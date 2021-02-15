@@ -12,15 +12,14 @@ contract TellorStorage {
         address miner;
     }
 
+    //TODO review dispute fields
     struct Dispute {
         bytes32 hash; //unique hash of dispute: keccak256(_miner,_requestId,_timestamp)
         int256 tally; //current tally of votes for - against measure
         bool executed; //is the dispute settled
         bool disputeVotePassed; //did the vote pass?
-        bool isPropFork; //true for fork proposal NEW
         address reportedMiner; //miner who submitted the 'bad value' will get disputeFee if dispute vote fails
         address reportingParty; //miner reporting the 'bad value'-pay disputeFee will get reportedMiner's stake if dispute vote passes
-        address proposedForkAddress; //new fork address (if fork proposal)
         mapping(bytes32 => uint256) disputeUintVars;
         //Each of the variables below is saved in the mapping disputeUintVars for each disputeID
         //e.g. TellorStorageStruct.DisputeById[disputeID].disputeUintVars[keccak256("requestId")]
@@ -47,69 +46,60 @@ contract TellorStorage {
         uint128 value; // value is the amount of tokens at a specific block number
     }
 
-    struct NewRequest {
+    struct Request {
         uint16 head;
-        // More or less 1 year of values if mined every block
-        uint256[65536] requestTimestamps;
-        uint256[65536] finalValues;
-        //index
+        // ~240 days of values if mined every block(5 min). Should take a whole year even for more requested ones
+        // TODO: Too high? We can keep way less, but this value we can nicely use a uint16 as head. Otherwise we would need to overflow ourselves.
+        uint256[65536] timestamps;
+        uint256[65536] values;
+        //those are mapped to index, not timestamp. ALso, the arrays are only kept for 256 requests to save storage.
         mapping(uint256 => bool) inDispute; //checks if API id is in dispute or finalized.
-        // Only keep the last 256 values
         mapping(uint256 => address[5]) minersByValue;
         mapping(uint256 => uint256[5]) valuesByTimestamp;
     }
 
-    struct TellorStorageStruct {
-        bytes32 currentChallenge; //current challenge to be solved
-        uint256[51] requestQ; //uint50 array of the top50 requests by payment amount
-        uint256[] newValueTimestamps; //array of all timestamps requested
-        Details[5] currentMiners; //This struct is for organizing the five mined values to find the median
-        mapping(bytes32 => address) addressVars;
-        //Address fields in the Tellor contract are saved the addressVars mapping
-        //e.g. addressVars[keccak256("tellorContract")] = address
-        //These are the variables saved in this mapping:
-        // address keccak256("tellorContract");//Tellor address
-        // address  keccak256("_owner");//Tellor Owner address
-        // address  keccak256("_deity");//Tellor Owner that can do things at will
-        // address  keccak256("pending_owner"); // The proposed new owner
-        mapping(bytes32 => uint256) uintVars;
-        //uint fields in the Tellor contract are saved the uintVars mapping
-        //e.g. uintVars[keccak256("decimals")] = uint
-        //These are the variables saved in this mapping:
-        // keccak256("decimals");    //18 decimal standard ERC20
-        // keccak256("disputeFee");//cost to dispute a mined value
-        // keccak256("disputeCount");//totalHistoricalDisputes
-        // keccak256("total_supply"); //total_supply of the token in circulation
-        // keccak256("stakeAmount");//stakeAmount for miners (we can cut gas if we just hardcoded it in...or should it be variable?)
-        // keccak256("stakerCount"); //number of parties currently staked
-        // keccak256("timeOfLastNewValue"); // time of last challenge solved
-        // keccak256("difficulty"); // Difficulty of current block
-        // keccak256("currentTotalTips"); //value of highest api/timestamp PayoutPool
-        // keccak256("currentRequestId"); //API being mined--updates with the ApiOnQ Id
-        // keccak256("requestCount"); // total number of requests through the system
-        // keccak256("slotProgress");//Number of miners who have mined this value so far
-        // keccak256("miningReward");//Mining Reward in PoWo tokens given to all miners per value
-        // keccak256("timeTarget"); //The time between blocks (mined Oracle values)
-        // keccak256("_tblock"); //
-        // keccak256("runningTips"); // VAriable to track running tips
-        // keccak256("currentReward"); // The current reward
-        // keccak256("devShare"); // The amount directed towards th devShare
-        // keccak256("currentTotalTips"); //
-        //This is a boolean that tells you if a given challenge has been completed by a given miner
-        mapping(bytes32 => mapping(address => bool)) minersByChallenge;
-        mapping(uint256 => uint256) requestIdByTimestamp; //minedTimestamp to apiId
-        mapping(uint256 => uint256) requestIdByRequestQIndex; //link from payoutPoolIndex (position in payout pool array) to apiId
-        mapping(uint256 => Dispute) disputesById; //disputeId=> Dispute details
-        mapping(address => Checkpoint[]) balances; //balances of a party given blocks
-        mapping(address => mapping(address => uint256)) allowed; //allowance for a given party and approver
-        mapping(address => StakeInfo) stakerDetails; //mapping from a persons address to their staking info
-        mapping(bytes32 => uint256) requestIdByQueryHash; // api bytes32 gets an id = to count of requests array
-        mapping(bytes32 => uint256) disputeIdByDisputeHash; //maps a hash to an ID for each dispute
-    }
+    uint256[51] requestQ; //uint50 array of the top50 requests by payment amount
+    uint256[] newValueTimestamps; //array of all timestamps requested TODO do we need this?
+    //Address fields in the Tellor contract are saved the addressVars mapping
+    //e.g. addressVars[keccak256("tellorContract")] = address
+    //These are the variables saved in this mapping:
+    // address keccak256("tellorContract");//Tellor address
+    // address  keccak256("_owner");//Tellor Owner address
+    // address  keccak256("_deity");//Tellor Owner that can do things at will
+    // address  keccak256("pending_owner"); // The proposed new owner
+    //uint fields in the Tellor contract are saved the uintVars mapping
+    //e.g. uintVars[keccak256("decimals")] = uint
+    //These are the variables saved in this mapping:
+    // keccak256("decimals");    //18 decimal standard ERC20
+    // keccak256("disputeFee");//cost to dispute a mined value
+    // keccak256("disputeCount");//totalHistoricalDisputes
+    // keccak256("total_supply"); //total_supply of the token in circulation
+    // keccak256("stakeAmount");//stakeAmount for miners (we can cut gas if we just hardcoded it in...or should it be variable?)
+    // keccak256("stakerCount"); //number of parties currently staked
+    // keccak256("timeOfLastNewValue"); // time of last challenge solved
+    // keccak256("difficulty"); // Difficulty of current block
+    // keccak256("currentTotalTips"); //value of highest api/timestamp PayoutPool
+    // keccak256("currentRequestId"); //API being mined--updates with the ApiOnQ Id
+    // keccak256("requestCount"); // total number of requests through the system
+    // keccak256("slotProgress");//Number of miners who have mined this value so far
+    // keccak256("miningReward");//Mining Reward in PoWo tokens given to all miners per value
+    // keccak256("timeTarget"); //The time between blocks (mined Oracle values)
+    // keccak256("_tblock"); //
+    // keccak256("runningTips"); // VAriable to track running tips
+    // keccak256("currentReward"); // The current reward
+    // keccak256("devShare"); // The amount directed towards th devShare
+    // keccak256("currentTotalTips"); //
+    //TODO review these fields
+    //This is a boolean that tells you if a given challenge has been completed by a given miner
+    mapping(uint256 => uint256) requestIdByTimestamp; //minedTimestamp to apiId
+    mapping(uint256 => uint256) requestIdByRequestQIndex; //link from payoutPoolIndex (position in payout pool array) to apiId
+    mapping(uint256 => Dispute) disputesById; //disputeId=> Dispute details
+    mapping(bytes32 => uint256) requestIdByQueryHash; // api bytes32 gets an id = to count of requests array
+    mapping(bytes32 => uint256) disputeIdByDisputeHash; //maps a hash to an ID for each dispute
 
     Details[5] currentMiners; //This struct is for organizing the five mined values to find the median
     mapping(address => StakeInfo) stakerDetails; //mapping from a persons address to their staking info
-    mapping(uint256 => NewRequest) requestDetails;
+    mapping(uint256 => Request) requestDetails;
     mapping(bytes32 => mapping(address => bool)) challenges;
 
     mapping(bytes32 => uint256) public uints;

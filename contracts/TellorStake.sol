@@ -4,6 +4,7 @@ import "./TellorStorage.sol";
 import "./TellorTransfer.sol";
 import "./Utilities.sol";
 
+//TODO both stake and dispute are rarely used, so we'll keep them as separate contracts
 /**
  * title Tellor Stake
  * @dev Contains the methods related to miners staking and unstaking. Tellor.sol
@@ -202,14 +203,23 @@ contract TellorDispute {
      * requires 5 miners to submit a value.
      */
     function beginDispute(
-        TellorStorage.TellorStorageStruct storage self,
         uint256 _requestId,
         uint256 _timestamp,
         uint256 _minerIndex
     ) public {
         TellorStorage.Request storage _request =
             self.requestDetails[_requestId];
-        require(_request.minedBlockNum[_timestamp] != 0, "Mined block is 0");
+
+        // timestamp should be less than now and greater than 0
+        require(
+            _request[_timestamp] > 0 && _request[_timestamp] < now,
+            "Mined block is 0"
+        );
+        // also, timestamp should be higher than timestamps[head - 256]
+        require(
+            timestamp >= _request.requestTimestamps[head - 256],
+            "Too old to dispute"
+        );
         require(_minerIndex < 5, "Miner index is wrong");
 
         //_miner is the miner being disputed. For every mined value 5 miners are saved in an array and the _minerIndex
@@ -219,44 +229,43 @@ contract TellorDispute {
             keccak256(abi.encodePacked(_miner, _requestId, _timestamp));
 
         //Increase the dispute count by 1
-        uint256 disputeId = self.uintVars[keccak256("disputeCount")] + 1;
-        self.uintVars[keccak256("disputeCount")] = disputeId;
+        uint256 disputeId = uints[keccak256("disputeCount")] + 1;
+        uints[keccak256("disputeCount")] = disputeId;
 
         //Sets the new disputeCount as the disputeId
 
         //Ensures that a dispute is not already open for the that miner, requestId and timestamp
-        uint256 hashId = self.disputeIdByDisputeHash[_hash];
+        uint256 hashId = disputeIdByDisputeHash[_hash];
         if (hashId != 0) {
-            self.disputesById[disputeId].disputeUintVars[
+            disputesById[disputeId].disputeUintVars[
                 keccak256("origID")
             ] = hashId;
         } else {
-            self.disputeIdByDisputeHash[_hash] = disputeId;
+            disputeIdByDisputeHash[_hash] = disputeId;
             hashId = disputeId;
         }
         uint256 origID = hashId;
         uint256 dispRounds =
-            self.disputesById[origID].disputeUintVars[
-                keccak256("disputeRounds")
-            ] + 1;
-        self.disputesById[origID].disputeUintVars[
+            disputesById[origID].disputeUintVars[keccak256("disputeRounds")] +
+                1;
+        disputesById[origID].disputeUintVars[
             keccak256("disputeRounds")
         ] = dispRounds;
-        self.disputesById[origID].disputeUintVars[
+        disputesById[origID].disputeUintVars[
             keccak256(abi.encode(dispRounds))
         ] = disputeId;
         if (disputeId != origID) {
             uint256 lastID =
-                self.disputesById[origID].disputeUintVars[
+                disputesById[origID].disputeUintVars[
                     keccak256(abi.encode(dispRounds - 1))
                 ];
             require(
-                self.disputesById[lastID].disputeUintVars[
+                disputesById[lastID].disputeUintVars[
                     keccak256("minExecutionDate")
                 ] <= now,
                 "Dispute is already open"
             );
-            if (self.disputesById[lastID].executed) {
+            if (disputesById[lastID].executed) {
                 require(
                     now -
                         self.disputesById[lastID].disputeUintVars[
@@ -269,17 +278,16 @@ contract TellorDispute {
         }
         uint256 _fee;
         if (_minerIndex == 2) {
-            self.requestDetails[_requestId].apiUintVars[
-                keccak256("disputeCount")
-            ] =
-                self.requestDetails[_requestId].apiUintVars[
+            requestDetails[_requestId].apiUintVars[keccak256("disputeCount")] =
+                requestDetails[_requestId].apiUintVars[
                     keccak256("disputeCount")
                 ] +
                 1;
             //update dispute fee for this case
             _fee =
-                self.uintVars[keccak256("stakeAmount")] *
-                self.requestDetails[_requestId].apiUintVars[
+                uints[keccak256("stakeAmount")] *
+                //removed this field from _requestVar should it be on dipustes
+                requestDetails[_requestId].apiUintVars[
                     keccak256("disputeCount")
                 ];
         } else {
@@ -289,10 +297,8 @@ contract TellorDispute {
         //maps the dispute to the Dispute struct
         self.disputesById[disputeId] = TellorStorage.Dispute({
             hash: _hash,
-            isPropFork: false,
             reportedMiner: _miner,
             reportingParty: msg.sender,
-            proposedForkAddress: address(0),
             executed: false,
             disputeVotePassed: false,
             tally: 0
@@ -416,11 +422,6 @@ contract TellorDispute {
             if (stakes.currentStatus == 3) {
                 stakes.currentStatus = 4;
             }
-        } else if (
-            uint256(_tally) >=
-            ((self.uintVars[keccak256("total_supply")] * 10) / 100)
-        ) {
-            emit NewTellorAddress(disp.proposedForkAddress);
         }
         disp.disputeUintVars[keccak256("tallyDate")] = now;
         disp.executed = true;
@@ -431,111 +432,6 @@ contract TellorDispute {
             disp.reportingParty,
             disp.disputeVotePassed
         );
-    }
-
-    /**
-     * @dev Allows for a fork to be proposed
-     * @param _propNewTellorAddress address for new proposed Tellor
-     */
-    function proposeFork(
-        TellorStorage.TellorStorageStruct storage self,
-        address _propNewTellorAddress
-    ) public {
-        bytes32 _hash = keccak256(abi.encode(_propNewTellorAddress));
-        self.uintVars[keccak256("disputeCount")]++;
-        uint256 disputeId = self.uintVars[keccak256("disputeCount")];
-        if (self.disputeIdByDisputeHash[_hash] != 0) {
-            self.disputesById[disputeId].disputeUintVars[
-                keccak256("origID")
-            ] = self.disputeIdByDisputeHash[_hash];
-        } else {
-            self.disputeIdByDisputeHash[_hash] = disputeId;
-        }
-        uint256 origID = self.disputeIdByDisputeHash[_hash];
-
-        self.disputesById[origID].disputeUintVars[keccak256("disputeRounds")]++;
-        uint256 dispRounds =
-            self.disputesById[origID].disputeUintVars[
-                keccak256("disputeRounds")
-            ];
-        self.disputesById[origID].disputeUintVars[
-            keccak256(abi.encode(dispRounds))
-        ] = disputeId;
-        if (disputeId != origID) {
-            uint256 lastID =
-                self.disputesById[origID].disputeUintVars[
-                    keccak256(abi.encode(dispRounds - 1))
-                ];
-            require(
-                self.disputesById[lastID].disputeUintVars[
-                    keccak256("minExecutionDate")
-                ] <= now,
-                "Dispute is already open"
-            );
-            if (self.disputesById[lastID].executed) {
-                require(
-                    now -
-                        self.disputesById[lastID].disputeUintVars[
-                            keccak256("tallyDate")
-                        ] <=
-                        1 days,
-                    "Time for voting haven't elapsed"
-                );
-            }
-        }
-        self.disputesById[disputeId] = TellorStorage.Dispute({
-            hash: _hash,
-            isPropFork: true,
-            reportedMiner: msg.sender,
-            reportingParty: msg.sender,
-            proposedForkAddress: _propNewTellorAddress,
-            executed: false,
-            disputeVotePassed: false,
-            tally: 0
-        });
-        TellorTransfer.doTransfer(
-            self,
-            msg.sender,
-            address(this),
-            100e18 * 2**(dispRounds - 1)
-        ); //This is the fork fee (just 100 tokens flat, no refunds.  Goes up quickly to dispute a bad vote)
-        self.disputesById[disputeId].disputeUintVars[
-            keccak256("blockNumber")
-        ] = block.number;
-        self.disputesById[disputeId].disputeUintVars[
-            keccak256("minExecutionDate")
-        ] = now + 7 days;
-    }
-
-    /**
-     * @dev Updates the Tellor address after a proposed fork has
-     * passed the vote and day has gone by without a dispute
-     * @param _disputeId the disputeId for the proposed fork
-     */
-    function updateTellor(
-        TellorStorage.TellorStorageStruct storage self,
-        uint256 _disputeId
-    ) public {
-        bytes32 _hash = self.disputesById[_disputeId].hash;
-        uint256 origID = self.disputeIdByDisputeHash[_hash];
-        uint256 lastID =
-            self.disputesById[origID].disputeUintVars[
-                keccak256(
-                    abi.encode(
-                        self.disputesById[origID].disputeUintVars[
-                            keccak256("disputeRounds")
-                        ]
-                    )
-                )
-            ];
-        TellorStorage.Dispute storage disp = self.disputesById[lastID];
-        require(disp.disputeVotePassed == true, "vote needs to pass");
-        require(
-            now - disp.disputeUintVars[keccak256("tallyDate")] > 1 days,
-            "Time for voting for further disputes has not passed"
-        );
-        self.addressVars[keccak256("tellorContract")] = disp
-            .proposedForkAddress;
     }
 
     /**

@@ -34,6 +34,7 @@ contract TellorVariables {
         0x7584d7d8701714da9c117f5bf30af73b0b88aca5338a84a21eb28de2fe0d93b8; //keccak256("currentRequestId")
 
 
-        //Calculate this hashes
-        bytes32 public constant currentChallenge = keccak256("currentChallenge");
+    //Calculate this hashes
+     bytes32 public constant currentChallenge = keccak256("currentChallenge");
+     
 }
