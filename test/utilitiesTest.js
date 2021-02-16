@@ -2,8 +2,10 @@ const { artifacts } = require("hardhat");
 const Master = artifacts.require("./TellorMaster.sol")
 const Tellor = artifacts.require("./TellorTest.sol")
 const ITellor = artifacts.require("./ITellor")
+const Stake = artifacts.require("./TellorStake.sol")
 const UtilitiesTests = artifacts.require("./UtilitiesTest")
 const helper = require("./helpers/test_helpers");
+const TestLib = require("./helpers/testLib");
 const BN = web3.utils.BN;
 
 contract("Utilities Tests", function(accounts) {
@@ -22,26 +24,44 @@ contract("Utilities Tests", function(accounts) {
     this.timeout(40000)
     tellor = await Tellor.new()
     tellorMaster = await Master.new(tellor.address)
+
+    let stake = await Stake.new()
+    await tellorMaster.changeTellorStake(stake.address)
     master = await ITellor.at(tellorMaster.address)
 
     for (var i = 0; i < accounts.length; i++) {
       //print tokens
       await master.theLazyCoon(accounts[i], web3.utils.toWei("7000", "ether"));
+            await master.depositStake({from: accounts[i]})
+
     }
 
     for (let index = 1; index < 58; index++) {
       await master.addTip(index, 1);
     }
+
+    env = {
+      master: master,
+      accounts: accounts
+    }
+
+       //Mining 11 blocks to get the requestQ alright
+    for (let index = 0; index < 12; index++) {
+      await helper.advanceTime(60 * 60 * 16);
+      await TestLib.mineBlock(env);      
+    }
+
+    utilities = await UtilitiesTests.new(master.address);
+
   });
 
-    it("test utilities", async function() {
+  it("test utilities", async function() {
     var myArr = [];
     for (var i = 50; i >= 0; i--) {
       myArr.push(i);
     }
     utilities = await UtilitiesTests.new(master.address);
     top5N = await utilities.testgetMax5(myArr);
-    let q = await master.getRequestQ();
     for (var i = 0; i < 5; i++) {
       assert(top5N["_max"][i] == myArr[i + 1]);
       assert(top5N["_index"][i] == i + 1);

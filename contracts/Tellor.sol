@@ -55,7 +55,8 @@ contract Tellor is TellorTransfer {
     ) external {
         bytes32 _hashMsgSender = keccak256(abi.encode(msg.sender));
         require(
-            uints[_hashMsgSender] == 0 || block.timestamp - uints[_hashMsgSender] > 15 minutes,
+            uints[_hashMsgSender] == 0 ||
+                block.timestamp - uints[_hashMsgSender] > 15 minutes,
             "Miner can only win rewards once per 15 min"
         );
         if (uints[slotProgress] != 4) {
@@ -203,19 +204,13 @@ contract Tellor is TellorTransfer {
         uint256 _tip = uints[currentTotalTips] / 10;
         uint256 _devShare = reward / 2;
 
-        _doTransfer(address(this), miners[0], reward + _tip);
-        _doTransfer(address(this), miners[1], reward + _tip);
-        _doTransfer(address(this), miners[2], reward + _tip);
-        _doTransfer(address(this), miners[3], reward + _tip);
-        _doTransfer(address(this), miners[4], reward + _tip);
+        _doMint(miners[0], reward + _tip);
+        _doMint(miners[1], reward + _tip);
+        _doMint(miners[2], reward + _tip);
+        _doMint(miners[3], reward + _tip);
+        _doMint(miners[4], reward + _tip);
 
-        //update the total supply
-        uints[total_supply] +=
-            _devShare +
-            reward *
-            5 -
-            (uints[currentTotalTips] / 2);
-        _doTransfer(address(this), addresses[_owner], _devShare);
+        _doMint(addresses[_owner], _devShare);
         uints[currentTotalTips] = 0;
     }
 
@@ -290,7 +285,7 @@ contract Tellor is TellorTransfer {
         _payReward(miners, _previousTime);
 
         uints[_tBlock]++;
-        uint256[5] memory _topId = getTopRequestIDs();
+        uint256[5] memory _topId = _getTopRequestIDs();
         for (uint256 i = 0; i < 5; i++) {
             currentMiners[i].value = _topId[i];
             requestQ[
@@ -320,7 +315,7 @@ contract Tellor is TellorTransfer {
      * @param _tip amount the requester is willing to pay to be get on queue. Miners
      * mine the onDeckQueryHash, or the api with the highest payout pool
      */
-    function addTip(uint256 _requestId, uint256 _tip) public {
+    function addTip(uint256 _requestId, uint256 _tip) external {
         require(_requestId != 0, "RequestId is 0");
         require(_tip != 0, "Tip should be greater than 0");
         uint256 _count = uints[requestCount] + 1;
@@ -345,7 +340,7 @@ contract Tellor is TellorTransfer {
      * @param _requestId being requested
      * @param _tip is the tip to add
      */
-    function updateOnDeck(uint256 _requestId, uint256 _tip) public {
+    function updateOnDeck(uint256 _requestId, uint256 _tip) internal {
         Request storage _request = requestDetails[_requestId];
         _request.apiUintVars[totalTip] = _request.apiUintVars[totalTip].add(
             _tip
@@ -364,7 +359,7 @@ contract Tellor is TellorTransfer {
             if (_request.apiUintVars[requestQPosition] == 0) {
                 uint256 _min;
                 uint256 _index;
-                (_min, _index) = getMin(requestQ);
+                (_min, _index) = _getMin(requestQ);
                 //we have to zero out the oldOne
                 //if the _payout is greater than the current minimum payout in the requestQ[51] or if the minimum is zero
                 //then add it to the requestQ array and map its index information to the requestId and the apiUintVars
@@ -382,7 +377,7 @@ contract Tellor is TellorTransfer {
         }
     }
 
-    function getMin(uint256[51] memory data)
+    function _getMin(uint256[51] memory data)
         internal
         pure
         returns (uint256 min, uint256 minIndex)
@@ -397,7 +392,7 @@ contract Tellor is TellorTransfer {
         }
     }
 
-    function getMax5(uint256[51] memory data)
+    function _getMax5(uint256[51] memory data)
         internal
         pure
         returns (uint256[5] memory max, uint256[5] memory maxIndex)
@@ -427,14 +422,14 @@ contract Tellor is TellorTransfer {
         }
     }
 
-    function getTopRequestIDs()
-        public
+    function _getTopRequestIDs()
+        internal
         view
         returns (uint256[5] memory _requestIds)
     {
         uint256[5] memory _max;
         uint256[5] memory _index;
-        (_max, _index) = getMax5(requestQ);
+        (_max, _index) = _getMax5(requestQ);
         for (uint256 i = 0; i < 5; i++) {
             if (_max[i] != 0) {
                 _requestIds[i] = requestIdByRequestQIndex[_index[i]];

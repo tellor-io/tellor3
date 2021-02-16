@@ -339,4 +339,22 @@ abstract contract ITellor {
     ) external virtual;
 
     function manuallySetDifficulty(uint256 _diff) external virtual {}
+
+    function getMax(uint256[51] memory data)
+        public
+        view
+        virtual
+        returns (uint256 max, uint256 maxIndex);
+
+    function getMin(uint256[51] memory data)
+        public
+        view
+        virtual
+        returns (uint256 min, uint256 minIndex);
+
+    function getMax5(uint256[51] memory data)
+        public
+        view
+        virtual
+        returns (uint256[5] memory max, uint256[5] memory maxIndex);
 }

@@ -4,6 +4,8 @@ pragma solidity 0.7.4;
 //Functions for retrieving min and Max in 51 length array (requestQ)
 //Taken partly from: https://github.com/modular-network/ethereum-libraries-array-utils/blob/master/contracts/Array256Lib.sol
 
+import "hardhat/console.sol";
+
 contract Utilities {
     /**
      * @dev Returns the max value in an array.
@@ -17,9 +19,10 @@ contract Utilities {
      * from 1-51 with zero as nothing.
      * @param data is the array to calculate max from
      * @return max amount and its index within the array
+     //TODO this function isn't used anywhere
      */
     function getMax(uint256[51] memory data)
-        internal
+        public
         pure
         returns (uint256 max, uint256 maxIndex)
     {
@@ -33,13 +36,8 @@ contract Utilities {
         }
     }
 
-    /**
-     * @dev Returns the minimum value in an array.
-     * @param data is the array to calculate min from
-     * @return min amount and its index within the array
-     */
     function getMin(uint256[51] memory data)
-        internal
+        public
         pure
         returns (uint256 min, uint256 minIndex)
     {
@@ -53,14 +51,9 @@ contract Utilities {
         }
     }
 
-    /**
-     * @dev Returns the 5 requestsId's with the top payouts in an array.
-     * @param data is the array to get the top 5 from
-     * @return max maxIdex amounts and their respective index within the array
-     */
     function getMax5(uint256[51] memory data)
-        internal
-        pure
+        public
+        view
         returns (uint256[5] memory max, uint256[5] memory maxIndex)
     {
         uint256 min5 = data[1];

@@ -117,6 +117,24 @@ contract TellorTransfer is TellorStorage, TellorVariables {
         emit Transfer(_from, _to, _amount);
     }
 
+    function _doMint(address _to, uint256 _amount) internal {
+        require(_amount != 0, "Tried to send non-positive amount");
+        require(_to != address(0), "Receiver is 0 address");
+        uint256 previousBalance = balanceOf(_to);
+        require(
+            previousBalance + _amount >= previousBalance,
+            "Overflow happened"
+        ); // Check for overflow
+        uint256 previousSupply = uints[total_supply];
+        require(
+            previousSupply + _amount >= previousSupply,
+            "Overflow happened"
+        );
+        uints[total_supply] += _amount;
+        updateBalanceAtNow(_to, previousBalance + _amount);
+        emit Transfer(address(0), _to, _amount);
+    }
+
     /**
      * @dev Gets balance of owner specified
      * @param _user is the owner address used to look up the balance

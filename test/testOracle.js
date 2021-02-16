@@ -1,6 +1,7 @@
 const { artifacts } = require("hardhat");
 const helper = require("./helpers/test_helpers");
-const TestLib = require("./helpers/testLib");const Master = artifacts.require("./TellorMaster.sol")
+const TestLib = require("./helpers/testLib");
+const Master = artifacts.require("./TellorMaster.sol")
 const Tellor = artifacts.require("./TellorTest.sol")
 const Stake = artifacts.require("./TellorStake.sol")
 const Initializer= artifacts.require("./Initializer.sol")
