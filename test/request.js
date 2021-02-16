@@ -14,6 +14,10 @@ contract("Request and tip tests", function(accounts) {
     tellor = await Tellor.new()
     tellorMaster = await Master.new(tellor.address)
     master = await ITellor.at(tellorMaster.address)
+
+    for (let index = 0; index < 58; index++) {
+      await master.addTip(index, 1);
+    }
   });
 
   it("test utilities", async function() {
