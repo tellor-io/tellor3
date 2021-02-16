@@ -36,8 +36,8 @@
       ]
     },
     "/home/jgcarv/Dev/Tellor/tellor3/contracts/TellorGetters.sol": {
-      "lastModificationDate": 1613487355978,
-      "contentHash": "89fae47d374f19f063e45364b1a872e4",
+      "lastModificationDate": 1613493196971,
+      "contentHash": "3849c788d1468a67da72ad897f51a6df",
       "sourceName": "contracts/TellorGetters.sol",
       "solcConfig": {
         "version": "0.7.4",
@@ -76,8 +76,8 @@
       ]
     },
     "/home/jgcarv/Dev/Tellor/tellor3/contracts/TellorStorage.sol": {
-      "lastModificationDate": 1613476314885,
-      "contentHash": "ac8d4b7c819afc36c7c78c6c750672da",
+      "lastModificationDate": 1613491478101,
+      "contentHash": "daa2e609e132f5bb502aadb4a9a4ee78",
       "sourceName": "contracts/TellorStorage.sol",
       "solcConfig": {
         "version": "0.7.4",
@@ -254,7 +254,7 @@
       ]
     },
     "/home/jgcarv/Dev/Tellor/tellor3/contracts/TellorMaster.sol": {
-      "lastModificationDate": 1613483253917,
+      "lastModificationDate": 1613490897643,
       "contentHash": "3b80d1957c12fa65bb1e9b6eacd8c59e",
       "sourceName": "contracts/TellorMaster.sol",
       "solcConfig": {
@@ -290,8 +290,8 @@
       ]
     },
     "/home/jgcarv/Dev/Tellor/tellor3/contracts/Tellor.sol": {
-      "lastModificationDate": 1613487625861,
-      "contentHash": "9699e98c085cbae5fb2c5157af6387fc",
+      "lastModificationDate": 1613494014814,
+      "contentHash": "c8040ab757c108feb38517d3e9ca3aea",
       "sourceName": "contracts/Tellor.sol",
       "solcConfig": {
         "version": "0.7.4",
@@ -330,8 +330,8 @@
       ]
     },
     "/home/jgcarv/Dev/Tellor/tellor3/contracts/ITellor.sol": {
-      "lastModificationDate": 1613478219370,
-      "contentHash": "a749683a079b61a64ae2a04633aabd8c",
+      "lastModificationDate": 1613491160527,
+      "contentHash": "bbe7739efdda8a11ef30400b22393f88",
       "sourceName": "contracts/ITellor.sol",
       "solcConfig": {
         "version": "0.7.4",
@@ -438,8 +438,8 @@
       ]
     },
     "/home/jgcarv/Dev/Tellor/tellor3/contracts/Initializer.sol": {
-      "lastModificationDate": 1613485211546,
-      "contentHash": "536aa991fd035721c8bf8bc3228179dd",
+      "lastModificationDate": 1613494159138,
+      "contentHash": "162956338e2ae2c56b1265533342c9da",
       "sourceName": "contracts/Initializer.sol",
       "solcConfig": {
         "version": "0.7.4",

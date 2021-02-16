@@ -292,7 +292,7 @@ contract TellorGetters is TellorStorage, TellorVariables, Utilities {
         Request storage _request = requestDetails[_requestId];
         return (
             _request.apiUintVars[keccak256("requestQPosition")],
-            _request.apiUintVars[keccak256("totalTip")]
+            _request.apiUintVars[totalTip]
         );
     }
 
@@ -442,9 +442,7 @@ contract TellorGetters is TellorStorage, TellorVariables, Utilities {
     {
         idsOnDeck = getTopRequestIDs();
         for (uint256 i = 0; i < 5; i++) {
-            tipsOnDeck[i] = requestDetails[idsOnDeck[i]].apiUintVars[
-                keccak256("totalTip")
-            ];
+            tipsOnDeck[i] = requestDetails[idsOnDeck[i]].apiUintVars[totalTip];
         }
     }
 

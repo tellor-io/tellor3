@@ -378,6 +378,10 @@ contract Tellor is TellorTransfer {
                 }
                 // else if the requestId is part of the requestQ[51] then update the tip for it
             } else {
+                console.log("-----");
+                console.log(_tip);
+                console.log(_requestId);
+                console.log(_request.apiUintVars[requestQPosition]);
                 requestQ[_request.apiUintVars[requestQPosition]] += _tip;
             }
         }
@@ -445,26 +449,18 @@ contract Tellor is TellorTransfer {
         }
     }
 
-    function _delegate(address implementation) internal virtual {
-        // solhint-disable-next-line no-inline-assembly
+    function _delegate(address implementation)
+        internal
+        virtual
+        returns (bool succ, bytes memory ret)
+    {
+        (succ, ret) = implementation.delegatecall(msg.data);
+    }
+
+    fallback() external payable {
+        address addr = addresses[keccak256("tellorStake")];
+        (bool result, ) = _delegate(addr);
         assembly {
-            // Copy msg.data. We take full control of memory in this inline assembly
-            // block because it will not return to Solidity code. We overwrite the
-            // Solidity scratch pad at memory position 0.
-            calldatacopy(0, 0, calldatasize())
-
-            // Call the implementation.
-            // out and outsize are 0 because we don't know the size yet.
-            let result := delegatecall(
-                gas(),
-                implementation,
-                0,
-                calldatasize(),
-                0,
-                0
-            )
-
-            // Copy the returned data.
             returndatacopy(0, 0, returndatasize())
 
             switch result
@@ -476,10 +472,5 @@ contract Tellor is TellorTransfer {
                     return(0, returndatasize())
                 }
         }
-    }
-
-    fallback() external payable {
-        address addr = addresses[keccak256("tellorStake")];
-        _delegate(addr);
     }
 }

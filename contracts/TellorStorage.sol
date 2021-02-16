@@ -13,7 +13,7 @@ contract TellorStorage {
         address miner;
     }
 
-  struct Dispute {
+    struct Dispute {
         bytes32 hash; //unique hash of dispute: keccak256(_miner,_requestId,_timestamp)
         int256 tally; //current tally of votes for - against measure
         bool executed; //is the dispute settled

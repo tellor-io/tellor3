@@ -204,14 +204,7 @@ abstract contract ITellor {
         external
         view
         virtual
-        returns (
-            string memory,
-            string memory,
-            bytes32,
-            uint256,
-            uint256,
-            uint256
-        );
+        returns (uint256, uint256);
 
     function getStakerInfo(address _staker)
         external
