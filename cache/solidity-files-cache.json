@@ -1,0 +1,330 @@
+{
+  "_format": "hh-sol-cache-2",
+  "files": {
+    "/home/nfett/coder/tellor3/contracts/SafeMath.sol": {
+      "lastModificationDate": 1613441197021,
+      "contentHash": "091f28cfe24cabb06816b94c553334b5",
+      "sourceName": "contracts/SafeMath.sol",
+      "solcConfig": {
+        "version": "0.7.4",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "0.7.4"
+      ],
+      "artifacts": [
+        "SafeMath"
+      ]
+    },
+    "/home/nfett/coder/tellor3/contracts/TellorGetters.sol": {
+      "lastModificationDate": 1613441197021,
+      "contentHash": "54ee1ec50002a51a6abe28d9fcf3847b",
+      "sourceName": "contracts/TellorGetters.sol",
+      "solcConfig": {
+        "version": "0.7.4",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./SafeMath.sol",
+        "./TellorStorage.sol",
+        "./TellorVariables.sol",
+        "./Utilities.sol"
+      ],
+      "versionPragmas": [
+        "0.7.4"
+      ],
+      "artifacts": [
+        "TellorGetters"
+      ]
+    },
+    "/home/nfett/coder/tellor3/contracts/TellorStorage.sol": {
+      "lastModificationDate": 1613441197021,
+      "contentHash": "ac8d4b7c819afc36c7c78c6c750672da",
+      "sourceName": "contracts/TellorStorage.sol",
+      "solcConfig": {
+        "version": "0.7.4",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "0.7.4"
+      ],
+      "artifacts": [
+        "TellorStorage"
+      ]
+    },
+    "/home/nfett/coder/tellor3/contracts/TellorVariables.sol": {
+      "lastModificationDate": 1613441197022,
+      "contentHash": "1322d913574b987eff909c3f560addbd",
+      "sourceName": "contracts/TellorVariables.sol",
+      "solcConfig": {
+        "version": "0.7.4",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "0.7.4"
+      ],
+      "artifacts": [
+        "TellorVariables"
+      ]
+    },
+    "/home/nfett/coder/tellor3/contracts/Utilities.sol": {
+      "lastModificationDate": 1613441197022,
+      "contentHash": "9abb97341d4b8bac0444ebc224856f2d",
+      "sourceName": "contracts/Utilities.sol",
+      "solcConfig": {
+        "version": "0.7.4",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "0.7.4"
+      ],
+      "artifacts": [
+        "Utilities"
+      ]
+    },
+    "/home/nfett/coder/tellor3/contracts/TellorStake.sol": {
+      "lastModificationDate": 1613441197021,
+      "contentHash": "62a492c325ab3e3e2bf2882400176f2c",
+      "sourceName": "contracts/TellorStake.sol",
+      "solcConfig": {
+        "version": "0.7.4",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./TellorStorage.sol",
+        "./TellorTransfer.sol",
+        "./Utilities.sol"
+      ],
+      "versionPragmas": [
+        "0.7.4"
+      ],
+      "artifacts": [
+        "TellorStake"
+      ]
+    },
+    "/home/nfett/coder/tellor3/contracts/TellorTransfer.sol": {
+      "lastModificationDate": 1613441197021,
+      "contentHash": "e7893d90ea383f5405c214f57ea41677",
+      "sourceName": "contracts/TellorTransfer.sol",
+      "solcConfig": {
+        "version": "0.7.4",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./SafeMath.sol",
+        "./TellorStorage.sol"
+      ],
+      "versionPragmas": [
+        "0.7.4"
+      ],
+      "artifacts": [
+        "TellorTransfer"
+      ]
+    },
+    "/home/nfett/coder/tellor3/contracts/TellorMaster.sol": {
+      "lastModificationDate": 1613441197021,
+      "contentHash": "dfef88e6b243cc8e569badf49cc96861",
+      "sourceName": "contracts/TellorMaster.sol",
+      "solcConfig": {
+        "version": "0.7.4",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./TellorStorage.sol"
+      ],
+      "versionPragmas": [
+        "0.7.4"
+      ],
+      "artifacts": [
+        "TellorMaster"
+      ]
+    },
+    "/home/nfett/coder/tellor3/contracts/Tellor.sol": {
+      "lastModificationDate": 1613441197021,
+      "contentHash": "97a68e2287207d203b27e2427959e6d6",
+      "sourceName": "contracts/Tellor.sol",
+      "solcConfig": {
+        "version": "0.7.4",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./TellorTransfer.sol",
+        "./TellorGetters.sol",
+        "./Utilities.sol",
+        "./SafeMath.sol"
+      ],
+      "versionPragmas": [
+        "0.7.4"
+      ],
+      "artifacts": [
+        "Tellor"
+      ]
+    }
+  }
+}

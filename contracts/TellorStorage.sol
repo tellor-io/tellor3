@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 pragma solidity 0.7.4;
 
 /**
@@ -8,18 +9,19 @@ pragma solidity 0.7.4;
 contract TellorStorage {
     //Internal struct for use in proof-of-work submission
     struct Details {
-        uint256 id;
+        uint256 value;
         address miner;
     }
 
-    //TODO review dispute fields
-    struct Dispute {
+  struct Dispute {
         bytes32 hash; //unique hash of dispute: keccak256(_miner,_requestId,_timestamp)
         int256 tally; //current tally of votes for - against measure
         bool executed; //is the dispute settled
         bool disputeVotePassed; //did the vote pass?
+        bool isPropFork; //true for fork proposal NEW
         address reportedMiner; //miner who submitted the 'bad value' will get disputeFee if dispute vote fails
         address reportingParty; //miner reporting the 'bad value'-pay disputeFee will get reportedMiner's stake if dispute vote passes
+        address proposedForkAddress; //new fork address (if fork proposal)
         mapping(bytes32 => uint256) disputeUintVars;
         //Each of the variables below is saved in the mapping disputeUintVars for each disputeID
         //e.g. TellorStorageStruct.DisputeById[disputeID].disputeUintVars[keccak256("requestId")]
@@ -47,12 +49,17 @@ contract TellorStorage {
     }
 
     struct Request {
-        uint16 head;
-        // ~240 days of values if mined every block(5 min). Should take a whole year even for more requested ones
-        // TODO: Too high? We can keep way less, but this value we can nicely use a uint16 as head. Otherwise we would need to overflow ourselves.
-        uint256[65536] timestamps;
-        uint256[65536] values;
-        //those are mapped to index, not timestamp. ALso, the arrays are only kept for 256 requests to save storage.
+        uint256[] requestTimestamps; //array of all newValueTimestamps requested
+        mapping(bytes32 => uint256) apiUintVars;
+        //Each of the variables below is saved in the mapping apiUintVars for each api request
+        //e.g. requestDetails[_requestId].apiUintVars[keccak256("totalTip")]
+        //These are the variables saved in this mapping:
+        // uint keccak256("granularity"); //multiplier for miners
+        // uint keccak256("requestQPosition"); //index in requestQ
+        // uint keccak256("totalTip");//bonus portion of payout
+        mapping(uint256 => uint256) minedBlockNum; //[apiId][minedTimestamp]=>block.number
+        //This the time series of finalValues stored by the contract where uint UNIX timestamp is mapped to value
+        mapping(uint256 => uint256) finalValues;
         mapping(uint256 => bool) inDispute; //checks if API id is in dispute or finalized.
         mapping(uint256 => address[5]) minersByValue;
         mapping(uint256 => uint256[5]) valuesByTimestamp;
@@ -96,7 +103,7 @@ contract TellorStorage {
     mapping(uint256 => Dispute) disputesById; //disputeId=> Dispute details
     mapping(bytes32 => uint256) requestIdByQueryHash; // api bytes32 gets an id = to count of requests array
     mapping(bytes32 => uint256) disputeIdByDisputeHash; //maps a hash to an ID for each dispute
-
+    mapping(bytes32 => mapping(address => bool)) minersByChallenge;
     Details[5] currentMiners; //This struct is for organizing the five mined values to find the median
     mapping(address => StakeInfo) stakerDetails; //mapping from a persons address to their staking info
     mapping(uint256 => Request) requestDetails;
@@ -109,8 +116,4 @@ contract TellorStorage {
     //ERC20 storage
     mapping(address => Checkpoint[]) balances;
     mapping(address => mapping(address => uint256)) public _allowances;
-
-    uint256 private _totalSupply;
-    string private _name;
-    string private _symbol;
 }

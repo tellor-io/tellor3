@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 pragma solidity 0.7.4;
 
 //Functions for retrieving min and Max in 51 length array (requestQ)
