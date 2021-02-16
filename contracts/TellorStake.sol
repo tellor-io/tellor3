@@ -573,4 +573,63 @@ contract TellorDispute {
                 1000)
         );
     }
+
+        /**
+    * @dev Updates the Tellor address after a proposed fork has 
+    * passed the vote and day has gone by without a dispute
+    * @param _disputeId the disputeId for the proposed fork
+    */
+    function updateTellor(TellorStorage.TellorStorageStruct storage self, uint _disputeId) public {
+        bytes32 _hash = self.disputesById[_disputeId].hash;
+        uint256 origID = self.disputeIdByDisputeHash[_hash];
+        uint256 lastID =  self.disputesById[origID].disputeUintVars[keccak256(abi.encode(self.disputesById[origID].disputeUintVars[keccak256("disputeRounds")]))];
+        TellorStorage.Dispute storage disp = self.disputesById[lastID];
+        require(disp.disputeVotePassed == true, "vote needs to pass");
+        require(now - disp.disputeUintVars[keccak256("tallyDate")] > 1 days, "Time for voting for further disputes has not passed");
+        require(now - disp.disputeUintVars[keccak256("tallyDate")] < 7 days, "Time limit for making it live");
+        self.addressVars[keccak256("tellorContract")] = disp.proposedForkAddress;
+    }
+
+    
+    /**
+    * @dev Allows for a fork to be proposed
+    * @param _propNewTellorAddress address for new proposed Tellor
+    */
+    function proposeFork(TellorStorage.TellorStorageStruct storage self, address _propNewTellorAddress) public {
+        bytes32 _hash = keccak256(abi.encode(_propNewTellorAddress));
+        self.uintVars[keccak256("disputeCount")]++;
+        uint256 disputeId = self.uintVars[keccak256("disputeCount")];
+        if(self.disputeIdByDisputeHash[_hash] != 0){
+            self.disputesById[disputeId].disputeUintVars[keccak256("origID")] = self.disputeIdByDisputeHash[_hash];
+        }
+        else{
+            self.disputeIdByDisputeHash[_hash] = disputeId;
+        }
+        uint256 origID = self.disputeIdByDisputeHash[_hash];
+
+        self.disputesById[origID].disputeUintVars[keccak256("disputeRounds")]++;
+        uint256 dispRounds = self.disputesById[origID].disputeUintVars[keccak256("disputeRounds")];
+        self.disputesById[origID].disputeUintVars[keccak256(abi.encode(dispRounds))] = disputeId;
+        if(disputeId != origID){
+            uint256 lastID =  self.disputesById[origID].disputeUintVars[keccak256(abi.encode(dispRounds-1))];
+            require(self.disputesById[lastID].disputeUintVars[keccak256("minExecutionDate")] <= now, "Dispute is already open");
+            if(self.disputesById[lastID].executed){
+                require(now - self.disputesById[lastID].disputeUintVars[keccak256("tallyDate")] <= 1 days, "Time for voting haven't elapsed");
+            }
+        }
+        self.disputesById[disputeId] = TellorStorage.Dispute({
+            hash: _hash,
+            isPropFork: true,
+            reportedMiner: msg.sender,
+            reportingParty: msg.sender,
+            proposedForkAddress: _propNewTellorAddress,
+            executed: false,
+            disputeVotePassed: false,
+            tally: 0
+        });
+        TellorTransfer.doTransfer(self, msg.sender, address(this), 100e18 * 2**(dispRounds-1)); //This is the fork fee (just 100 tokens flat, no refunds.  Goes up quickly to dispute a bad vote)
+        self.disputesById[disputeId].disputeUintVars[keccak256("blockNumber")] = block.number;
+        self.disputesById[disputeId].disputeUintVars[keccak256("minExecutionDate")] = now + 7 days;
+    }
+
 }

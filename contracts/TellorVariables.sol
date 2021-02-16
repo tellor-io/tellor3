@@ -1,4 +1,4 @@
-pragma solidity 0.7.4
+pragma solidity 0.7.4;
 
 
 // Helper contract to store hashes of variables

@@ -10,7 +10,7 @@ import "./TellorTransfer.sol";
  * The logic for this contract is in TellorLibrary.sol, TellorDispute.sol, TellorStake.sol,
  * and TellorTransfer.sol
  */
-contract Tellor is TellorVariables, TellorStorage, TellorTransfer {
+contract Tellor is TellorGetters, TellorVariables, TellorStorage, TellorTransfer {
     function submitMiningSolution(
         string calldata _nonce,
         uint256[5] calldata _requestIds,

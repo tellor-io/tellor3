@@ -11,31 +11,31 @@ import "./TellorStorage.sol";
 contract TellorMaster is TellorStorage {
     event NewTellorAddress(address _newTellor);
 
-    // constructor(address _tellorContract) public {
-    //     tellor.init();
-    //     tellor.addressVars[keccak256("_owner")] = msg.sender;
-    //     tellor.addressVars[keccak256("_deity")] = msg.sender;
-    //     tellor.addressVars[keccak256("tellorContract")] = _tellorContract;
-    //     emit NewTellorAddress(_tellorContract);
-    // }
+    constructor(address _tellorContract) public {
+        tellor.init();
+        tellor.addressVars[keccak256("_owner")] = msg.sender;
+        tellor.addressVars[keccak256("_deity")] = msg.sender;
+        tellor.addressVars[keccak256("tellorContract")] = _tellorContract;
+        emit NewTellorAddress(_tellorContract);
+    }
 
-    // /**
-    //  * @dev Gets the 5 miners who mined the value for the specified requestId/_timestamp
-    //  * @dev Only needs to be in library
-    //  * @param _newDeity the new Deity in the contract
-    //  */
+    /**
+     * @dev Gets the 5 miners who mined the value for the specified requestId/_timestamp
+     * @dev Only needs to be in library
+     * @param _newDeity the new Deity in the contract
+     */
 
-    // function changeDeity(address _newDeity) external {
-    //     tellor.changeDeity(_newDeity);
-    // }
+    function changeDeity(address _newDeity) external {
+        tellor.changeDeity(_newDeity);
+    }
 
-    // /**
-    //  * @dev  allows for the deity to make fast upgrades.  Deity should be 0 address if decentralized
-    //  * @param _tellorContract the address of the new Tellor Contract
-    //  */
-    // function changeTellorContract(address _tellorContract) external {
-    //     tellor.changeTellorContract(_tellorContract);
-    // }
+    /**
+     * @dev  allows for the deity to make fast upgrades.  Deity should be 0 address if decentralized
+     * @param _tellorContract the address of the new Tellor Contract
+     */
+    function changeTellorContract(address _tellorContract) external {
+        tellor.changeTellorContract(_tellorContract);
+    }
 
     function _delegate(address implementation) internal virtual {
         // solhint-disable-next-line no-inline-assembly
