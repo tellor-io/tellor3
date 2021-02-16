@@ -15,14 +15,8 @@ contract("DidMine test", function(accounts) {
 
   beforeEach("Setup contract for each test", async function() {
     //Could use the getV25(accounts, true), since you're upgrading in the first line of tests. I added full tips to getV25 in testLib already
-       let initer = await Initializer.new()
     tellor = await Tellor.new()
-    tellorMaster = await Master.new(initer.address)
-    let m = await Initializer.at(tellorMaster.address)
-    await m.init();
-
-    await tellorMaster.changeTellorContract(tellor.address)
-
+    tellorMaster = await Master.new(tellor.address)
     let stake = await Stake.new()
     await tellorMaster.changeTellorStake(stake.address)
     master = await ITellor.at(tellorMaster.address)
