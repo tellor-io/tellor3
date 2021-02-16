@@ -204,6 +204,9 @@ contract Tellor is TellorTransfer {
         uint256 _tip = uints[currentTotalTips] / 10;
         uint256 _devShare = reward / 2;
 
+        // Burn half of tips
+        _doBurn(address(this), uints[currentTotalTips] / 2);
+
         _doMint(miners[0], reward + _tip);
         _doMint(miners[1], reward + _tip);
         _doMint(miners[2], reward + _tip);

@@ -108,8 +108,9 @@ contract("Utilities Tests", function(accounts) {
       await master.addTip(j, j, { from: accounts[2] });
     }
     max = await utilities.testgetMax();
+    console.log(max)
     assert(max["0"].toString() == "45", "Max should be 45");
-    assert(max["1"].toString() == "6", "Max should be 6"); //note first 5 are added
+    assert(max["1"].toString() == "45", "Max should be 6"); //note first 5 are added
   });
   it("Test getMax payout and index 60 requests", async function() {
     utilities = await UtilitiesTests.new(master.address);
@@ -161,17 +162,6 @@ contract("Utilities Tests", function(accounts) {
     for (var i = 0; i < res.length; i++) {
       assert(svals[i] == sorted[i], "Value supposed to be on the top5");
     }
-  });
-
-  it("Timestamp on Q", async () => {
-    utilities = await UtilitiesTests.new(master.address);
-    apiVars = await master.getRequestVars(1);
-    apiIdforpayoutPoolIndex = await master.getRequestIdByRequestQIndex(0);
-    apiId = await master.getRequestIdByQueryHash(apiVars[2]);
-    assert(
-      web3.utils.hexToNumberString(apiId) == 1,
-      "timestamp on Q should be 1"
-    );
   });
 
   it("utilities Test getMin payout and index 10 req with overlapping tips and requests", async function() {

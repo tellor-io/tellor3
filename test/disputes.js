@@ -53,9 +53,15 @@ contract("Dispute Tests", function(accounts) {
     }
     await master.theLazyCoon(tellorMaster.address, web3.utils.toWei("70000", "ether"));
 
+    
     env = {
       master: master,
       accounts: accounts
+    }
+
+    for (let index = 0; index < 12; index++) {
+      await helper.advanceTime(60 * 60 * 16);
+      await TestLib.mineBlock(env);      
     }
   });
 
@@ -104,11 +110,15 @@ contract("Dispute Tests", function(accounts) {
         "reported miner's balance should change correctly"
       );
 
+      console.log(web3.utils.fromWei(dispBal2) -
+          web3.utils.fromWei(dispBal1) -
+          web3.utils.fromWei(disputeFee))
+
       assert(
         web3.utils.fromWei(dispBal2) -
           web3.utils.fromWei(dispBal1) -
           web3.utils.fromWei(disputeFee) ==
-          500,
+          400,
         "disputing party's balance should change correctly"
       );
       s = await master.getStakerInfo(accounts[2]);
@@ -220,6 +230,12 @@ contract("Dispute Tests", function(accounts) {
       balance2 = await master.balanceOf(accounts[2]);
       dispBal2 = await master.balanceOf(accounts[1]);
       let disputeFee = await master.getUintVar(hash("disputeFee"));
+
+      console.log(   dispBal1
+          .sub(dispBal2)
+          .sub(disputeFee))
+
+          console.log(dispInfo[7][8])
 
       assert(
         dispBal1
@@ -422,6 +438,7 @@ contract("Dispute Tests", function(accounts) {
     console.log(dispInfo);
 
     assert(dispInfo[7][0] == requetsId);
+    console.log(blocks[0]);
     assert(dispInfo["7"][2] == blocks[0].submitted[requetsId][2]);
     assert(dispInfo[2] == true, "Dispute Vote passed");
     voted = await master.didVote(1, accounts[1]);
@@ -534,8 +551,8 @@ contract("Dispute Tests", function(accounts) {
       "account 2 should be the disputed miner"
     );
     assert(dispInfo[2] == true, "Dispute Vote passed");
-    console.log(dispInfo[7][8].toString());
-    assert(web3.utils.fromWei(dispInfo[7][8]) == 500, "fee should be correct");
+    console.log(web3.utils.fromWei(dispInfo[7][8].toString()));
+    assert(web3.utils.fromWei(dispInfo[7][8]) == 400, "fee should be correct");
     //vote 2 - fails
     await master.theLazyCoon(accounts[6], web3.utils.toWei("5000", "ether"));
     await startADispute(accounts[0], 1, 3);
@@ -550,7 +567,7 @@ contract("Dispute Tests", function(accounts) {
     dispInfo = await master.getAllDisputeVars(2);
     assert(dispInfo[2] == true, "Dispute Vote passes again");
     assert(
-      web3.utils.fromWei(dispInfo[7][8]) == 500 * 2,
+      web3.utils.fromWei(dispInfo[7][8]) == 400 * 2,
       "fee should be correct"
     );
     await helper.advanceTime(86400 * 2);

@@ -79,7 +79,7 @@ contract("Reward Tests", function(accounts) {
       await TestLib.mineBlock(env);      
     }
     vars = await master.getNewCurrentVariables();
-    await master.addTip(1, 10000);
+    await master.addTip(1, 10001);
     await helper.takeFifteen();
     await TestLib.mineBlock(env);
     vars2 = await master.getNewCurrentVariables();
