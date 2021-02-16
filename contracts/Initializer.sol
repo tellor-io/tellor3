@@ -13,6 +13,19 @@ import "./SafeMath.sol";
  * The logic for this contract is in TellorLibrary.sol, TellorDispute.sol, TellorStake.sol,
  * and TellorTransfer.sol
  */
-contract Initializer is TellorGetters, TellorTransfer {
-    fallback() external {}
+contract Initializer is TellorTransfer {
+    function _init() internal {
+        uints[difficulty] = 10000000;
+        uints[timeTarget] = 240;
+        // uints[currentReward] = 1e18;
+        uints[timeOfLastNewValue] = block.timestamp - 240;
+    }
+
+    function init() external {
+        _init();
+    }
+
+    fallback() external {
+        _init();
+    }
 }

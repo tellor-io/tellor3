@@ -1,15 +1,16 @@
-var UtilitiesTests = artifacts.require("./UtilitiesTests.sol");
-const Tellor = artifacts.require("./TellorTest.sol"); // globally injected artifacts helper
-var masterAbi = Tellor.abi;
-const TestLib = require("./helpers/testLib");
+const { artifacts } = require("hardhat");
+const Master = artifacts.require("./TellorMaster.sol")
+const Tellor = artifacts.require("./TellorTest.sol")
+const ITellor = artifacts.require("./ITellor")
+const UtilitiesTests = artifacts.require("./UtilitiesTest")
 const helper = require("./helpers/test_helpers");
+const BN = web3.utils.BN;
 
 contract("Utilities Tests", function(accounts) {
-  let oracle;
-  let oldTellor;
+  let tellor;
+  let tellorMaster;
   let utilities;
   let master;
-  let env;
 
   const printRequestQ = async () => {
     let q = await master.getRequestQ();
@@ -17,38 +18,36 @@ contract("Utilities Tests", function(accounts) {
     q.map((i) => console.log(i.toString()));
   };
 
-  before("Setting up enviroment", async () => {
-    try {
-      await TestLib.prepare();
-    } catch (error) {
-      if (!error.message.includes("has already been linked")) {
-        throw error;
-      }
-    }
-  });
-
   beforeEach("Setup contract for each test", async function() {
     this.timeout(40000)
-    master = await TestLib.getEnv(accounts, true);
-    env = {
-      master: master,
-      accounts: accounts,
-    };
-    utilities = await UtilitiesTests.new(master.address);
+    tellor = await Tellor.new()
+    tellorMaster = await Master.new(tellor.address)
+    master = await ITellor.at(tellorMaster.address)
 
-    //  clearing tips before tests
-    for (var i = 0; i < 10; i++) {
-      await helper.takeFifteen();
-      await TestLib.mineBlock(env);
+    for (var i = 0; i < accounts.length; i++) {
+      //print tokens
+      await master.theLazyCoon(accounts[i], web3.utils.toWei("7000", "ether"));
     }
 
-    //Add tip and mine 2 blocks to clear tips
-    await master.addTip(52, 1);
-    await helper.advanceTime(60 * 16);
-    await TestLib.mineBlock(env);
-    await helper.advanceTime(60 * 16);
-    await TestLib.mineBlock(env);
+    for (let index = 1; index < 58; index++) {
+      await master.addTip(index, 1);
+    }
   });
+
+    it("test utilities", async function() {
+    var myArr = [];
+    for (var i = 50; i >= 0; i--) {
+      myArr.push(i);
+    }
+    utilities = await UtilitiesTests.new(master.address);
+    top5N = await utilities.testgetMax5(myArr);
+    let q = await master.getRequestQ();
+    for (var i = 0; i < 5; i++) {
+      assert(top5N["_max"][i] == myArr[i + 1]);
+      assert(top5N["_index"][i] == i + 1);
+    }
+  });
+
   it("Test possible duplicates on top Requests", async function() {
     const testGetMax = async () => {
       let queue = [0];

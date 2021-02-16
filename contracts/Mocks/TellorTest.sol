@@ -9,4 +9,12 @@ contract TellorTest is Tellor {
         uints[total_supply] += _amount;
         TellorTransfer.updateBalanceAtNow(_address, _amount);
     }
+
+    function testSubmitMiningSolution(
+        string calldata _nonce,
+        uint256[5] calldata _requestId,
+        uint256[5] calldata _value
+    ) external {
+        _submitMiningSolution(_nonce, _requestId, _value);
+    }
 }

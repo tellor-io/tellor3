@@ -3,13 +3,14 @@ pragma solidity 0.7.4;
 
 import "./SafeMath.sol";
 import "./TellorStorage.sol";
+import "./TellorVariables.sol";
 
 /**
  * @title Tellor Transfer
  * @dev Contains the methods related to transfers and ERC20. Tellor.sol and TellorGetters.sol
  * reference this library for function's logic.
  */
-contract TellorTransfer is TellorStorage {
+contract TellorTransfer is TellorStorage, TellorVariables {
     using SafeMath for uint256;
 
     event Transfer(address indexed from, address indexed to, uint256 value);
@@ -18,9 +19,6 @@ contract TellorTransfer is TellorStorage {
         address indexed spender,
         uint256 value
     );
-
-    bytes32 public constant stakeAmount =
-        0x7be108969d31a3f0b261465c71f2b0ba9301cd914d55d9091c3b36a49d4d41b2; //keccak256("stakeAmount")
 
     /*Functions*/
 

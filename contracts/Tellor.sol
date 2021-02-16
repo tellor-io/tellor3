@@ -5,6 +5,7 @@ import "./TellorTransfer.sol";
 import "./TellorGetters.sol";
 import "./Utilities.sol";
 import "./SafeMath.sol";
+import "hardhat/console.sol";
 
 // TODO review all functions visibility
 /**
@@ -13,10 +14,9 @@ import "./SafeMath.sol";
  * The logic for this contract is in TellorLibrary.sol, TellorDispute.sol, TellorStake.sol,
  * and TellorTransfer.sol
  */
-contract Tellor is TellorGetters, TellorTransfer {
-
+contract Tellor is TellorTransfer {
     using SafeMath for uint256;
-    
+
     event TipAdded(
         address indexed _sender,
         uint256 indexed _requestId,
@@ -115,8 +115,7 @@ contract Tellor is TellorGetters, TellorTransfer {
         minersByChallenge[_currChallenge][msg.sender] = true;
 
         //Updating Request
-        Request storage _tblock =
-        requestDetails[uints[_tBlock]];
+        Request storage _tblock = requestDetails[uints[_tBlock]];
 
         //Assigning directly is cheaper than using a for loop
         _tblock.valuesByTimestamp[0][_slotProgress] = _values[0];
@@ -230,8 +229,7 @@ contract Tellor is TellorGetters, TellorTransfer {
     function _newBlock(string memory _nonce, uint256[5] memory _requestIds)
         internal
     {
-         Request storage _tblock =
-            requestDetails[uints[_tBlock]];
+        Request storage _tblock = requestDetails[uints[_tBlock]];
 
         //Sets time of value submission rounded to 1 minute
         bytes32 _currChallenge = bytesVars[currentChallenge];
@@ -259,8 +257,7 @@ contract Tellor is TellorGetters, TellorTransfer {
                     _tblock.minersByValue[k][j] = temp2;
                 }
             }
-            Request storage _request =
-                requestDetails[_requestIds[k]];
+            Request storage _request = requestDetails[_requestIds[k]];
             //Save the official(finalValue), timestamp of it, 5 miners and their submitted values for it, and its block number
             a = _tblock.valuesByTimestamp[k];
             _request.finalValues[_timeOfLastNewValue] = a[2];
@@ -289,9 +286,7 @@ contract Tellor is TellorGetters, TellorTransfer {
         newValueTimestamps.push(_timeOfLastNewValue);
 
         address[5] memory miners =
-            requestDetails[_requestIds[0]].minersByValue[
-                _timeOfLastNewValue
-            ];
+            requestDetails[_requestIds[0]].minersByValue[_timeOfLastNewValue];
         //payMinersRewards
         _payReward(miners, _previousTime);
 
@@ -302,8 +297,9 @@ contract Tellor is TellorGetters, TellorTransfer {
             requestQ[
                 requestDetails[_topId[i]].apiUintVars[requestQPosition]
             ] = 0;
-            uints[currentTotalTips] += requestDetails[_topId[i]]
-                .apiUintVars[totalTip];
+            uints[currentTotalTips] += requestDetails[_topId[i]].apiUintVars[
+                totalTip
+            ];
         }
         //Issue the the next challenge
 
@@ -325,10 +321,7 @@ contract Tellor is TellorGetters, TellorTransfer {
      * @param _tip amount the requester is willing to pay to be get on queue. Miners
      * mine the onDeckQueryHash, or the api with the highest payout pool
      */
-    function addTip(
-        uint256 _requestId,
-        uint256 _tip
-    ) public {
+    function addTip(uint256 _requestId, uint256 _tip) public {
         require(_requestId != 0, "RequestId is 0");
         require(_tip != 0, "Tip should be greater than 0");
         uint256 _count = uints[requestCount] + 1;
@@ -353,12 +346,8 @@ contract Tellor is TellorGetters, TellorTransfer {
      * @param _requestId being requested
      * @param _tip is the tip to add
      */
-    function updateOnDeck(
-        uint256 _requestId,
-        uint256 _tip
-    ) public {
-        Request storage _request =
-            requestDetails[_requestId];
+    function updateOnDeck(uint256 _requestId, uint256 _tip) public {
+        Request storage _request = requestDetails[_requestId];
         _request.apiUintVars[totalTip] = _request.apiUintVars[totalTip].add(
             _tip
         );
@@ -376,7 +365,7 @@ contract Tellor is TellorGetters, TellorTransfer {
             if (_request.apiUintVars[requestQPosition] == 0) {
                 uint256 _min;
                 uint256 _index;
-                (_min, _index) = Utilities.getMin(requestQ);
+                (_min, _index) = getMin(requestQ);
                 //we have to zero out the oldOne
                 //if the _payout is greater than the current minimum payout in the requestQ[51] or if the minimum is zero
                 //then add it to the requestQ array and map its index information to the requestId and the apiUintVars
@@ -392,5 +381,105 @@ contract Tellor is TellorGetters, TellorTransfer {
                 requestQ[_request.apiUintVars[requestQPosition]] += _tip;
             }
         }
+    }
+
+    function getMin(uint256[51] memory data)
+        internal
+        pure
+        returns (uint256 min, uint256 minIndex)
+    {
+        minIndex = data.length - 1;
+        min = data[minIndex];
+        for (uint256 i = data.length - 2; i > 0; i--) {
+            if (data[i] < min) {
+                min = data[i];
+                minIndex = i;
+            }
+        }
+    }
+
+    function getMax5(uint256[51] memory data)
+        internal
+        pure
+        returns (uint256[5] memory max, uint256[5] memory maxIndex)
+    {
+        uint256 min5 = data[1];
+        uint256 minI = 0;
+        for (uint256 j = 0; j < 5; j++) {
+            max[j] = data[j + 1]; //max[0]=data[1]
+            maxIndex[j] = j + 1; //maxIndex[0]= 1
+            if (max[j] < min5) {
+                min5 = max[j];
+                minI = j;
+            }
+        }
+        for (uint256 i = 6; i < data.length; i++) {
+            if (data[i] > min5) {
+                max[minI] = data[i];
+                maxIndex[minI] = i;
+                min5 = data[i];
+                for (uint256 j = 0; j < 5; j++) {
+                    if (max[j] < min5) {
+                        min5 = max[j];
+                        minI = j;
+                    }
+                }
+            }
+        }
+    }
+
+    function getTopRequestIDs()
+        public
+        view
+        returns (uint256[5] memory _requestIds)
+    {
+        uint256[5] memory _max;
+        uint256[5] memory _index;
+        (_max, _index) = getMax5(requestQ);
+        for (uint256 i = 0; i < 5; i++) {
+            if (_max[i] != 0) {
+                _requestIds[i] = requestIdByRequestQIndex[_index[i]];
+            } else {
+                _requestIds[i] = currentMiners[4 - i].value;
+            }
+        }
+    }
+
+    function _delegate(address implementation) internal virtual {
+        // solhint-disable-next-line no-inline-assembly
+        assembly {
+            // Copy msg.data. We take full control of memory in this inline assembly
+            // block because it will not return to Solidity code. We overwrite the
+            // Solidity scratch pad at memory position 0.
+            calldatacopy(0, 0, calldatasize())
+
+            // Call the implementation.
+            // out and outsize are 0 because we don't know the size yet.
+            let result := delegatecall(
+                gas(),
+                implementation,
+                0,
+                calldatasize(),
+                0,
+                0
+            )
+
+            // Copy the returned data.
+            returndatacopy(0, 0, returndatasize())
+
+            switch result
+                // delegatecall returns 0 on error.
+                case 0 {
+                    revert(0, returndatasize())
+                }
+                default {
+                    return(0, returndatasize())
+                }
+        }
+    }
+
+    fallback() external payable {
+        address addr = addresses[keccak256("tellorStake")];
+        _delegate(addr);
     }
 }

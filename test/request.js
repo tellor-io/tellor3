@@ -15,7 +15,12 @@ contract("Request and tip tests", function(accounts) {
     tellorMaster = await Master.new(tellor.address)
     master = await ITellor.at(tellorMaster.address)
 
-    for (let index = 0; index < 58; index++) {
+    for (var i = 0; i < accounts.length; i++) {
+      //print tokens
+      await master.theLazyCoon(accounts[i], web3.utils.toWei("7000", "ether"));
+    }
+
+    for (let index = 1; index < 58; index++) {
       await master.addTip(index, 1);
     }
   });
@@ -30,9 +35,10 @@ contract("Request and tip tests", function(accounts) {
     assert(minT[0] == 0);
     assert(minT[1] == 50, "index should be correct");
   });
+
   it("Add Tip", async function() {
     let vars = await master.getRequestVars(11);
-    let initialTip = vars[5];
+    let initialTip = vars[1];
     apiVars = await master.getRequestVars(11);
     res = await master.addTip(11, 20);
     apiVars = await master.getRequestVars(11);

@@ -1,41 +1,63 @@
+const { artifacts } = require("hardhat");
 const helper = require("./helpers/test_helpers");
 const TestLib = require("./helpers/testLib");
-const { artifacts } = require("hardhat");
-// const Tellor = artifacts.require("./TellorTest.sol"); // globally injected artifacts helper
-var UtilitiesTests = artifacts.require("./UtilitiesTests.sol");
 const Master = artifacts.require("./TellorMaster.sol")
-const Tellor = artifacts.require("./TellorOracle.sol")
+const Tellor = artifacts.require("./TellorTest.sol")
+const Stake = artifacts.require("./TellorStake.sol")
+const Initializer= artifacts.require("./Initializer.sol")
+const ITellor = artifacts.require("./ITellor")
+const BN = web3.utils.BN;
 
 contract("Test Oracle", function(accounts) {
-  let master = {};
+  let tellorMaster = {};
   let tellor = {};
+  let env = {};
+
+  let master = {}
 
   beforeEach("Setup contract for each test", async function() {
+    let initer = await Initializer.new()
     tellor = await Tellor.new()
-    master = await TestLib.getEnv(accounts, true);
-  });
+    tellorMaster = await Master.new(initer.address)
+    let m = await Initializer.at(tellorMaster.address)
+    await m.init();
 
-  it("test utilities", async function() {
-    var myArr = [];
-    for (var i = 50; i >= 0; i--) {
-      myArr.push(i);
+    await tellorMaster.changeTellorContract(tellor.address)
+
+    let stake = await Stake.new()
+    await tellorMaster.changeTellorStake(stake.address)
+    master = await ITellor.at(tellorMaster.address)
+
+    for (var i = 0; i < accounts.length; i++) {
+      //print tokens
+      await master.theLazyCoon(accounts[i], web3.utils.toWei("7000", "ether"));
+      await master.depositStake({from: accounts[i]})
     }
-    utilities = await UtilitiesTests.new(master.address);
-    top5N = await utilities.testgetMax5(myArr);
-    let q = await master.getRequestQ();
-    for (var i = 0; i < 5; i++) {
-      assert(top5N["_max"][i] == myArr[i + 1]);
-      assert(top5N["_index"][i] == i + 1);
+
+    for (let index = 1; index < 58; index++) {
+      await master.addTip(index, 1);
     }
+
+    await master.theLazyCoon(tellorMaster.address, web3.utils.toWei("70000", "ether"));
+
+    env = {
+      master: master,
+      accounts: accounts
+    }
+
   });
 
   it("getVariables", async function() {
     await master.addTip(1, 20);
+    let t = await master.getRequestVars(1)
+    console.log(t)
     let vars = await master.getNewCurrentVariables();
     assert(vars["1"].length == 5, "ids should be populated");
     assert(vars["2"] > 0, "difficulty should be correct");
+    console.log(vars["3"]);
     assert(vars["3"] > 0, "tip should be correct");
   });
+
   it("getTopRequestIDs", async function() {
     vars = await master.getTopRequestIDs();
     for (var i = 0; i < 5; i++) {
@@ -43,9 +65,10 @@ contract("Test Oracle", function(accounts) {
     }
   });
   it("Test miner", async function() {
+    let ids = await env.master.getNewCurrentVariables();
     await helper.advanceTime(60 * 60 * 16);
     await TestLib.mineBlock(env);
-    vars = await master.getLastNewValueById(5);
+    vars = await master.getLastNewValueById(ids["1"][0]);
     assert(vars[0] > 0, "value should be positive");
     assert(vars[1] == true, "value should be there");
   });

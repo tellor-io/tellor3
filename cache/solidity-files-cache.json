@@ -36,8 +36,8 @@
       ]
     },
     "/home/jgcarv/Dev/Tellor/tellor3/contracts/TellorGetters.sol": {
-      "lastModificationDate": 1613476314885,
-      "contentHash": "54ee1ec50002a51a6abe28d9fcf3847b",
+      "lastModificationDate": 1613487355978,
+      "contentHash": "89fae47d374f19f063e45364b1a872e4",
       "sourceName": "contracts/TellorGetters.sol",
       "solcConfig": {
         "version": "0.7.4",
@@ -65,7 +65,8 @@
         "./SafeMath.sol",
         "./TellorStorage.sol",
         "./TellorVariables.sol",
-        "./Utilities.sol"
+        "./Utilities.sol",
+        "hardhat/console.sol"
       ],
       "versionPragmas": [
         "0.7.4"
@@ -109,8 +110,8 @@
       ]
     },
     "/home/jgcarv/Dev/Tellor/tellor3/contracts/TellorVariables.sol": {
-      "lastModificationDate": 1613476314885,
-      "contentHash": "1322d913574b987eff909c3f560addbd",
+      "lastModificationDate": 1613484391995,
+      "contentHash": "ce3499d7ee40c6cec90f6189ec144995",
       "sourceName": "contracts/TellorVariables.sol",
       "solcConfig": {
         "version": "0.7.4",
@@ -177,8 +178,8 @@
       ]
     },
     "/home/jgcarv/Dev/Tellor/tellor3/contracts/TellorStake.sol": {
-      "lastModificationDate": 1613476314885,
-      "contentHash": "62a492c325ab3e3e2bf2882400176f2c",
+      "lastModificationDate": 1613485163731,
+      "contentHash": "1682ca4bcba9708bf0c64668bb86eb5a",
       "sourceName": "contracts/TellorStake.sol",
       "solcConfig": {
         "version": "0.7.4",
@@ -203,8 +204,8 @@
         }
       },
       "imports": [
-        "./TellorStorage.sol",
         "./TellorTransfer.sol",
+        "./TellorGetters.sol",
         "./Utilities.sol"
       ],
       "versionPragmas": [
@@ -215,8 +216,8 @@
       ]
     },
     "/home/jgcarv/Dev/Tellor/tellor3/contracts/TellorTransfer.sol": {
-      "lastModificationDate": 1613476314885,
-      "contentHash": "e7893d90ea383f5405c214f57ea41677",
+      "lastModificationDate": 1613484372467,
+      "contentHash": "bc2d403a07558b4c2490d5c4482a397a",
       "sourceName": "contracts/TellorTransfer.sol",
       "solcConfig": {
         "version": "0.7.4",
@@ -242,7 +243,8 @@
       },
       "imports": [
         "./SafeMath.sol",
-        "./TellorStorage.sol"
+        "./TellorStorage.sol",
+        "./TellorVariables.sol"
       ],
       "versionPragmas": [
         "0.7.4"
@@ -252,8 +254,8 @@
       ]
     },
     "/home/jgcarv/Dev/Tellor/tellor3/contracts/TellorMaster.sol": {
-      "lastModificationDate": 1613476314885,
-      "contentHash": "dfef88e6b243cc8e569badf49cc96861",
+      "lastModificationDate": 1613483253917,
+      "contentHash": "3b80d1957c12fa65bb1e9b6eacd8c59e",
       "sourceName": "contracts/TellorMaster.sol",
       "solcConfig": {
         "version": "0.7.4",
@@ -288,8 +290,8 @@
       ]
     },
     "/home/jgcarv/Dev/Tellor/tellor3/contracts/Tellor.sol": {
-      "lastModificationDate": 1613476314885,
-      "contentHash": "97a68e2287207d203b27e2427959e6d6",
+      "lastModificationDate": 1613487625861,
+      "contentHash": "9699e98c085cbae5fb2c5157af6387fc",
       "sourceName": "contracts/Tellor.sol",
       "solcConfig": {
         "version": "0.7.4",
@@ -317,7 +319,8 @@
         "./TellorTransfer.sol",
         "./TellorGetters.sol",
         "./Utilities.sol",
-        "./SafeMath.sol"
+        "./SafeMath.sol",
+        "hardhat/console.sol"
       ],
       "versionPragmas": [
         "0.7.4"
@@ -361,8 +364,8 @@
       ]
     },
     "/home/jgcarv/Dev/Tellor/tellor3/contracts/Mocks/TellorTest.sol": {
-      "lastModificationDate": 1613478835641,
-      "contentHash": "acd89fb683d30ac718a7b03922738334",
+      "lastModificationDate": 1613482656389,
+      "contentHash": "f52c8792433d4ee3dcd674490237f9aa",
       "sourceName": "contracts/Mocks/TellorTest.sol",
       "solcConfig": {
         "version": "0.7.4",
@@ -432,6 +435,79 @@
       ],
       "artifacts": [
         "UtilitiesTest"
+      ]
+    },
+    "/home/jgcarv/Dev/Tellor/tellor3/contracts/Initializer.sol": {
+      "lastModificationDate": 1613485211546,
+      "contentHash": "536aa991fd035721c8bf8bc3228179dd",
+      "sourceName": "contracts/Initializer.sol",
+      "solcConfig": {
+        "version": "0.7.4",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./TellorTransfer.sol",
+        "./TellorGetters.sol",
+        "./Utilities.sol",
+        "./SafeMath.sol"
+      ],
+      "versionPragmas": [
+        "0.7.4"
+      ],
+      "artifacts": [
+        "Initializer"
+      ]
+    },
+    "/home/jgcarv/Dev/Tellor/tellor3/node_modules/hardhat/console.sol": {
+      "lastModificationDate": 1613413140804,
+      "contentHash": "cc4777addd464ea56fa35b1c45df0591",
+      "sourceName": "hardhat/console.sol",
+      "solcConfig": {
+        "version": "0.7.4",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.4.22 <0.9.0"
+      ],
+      "artifacts": [
+        "console"
       ]
     }
   }

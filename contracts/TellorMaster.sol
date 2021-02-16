@@ -27,6 +27,7 @@ contract TellorMaster is TellorStorage {
         require(msg.sender == addresses[keccak256("_deity")]);
         addresses[keccak256("_deity")] = _newDeity;
     }
+
     /**
      * @param _newOwner the new Deity in the contract
      */
@@ -35,6 +36,7 @@ contract TellorMaster is TellorStorage {
         require(msg.sender == addresses[keccak256("_owner")]);
         addresses[keccak256("_owner")] = _newOwner;
     }
+
     /**
      * @dev  allows for the deity to make fast upgrades.  Deity should be 0 address if decentralized
      * @param _tellorContract the address of the new Tellor Contract
@@ -42,6 +44,15 @@ contract TellorMaster is TellorStorage {
     function changeTellorContract(address _tellorContract) external {
         require(msg.sender == addresses[keccak256("_deity")]);
         addresses[keccak256("tellorContract")] = _tellorContract;
+    }
+
+    /**
+     * @dev  allows for the deity to make fast upgrades.  Deity should be 0 address if decentralized
+     * @param _tellorStake the address of the new Tellor Contract
+     */
+    function changeTellorStake(address _tellorStake) external {
+        require(msg.sender == addresses[keccak256("_deity")]);
+        addresses[keccak256("tellorStake")] = _tellorStake;
     }
 
     function _delegate(address implementation) internal virtual {
