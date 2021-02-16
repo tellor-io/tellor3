@@ -25,6 +25,8 @@ contract TellorGetters is TellorStorage, TellorVariables, Utilities {
         view
         returns (bool)
     {
+        console.log(_miner);
+        console.log(minersByChallenge[_challenge][_miner]);
         return minersByChallenge[_challenge][_miner];
     }
 

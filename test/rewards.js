@@ -1,31 +1,50 @@
-const Tellor = artifacts.require("./TellorTest.sol"); // globally injected artifacts helper
-var masterAbi = Tellor.abi;
+const { artifacts } = require("hardhat");
 const TestLib = require("./helpers/testLib");
+
 const helper = require("./helpers/test_helpers");
+const Master = artifacts.require("./TellorMaster.sol")
+const Tellor = artifacts.require("./TellorTest.sol")
+const Stake = artifacts.require("./TellorStake.sol")
+const Initializer= artifacts.require("./Initializer.sol")
+const ITellor = artifacts.require("./ITellor")
 const hash = web3.utils.keccak256;
-var UtilitiesTests = artifacts.require("./UtilitiesTests.sol");
+const UtilitiesTest = artifacts.require("./UtilitiesTest")
 
 contract("Reward Tests", function(accounts) {
-  let master;
-  let env;
+  let tellorMaster = {};
+  let tellor = {};
+  let env = {};
 
-  before("Setting up enviroment", async () => {
-    try {
-      await TestLib.prepare();
-    } catch (error) {
-      if (!error.message.includes("has already been linked")) {
-        throw error;
-      }
-    }
-  });
+  let master = {}
 
   beforeEach("Setup contract for each test", async function() {
-    //Could use the getV25(accounts, true), since you're upgrading in the first line of tests. I added full tips to getV25 in testLib already
-    master = await TestLib.getEnv(accounts, true);
+    let initer = await Initializer.new()
+    tellor = await Tellor.new()
+    tellorMaster = await Master.new(initer.address)
+    let m = await Initializer.at(tellorMaster.address)
+    await m.init();
+
+    await tellorMaster.changeTellorContract(tellor.address)
+
+    let stake = await Stake.new()
+    await tellorMaster.changeTellorStake(stake.address)
+    master = await ITellor.at(tellorMaster.address)
+
+    for (var i = 0; i < accounts.length; i++) {
+      //print tokens
+      await master.theLazyCoon(accounts[i], web3.utils.toWei("7000", "ether"));
+      await master.depositStake({from: accounts[i]})
+    }
+
+    for (let index = 1; index < 50; index++) {
+      await master.addTip(index, index);
+    }
+    await master.theLazyCoon(tellorMaster.address, web3.utils.toWei("70000", "ether"));
+
     env = {
       master: master,
-      accounts: accounts,
-    };
+      accounts: accounts
+    }
   });
 
   it("Inflation is fixed", async function() {
@@ -44,7 +63,7 @@ contract("Reward Tests", function(accounts) {
     }
 
     //Add tip and mine 2 blocks to clear tips
-    await master.addTip(52, 1);
+    await master.addTip(10, 1);
     await helper.advanceTime(60 * 16);
     await TestLib.mineBlock(env);
     await helper.advanceTime(60 * 16);
@@ -62,6 +81,11 @@ contract("Reward Tests", function(accounts) {
   });
 
   it("Test allow tip of current mined ID", async function() {
+    //Mine a few blocks to get requestQ in order:
+    for (let index = 0; index < 12; index++) {
+      await helper.advanceTime(60 * 60 * 16);
+      await TestLib.mineBlock(env);      
+    }
     vars = await master.getNewCurrentVariables();
     await master.addTip(1, 10000);
     await helper.takeFifteen();
@@ -89,7 +113,7 @@ contract("Reward Tests", function(accounts) {
       await TestLib.mineBlock(env);
     }
     vars = await master.getRequestVars(vars["1"][0]);
-    assert(vars["5"] == 0, "api payout should be zero");
+    assert(vars["1"].toString() == "0", "api payout should be zero");
     vars = await master.getUintVar(web3.utils.keccak256("currentTotalTips"));
     assert(vars == 0, "api payout should be zero");
   });

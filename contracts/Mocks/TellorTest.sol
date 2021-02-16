@@ -17,4 +17,8 @@ contract TellorTest is Tellor {
     ) external {
         _submitMiningSolution(_nonce, _requestId, _value);
     }
+
+    function manuallySetDifficulty(uint256 _diff) public{
+        uints[difficulty] = _diff;
+    }
 }

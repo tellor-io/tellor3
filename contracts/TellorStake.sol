@@ -95,7 +95,7 @@ contract TellorStake is TellorTransfer, TellorGetters {
         newStake(msg.sender);
         //self adjusting disputeFee
         //TODO update is reverting
-        // updateMinDisputeFee();
+        updateMinDisputeFee();
     }
 
     /**

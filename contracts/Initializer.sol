@@ -17,7 +17,9 @@ contract Initializer is TellorTransfer {
     function _init() internal {
         uints[difficulty] = 10000000;
         uints[timeTarget] = 240;
-        // uints[currentReward] = 1e18;
+        uints[targetMiners] = 200;
+        uints[disputeFee] = 500e17;
+        uints[stakeAmount] = 500e18;
         uints[timeOfLastNewValue] = block.timestamp - 240;
 
         currentMiners[0].value = 0;

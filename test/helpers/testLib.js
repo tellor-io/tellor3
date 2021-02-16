@@ -55,6 +55,16 @@ async function mineBlock(env) {
 }
 
 
+async function depositStake(env) {
+    for (var i = 0; i < env.accounts.length; i++) {
+      //print tokens
+      await env.master.theLazyCoon(env.accounts[i], web3.utils.toWei("7000", "ether"));
+      await env.master.depositStake({from: env.accounts[i]})
+    }
+}
+
+
 module.exports = {
   mineBlock: mineBlock,
+  depositStake: depositStake,
 };

@@ -3,6 +3,8 @@ const Master = artifacts.require("./TellorMaster.sol")
 const Tellor = artifacts.require("./TellorTest.sol")
 const ITellor = artifacts.require("./ITellor")
 const UtilitiesTests = artifacts.require("./UtilitiesTest")
+const Stake = artifacts.require("./TellorStake.sol")
+const Initializer= artifacts.require("./Initializer.sol")
 const helper = require("./helpers/test_helpers");
 const BN = web3.utils.BN;
 
@@ -11,8 +13,16 @@ contract("Request and tip tests", function(accounts) {
   let tellor = {};
 
   beforeEach("Setup contract for each test", async function() {
+    let initer = await Initializer.new()
     tellor = await Tellor.new()
-    tellorMaster = await Master.new(tellor.address)
+    tellorMaster = await Master.new(initer.address)
+    let m = await Initializer.at(tellorMaster.address)
+    await m.init();
+
+    await tellorMaster.changeTellorContract(tellor.address)
+
+    let stake = await Stake.new()
+    await tellorMaster.changeTellorStake(stake.address)
     master = await ITellor.at(tellorMaster.address)
 
     for (var i = 0; i < accounts.length; i++) {
@@ -37,13 +47,14 @@ contract("Request and tip tests", function(accounts) {
   });
 
   it("Add Tip", async function() {
+
     let vars = await master.getRequestVars(11);
     let initialTip = vars[1];
     apiVars = await master.getRequestVars(11);
     res = await master.addTip(11, 20);
     apiVars = await master.getRequestVars(11);
     assert(
-      apiVars[5].toNumber() == initialTip.toNumber() + 20,
+      apiVars[1].toNumber() == initialTip.toNumber() + 20,
       "value pool should be 20"
     );
   });
@@ -93,7 +104,7 @@ contract("Request and tip tests", function(accounts) {
     let pay2 = new BN(web3.utils.toWei("50", "ether"));
     let res3 = await master.addTip(31, pay, { from: accounts[2] });
     apiVars = await master.getRequestVars(31);
-    assert(apiVars[5].eq(pay.add(tipBefore31)), "value pool should be 20");
+    assert(apiVars[1].eq(pay.add(tipBefore31)), "value pool should be 20");
     data = await master.getNewVariablesOnDeck();
     ids = data["0"].map((i) => i.toString());
     assert(ids.includes("31"), "ID on deck should be 31");
@@ -122,7 +133,7 @@ contract("Request and tip tests", function(accounts) {
     let previousTips = [];
     for (var i = 0; i <= 56; i++) {
       let tip = await master.getRequestVars(i);
-      previousTips.push(tip[5]);
+      previousTips.push(tip[1]);
     }
 
     await master.theLazyCoon(accounts[2], web3.utils.toWei("1000", "ether"));

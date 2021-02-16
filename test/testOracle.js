@@ -1,8 +1,6 @@
 const { artifacts } = require("hardhat");
 const helper = require("./helpers/test_helpers");
-const TestLib = require("./helpers/testLib");
-const testLib = require("./helpers/testLib");
-const Master = artifacts.require("./TellorMaster.sol")
+const TestLib = require("./helpers/testLib");const Master = artifacts.require("./TellorMaster.sol")
 const Tellor = artifacts.require("./TellorTest.sol")
 const Stake = artifacts.require("./TellorStake.sol")
 const Initializer= artifacts.require("./Initializer.sol")
@@ -151,7 +149,7 @@ contract("Test Oracle", function(accounts) {
        //Mining 11 blocks to get the requestQ alright
     for (let index = 0; index < 12; index++) {
       await helper.advanceTime(60 * 60 * 16);
-      await testLib.mineBlock(env);      
+      await TestLib.mineBlock(env);      
     }
     await helper.advanceTime(60 * 60 * 16);
     await TestLib.mineBlock(env);

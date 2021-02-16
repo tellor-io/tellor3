@@ -55,7 +55,7 @@ contract Tellor is TellorTransfer {
     ) external {
         bytes32 _hashMsgSender = keccak256(abi.encode(msg.sender));
         require(
-            block.timestamp - uints[_hashMsgSender] > 15 minutes,
+            uints[_hashMsgSender] == 0 || block.timestamp - uints[_hashMsgSender] > 15 minutes,
             "Miner can only win rewards once per 15 min"
         );
         if (uints[slotProgress] != 4) {
@@ -113,7 +113,6 @@ contract Tellor is TellorTransfer {
         );
         //Update the miner status to true once they submit a value so they don't submit more than once
         minersByChallenge[_currChallenge][msg.sender] = true;
-
         //Updating Request
         Request storage _tblock = requestDetails[uints[_tBlock]];
 
@@ -378,10 +377,6 @@ contract Tellor is TellorTransfer {
                 }
                 // else if the requestId is part of the requestQ[51] then update the tip for it
             } else {
-                console.log("-----");
-                console.log(_tip);
-                console.log(_requestId);
-                console.log(_request.apiUintVars[requestQPosition]);
                 requestQ[_request.apiUintVars[requestQPosition]] += _tip;
             }
         }

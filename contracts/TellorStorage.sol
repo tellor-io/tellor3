@@ -107,7 +107,6 @@ contract TellorStorage {
     Details[5] currentMiners; //This struct is for organizing the five mined values to find the median
     mapping(address => StakeInfo) stakerDetails; //mapping from a persons address to their staking info
     mapping(uint256 => Request) requestDetails;
-    mapping(bytes32 => mapping(address => bool)) challenges;
 
     mapping(bytes32 => uint256) public uints;
     mapping(bytes32 => address) public addresses;

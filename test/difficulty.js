@@ -1,32 +1,49 @@
-const TestLib = require("./helpers/testLib");
-const helper = require("./helpers/test_helpers");
 const { timeTarget } = require("./helpers/constants");
+const { artifacts } = require("hardhat");
+const helper = require("./helpers/test_helpers");
+const TestLib = require("./helpers/testLib");
+const testLib = require("./helpers/testLib");
+const Master = artifacts.require("./TellorMaster.sol")
+const Tellor = artifacts.require("./TellorTest.sol")
+const Stake = artifacts.require("./TellorStake.sol")
+const Initializer= artifacts.require("./Initializer.sol")
+const ITellor = artifacts.require("./ITellor")
+const BN = web3.utils.BN;
+
 
 contract("Difficulty tests", function(accounts) {
-  let master;
-  let env;
+    let tellorMaster = {};
+  let tellor = {};
+  let env = {};
+
+  let master = {}
 
   const getDiff = async () => {
     let diff = await master.getNewCurrentVariables();
     return diff[2].toNumber();
   };
 
-  before("Setting up environment", async () => {
-    try {
-      await TestLib.prepare();
-    } catch (error) {
-      if (!error.message.includes("has already been linked")) {
-        throw error;
-      }
-    }
-  });
-
   beforeEach("Setup contract for each test", async function() {
-    master = await TestLib.getEnv(accounts, true);
+      //Could use the getV25(accounts, true), since you're upgrading in the first line of tests. I added full tips to getV25 in testLib already
+       let initer = await Initializer.new()
+    tellor = await Tellor.new()
+    tellorMaster = await Master.new(initer.address)
+    let m = await Initializer.at(tellorMaster.address)
+    await m.init();
+
+    await tellorMaster.changeTellorContract(tellor.address)
+
+    let stake = await Stake.new()
+    await tellorMaster.changeTellorStake(stake.address)
+    master = await ITellor.at(tellorMaster.address)
+
     env = {
       master: master,
-      accounts: accounts,
-    };
+      accounts: accounts
+    }
+    await master.theLazyCoon(tellorMaster.address, web3.utils.toWei("70000", "ether"));
+
+    await TestLib.depositStake(env)
   });
 
   it("Test Difficulty Adjustment", async function() {
@@ -149,7 +166,7 @@ contract("Difficulty tests", function(accounts) {
       //Try mine first slot with incorrect nonce
       await helper.expectThrow(
         master.submitMiningSolution("nonce", vars["1"], values, {
-          from: accounts[20],
+          from: accounts[39],
         })
       );
 

@@ -5,6 +5,8 @@ import "./SafeMath.sol";
 import "./TellorStorage.sol";
 import "./TellorVariables.sol";
 
+import "hardhat/console.sol";
+
 /**
  * @title Tellor Transfer
  * @dev Contains the methods related to transfers and ERC20. Tellor.sol and TellorGetters.sol

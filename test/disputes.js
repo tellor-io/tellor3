@@ -1,6 +1,10 @@
+const { artifacts } = require("hardhat");
 const helper = require("./helpers/test_helpers");
-const TestLib = require("./helpers/testLib");
-
+const TestLib = require("./helpers/testLib");const Master = artifacts.require("./TellorMaster.sol")
+const Tellor = artifacts.require("./TellorTest.sol")
+const Stake = artifacts.require("./TellorStake.sol")
+const Initializer= artifacts.require("./Initializer.sol")
+const ITellor = artifacts.require("./ITellor")
 const { stakeAmount } = require("./helpers/constants");
 const hash = web3.utils.keccak256;
 const BN = web3.utils.BN;
@@ -10,15 +14,6 @@ contract("Dispute Tests", function(accounts) {
   let env;
   let disputeFee;
 
-  before("Setting up enviroment", async () => {
-    try {
-      await TestLib.prepare();
-    } catch (error) {
-      if (!error.message.includes("has already been linked")) {
-        throw error;
-      }
-    }
-  });
 
   const takeFifteen = async () => {
     await helper.advanceTime(60 * 18);
@@ -41,11 +36,33 @@ contract("Dispute Tests", function(accounts) {
   };
 
   beforeEach("Setup contract for each test", async function() {
-    master = await TestLib.getEnv(accounts, true);
+    let initer = await Initializer.new()
+    tellor = await Tellor.new()
+    tellorMaster = await Master.new(initer.address)
+    let m = await Initializer.at(tellorMaster.address)
+    await m.init();
+
+    await tellorMaster.changeTellorContract(tellor.address)
+
+    let stake = await Stake.new()
+    await tellorMaster.changeTellorStake(stake.address)
+    master = await ITellor.at(tellorMaster.address)
+
+    for (var i = 0; i < accounts.length; i++) {
+      //print tokens
+      await master.theLazyCoon(accounts[i], web3.utils.toWei("7000", "ether"));
+      await master.depositStake({from: accounts[i]})
+    }
+
+    for (let index = 1; index < 50; index++) {
+      await master.addTip(index, index);
+    }
+    await master.theLazyCoon(tellorMaster.address, web3.utils.toWei("70000", "ether"));
+
     env = {
       master: master,
-      accounts: accounts,
-    };
+      accounts: accounts
+    }
   });
 
   it("Test no time limit on disputes", async function() {
@@ -408,9 +425,10 @@ contract("Dispute Tests", function(accounts) {
     await master.unlockDisputeFee(3, { from: accounts[0] });
 
     dispInfo = await master.getAllDisputeVars(1);
+    console.log(dispInfo);
 
     assert(dispInfo[7][0] == requetsId);
-    assert(dispInfo[7][2] == blocks[0].submitted[requetsId][2]);
+    assert(dispInfo["7"][2] == blocks[0].submitted[requetsId][2]);
     assert(dispInfo[2] == true, "Dispute Vote passed");
     voted = await master.didVote(1, accounts[1]);
     assert(voted == true, "account 1 voted");
@@ -436,54 +454,6 @@ contract("Dispute Tests", function(accounts) {
     assert(dispBal4 - orig_dispBal4 == 0, "a4 shouldn't change'");
   });
 
-  it("Test multiple dispute rounds -- proposed fork", async function() {
-    let add = "0x0BB7087eE6F9D4Cf664F863EDf2b70293b29D71d";
-    await master.proposeFork(add, { from: accounts[1] });
-
-    for (var i = 1; i < 5; i++) {
-      await master.theLazyCoon(accounts[i], web3.utils.toWei("1000", "ether"));
-      await master.vote(1, true, { from: accounts[i] });
-    }
-    await helper.advanceTime(86400 * 8);
-    await master.tallyVotes(1);
-
-    await helper.advanceTime(100);
-    dispInfo = await master.getAllDisputeVars(1);
-    assert(dispInfo[2] == true, "Dispute Vote passed");
-    assert((await master.getAddressVars(hash("tellorContract"))) != add);
-    await master.proposeFork(add);
-
-    for (var i = 1; i < 5; i++) {
-      await master.vote(2, false, { from: accounts[i] });
-    }
-    await helper.advanceTime(86400 * 8);
-    await master.tallyVotes(2);
-
-    // await helper.expectThrow(await master.updateTellor(1)); //try to withdraw
-    await helper.advanceTime(86400 * 8);
-    await helper.expectThrow(master.updateTellor(2));
-    assert((await master.getAddressVars(hash("tellorContract"))) != add);
-  });
-
-  it("Test proposed fork fee increase", async function() {
-    let add = "0x0BB7087eE6F9D4Cf664F863EDf2b70293b29D71d";
-    let baseFee = new BN(web3.utils.toWei("100", "ether"));
-
-    for (var i = 1; i < 5; i++) {
-      let initBal = await master.balanceOf(master.address);
-      await master.proposeFork(add, {
-        from: accounts[1],
-      });
-      let secBal = await master.balanceOf(master.address);
-      let pot = new BN("2").pow(new BN(i - 1));
-      assert(
-        secBal.sub(initBal).eq(baseFee.mul(pot)),
-        "fee incorrectly calculated"
-      );
-      //await 7 days
-      await helper.advanceTime(60 * 60 * 24 * 7);
-    }
-  });
 
   it("Test multiple dispute rounds, assure increasing per dispute round", async function() {
     await master.theLazyCoon(accounts[1], web3.utils.toWei("500", "ether"));
@@ -570,6 +540,7 @@ contract("Dispute Tests", function(accounts) {
       "account 2 should be the disputed miner"
     );
     assert(dispInfo[2] == true, "Dispute Vote passed");
+    console.log(dispInfo[7][8].toString());
     assert(web3.utils.fromWei(dispInfo[7][8]) == 500, "fee should be correct");
     //vote 2 - fails
     await master.theLazyCoon(accounts[6], web3.utils.toWei("5000", "ether"));
