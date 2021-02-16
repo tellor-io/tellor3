@@ -5,10 +5,8 @@ const helper = require("./helpers/test_helpers");
 const Master = artifacts.require("./TellorMaster.sol")
 const Tellor = artifacts.require("./TellorTest.sol")
 const Stake = artifacts.require("./TellorStake.sol")
-const Initializer= artifacts.require("./Initializer.sol")
 const ITellor = artifacts.require("./ITellor")
 const hash = web3.utils.keccak256;
-const UtilitiesTest = artifacts.require("./UtilitiesTest")
 
 contract("Reward Tests", function(accounts) {
   let tellorMaster = {};
@@ -18,14 +16,8 @@ contract("Reward Tests", function(accounts) {
   let master = {}
 
   beforeEach("Setup contract for each test", async function() {
-    let initer = await Initializer.new()
     tellor = await Tellor.new()
-    tellorMaster = await Master.new(initer.address)
-    let m = await Initializer.at(tellorMaster.address)
-    await m.init();
-
-    await tellorMaster.changeTellorContract(tellor.address)
-
+    tellorMaster = await Master.new(tellor.address)
     let stake = await Stake.new()
     await tellorMaster.changeTellorStake(stake.address)
     master = await ITellor.at(tellorMaster.address)

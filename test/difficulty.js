@@ -2,11 +2,9 @@ const { timeTarget } = require("./helpers/constants");
 const { artifacts } = require("hardhat");
 const helper = require("./helpers/test_helpers");
 const TestLib = require("./helpers/testLib");
-const testLib = require("./helpers/testLib");
 const Master = artifacts.require("./TellorMaster.sol")
 const Tellor = artifacts.require("./TellorTest.sol")
 const Stake = artifacts.require("./TellorStake.sol")
-const Initializer= artifacts.require("./Initializer.sol")
 const ITellor = artifacts.require("./ITellor")
 const BN = web3.utils.BN;
 
@@ -25,11 +23,8 @@ contract("Difficulty tests", function(accounts) {
 
   beforeEach("Setup contract for each test", async function() {
       //Could use the getV25(accounts, true), since you're upgrading in the first line of tests. I added full tips to getV25 in testLib already
-       let initer = await Initializer.new()
     tellor = await Tellor.new()
-    tellorMaster = await Master.new(initer.address)
-    let m = await Initializer.at(tellorMaster.address)
-    await m.init();
+    tellorMaster = await Master.new(tellor.address)
 
     await tellorMaster.changeTellorContract(tellor.address)
 

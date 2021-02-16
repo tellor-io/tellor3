@@ -3,7 +3,6 @@ const helper = require("./helpers/test_helpers");
 const Master = artifacts.require("./TellorMaster.sol")
 const Tellor = artifacts.require("./TellorTest.sol")
 const Stake = artifacts.require("./TellorStake.sol")
-const Initializer= artifacts.require("./Initializer.sol")
 const ITellor = artifacts.require("./ITellor")
 
 contract("DidMine test", function(accounts) {
