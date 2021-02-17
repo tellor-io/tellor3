@@ -60,10 +60,10 @@ contract("Request and tip tests", function(accounts) {
     data = await master.getNewVariablesOnDeck();
     let ids = data["0"].map((i) => i.toString());
     let tips = data["1"].map((i) => i.toString());
-
+    console.log("tips",)
     assert(ids.includes("41"), "ID on deck should be 41");
     assert(ids.includes("31"), "ID on deck should be 31");
-    assert(tips.includes("422"), "Tip should be over 110");
+    assert(tips.includes("400"), "Tip should include 400");
     req1 = await master.addTip(32, 410, { from: accounts[2] });
     data = await master.getNewVariablesOnDeck();
     ids = data["0"].map((i) => i.toString());
@@ -97,6 +97,8 @@ contract("Request and tip tests", function(accounts) {
     let pay2 = new BN(web3.utils.toWei("50", "ether"));
     let res3 = await master.addTip(31, pay, { from: accounts[2] });
     apiVars = await master.getRequestVars(31);
+    console.log(apiVars[1] * 1)
+    console.log(tipBefore31)
     assert(apiVars[1].eq(pay.add(tipBefore31)), "value pool should be 20");
     data = await master.getNewVariablesOnDeck();
     ids = data["0"].map((i) => i.toString());

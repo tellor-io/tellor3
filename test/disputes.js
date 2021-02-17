@@ -110,12 +110,13 @@ contract("Dispute Tests", function(accounts) {
         web3.utils.fromWei(balance1) - web3.utils.fromWei(balance2) == 500,
         "reported miner's balance should change correctly"
       );
+      console.log(web3.utils.fromWei(dispBal2)*1,
+          web3.utils.fromWei(dispBal1)*1)
       assert(
         web3.utils.fromWei(dispBal2) -
-          web3.utils.fromWei(dispBal1) -
-          web3.utils.fromWei(disputeFee) ==
-          400,
-        "disputing party's balance should change correctly"
+          web3.utils.fromWei(dispBal1) ==
+          1000,
+        "disputing party's balance should change correctly (ncludes dispute fee + stake)"
       );
       s = await master.getStakerInfo(accounts[2]);
       assert(s != 1, " Not staked");
@@ -225,18 +226,20 @@ contract("Dispute Tests", function(accounts) {
       dispBal2 = await master.balanceOf(accounts[1]);
       let disputeFee = await master.getUintVar(hash("disputeFee"));
 
-      console.log(   dispBal1
-          .sub(dispBal2)
-          .sub(disputeFee))
-
-          console.log(dispInfo[7][8])
+      console.log(dispInfo2[7][8] * 1 - 0)
+      console.log(disputeFee)
+      console.log(        dispBal1
+        .sub(dispBal2)
+        .sub(disputeFee)
+        .sub(disputeFee) * 1 - 0)
 
       assert(
         dispBal1
           .sub(dispBal2)
           .sub(disputeFee)
-          .eq(dispInfo[7][8]),
-        "reported miner's balance should change correctly"
+          .sub(disputeFee)
+          .eq(dispInfo2[7][8]),
+        "disputing party's balance should change correctly"
       );
 
       assert(
