@@ -10,6 +10,7 @@
     "web3": "^1.3.4"
   },
   "dependencies": {
+    "dotenv": "^8.2.0",
     "hardhat-gas-reporter": "^1.0.4"
   }
 }

@@ -1,4 +1,4 @@
-
+//npx hardhat run --network rinkeby scripts/DeployTellor.js
 const { artifacts } = require("hardhat");
 
 const Master = artifacts.require("./TellorMaster.sol")
@@ -26,15 +26,15 @@ oldTellor = '0x9FAC705A49e0c8789483c518E71C6483e495ECC4'
 
 // }
 
-async function main(oldTellor) {
+async function main(_oldTellor) {
     // We get the contract to deploy
     const Tellor = await ethers.getContractFactory("Tellor");
     const tellor= await Tellor.deploy();
     console.log("Tellor deployed to:", tellor.address);
 
     const Master = await ethers.getContractFactory("TellorMaster");
-    const tellorMaster= await Master.deploy(tellor.address, oldTellor );
-    console.log("Tellor deployed to:", tellorMaster.address);
+    const tellorMaster= await Master.deploy(tellor.address, _oldTellor );
+    console.log("TellorMaster deployed to:", tellorMaster.address);
 
     const Stake = await ethers.getContractFactory("TellorStake");
     const stake = await Stake.deploy( );
@@ -42,7 +42,7 @@ async function main(oldTellor) {
     await tellorMaster.changeTellorStake(stake.address)
   }
 
-  main()
+  main(oldTellor)
   .then(() => process.exit(0))
   .catch(error => {
     console.error(error);

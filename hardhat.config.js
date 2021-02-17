@@ -2,6 +2,7 @@ require("@nomiclabs/hardhat-truffle5");
 require("hardhat-gas-reporter");
 require("solidity-coverage");
 require("@nomiclabs/hardhat-ethers");
+require("dotenv").config();
 
 task("deploy", "Deploy and verify the contracts")
   .addParam("oldtellorAddress", "The old master contract address")
@@ -13,7 +14,7 @@ task("deploy", "Deploy and verify the contracts")
     const tellor= await Tellor.deploy();
     console.log("Tellor deployed to:", tellor.address);
     await tellor.deployed();
-    console.log("contract deployed to:", "https://" + taskArgs.network + ".etherscan.io/address/" + contract.address);
+    console.log("Tellor contract deployed to:", "https://" + taskArgs.network + ".etherscan.io/address/" + contract.address);
     console.log("    transaction hash:", "https://" + taskArgs.network + ".etherscan.io/tx/" + contract.deployTransaction.hash);
 
     // Wait for few confirmed transactions.
@@ -31,9 +32,9 @@ task("deploy", "Deploy and verify the contracts")
     console.log("deploy tellorMaster")
     const Master = await ethers.getContractFactory("TellorMaster");
     const master= await Master.deploy(tellor.address,oldtellorAddress);
-    console.log("Tellor deployed to:", master.address);
+    console.log("Tellor Master deployed to:", master.address);
     await master.deployed();
-    console.log("contract deployed to:", "https://" + taskArgs.network + ".etherscan.io/address/" + contract.address);
+    console.log("TellorMaster deployed to:", "https://" + taskArgs.network + ".etherscan.io/address/" + contract.address);
     console.log("    transaction hash:", "https://" + taskArgs.network + ".etherscan.io/tx/" + contract.deployTransaction.hash);
 
     // Wait for few confirmed transactions.
@@ -54,7 +55,7 @@ task("deploy", "Deploy and verify the contracts")
     const stake = await Stake.deploy();
     console.log("Stake deployed to:", stake.address);
     await tellor.deployed();
-    console.log("contract deployed to:", "https://" + taskArgs.network + ".etherscan.io/address/" + contract.address);
+    console.log("TellorStake deployed to:", "https://" + taskArgs.network + ".etherscan.io/address/" + contract.address);
     console.log("    transaction hash:", "https://" + taskArgs.network + ".etherscan.io/tx/" + contract.deployTransaction.hash);
 
     // Wait for few confirmed transactions.
@@ -101,5 +102,4 @@ module.exports = {
       apiKey: process.env.ETHERSCAN
     },
 
-  },
 };
