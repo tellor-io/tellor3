@@ -6,7 +6,6 @@ import "./TellorGetters.sol";
 import "./Utilities.sol";
 import "./ITellor.sol";
 import "./SafeMath.sol";
-import "hardhat/console.sol";
 
 // TODO review all functions visibility
 /**
