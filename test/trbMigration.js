@@ -5,6 +5,7 @@ const Tellor = artifacts.require("./TellorTest.sol")
 const ITellor = artifacts.require("./ITellor.sol")
 const hash = web3.utils.keccak256;
 const BN = web3.utils.BN;
+const helper = require("./helpers/test_helpers");
 
 contract("Token Migration and Deity Tests", function(accounts) {
   let tellorMaster = {};
@@ -26,22 +27,19 @@ contract("Token Migration and Deity Tests", function(accounts) {
   });
   it("Good Migration - User Balance", async function() {
     for (var i = 0; i < 10; i++) {
-      console.log("here")
-      console.log(await oldTellor.balanceOf(accounts[i]))
       await master.migrate({from:accounts[i]});
-      console.log("here2")
-      let pay = new BN(i);
-      assert(await master.balanceOf(accounts[i]) == pay.mul(baseNum))
+      let pay = new BN(i+1);
+      assert(await master.balanceOf(accounts[i]) - pay.mul(baseNum) == 0)
     }
   });
   it("Good Migration - Total Supply Changes correctly", async function() {
-    let supply = 0
+    let supply  = 0
     for (var i = 0; i < 10; i++) {
       await master.migrate({from:accounts[i]});
-      let pay = new BN(i);
-      supply += pay.mul(baseNum);
-      assert(await master.totalSupply() == supply, "totalSupply should be corrects")
+      supply += (i+1);
     }
+    pay = new BN(supply)
+    assert(await master.totalSupply()- pay.mul(baseNum) == 0, "totalSupply should be corrects")
   });
   it("Migration fails if no balance", async function() {
     await helper.expectThrow(
@@ -50,11 +48,9 @@ contract("Token Migration and Deity Tests", function(accounts) {
   });
   it("Migration fails if trying to migrate twice", async function() {
     for (var i = 0; i < 10; i++) {
-      console.log(i)
       await master.migrate({from:accounts[i]});
-      let pay = new BN(i);
-      assert(await master.balanceOf(accounts[i]) == pay.mul(baseNum))
-      console.log(i)
+      let pay = new BN(i+1);
+      assert(await master.balanceOf(accounts[i]) - pay.mul(baseNum) == 0)
     }
     await helper.expectThrow(
       master.migrate({from:accounts[1]})
@@ -63,7 +59,7 @@ contract("Token Migration and Deity Tests", function(accounts) {
   it("Diety tests", async function() {
       newTellor = await Tellor.new()
       newStake = await Stake.new()
-      await tellorMaster.changeTellorStake(newStake)
+      await tellorMaster.changeTellorStake(newStake.address)
       assert(await master.getAddressVars(hash("tellorStake")) == newStake.address)
       await tellorMaster.changeOwner(accounts[2])
       assert(await master.getAddressVars(hash("_owner")) == accounts[2])

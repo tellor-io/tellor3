@@ -111,7 +111,6 @@ contract("Utilities Tests", function(accounts) {
       await master.addTip(j, j, { from: accounts[2] });
     }
     max = await utilities.testgetMax();
-    console.log(max)
     assert(max["0"].toString() == "45", "Max should be 45");
     assert(max["1"].toString() == "45", "Max should be 6"); //note first 5 are added
   });
