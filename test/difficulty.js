@@ -147,15 +147,20 @@ contract("Difficulty tests", function(accounts) {
 
     it("Zero difficulty on the 5th slot", async () => {
       // Increasing the diff
+      console.log("diff1")
       await TestLib.mineBlock({
         master: master,
         accounts: accounts.slice(30, 35),
       });
+      console.log("diff2")
       await master.manuallySetDifficulty(1000);
+      console.log("diff3")
 
       await helper.advanceTime(61);
+      console.log("diff4")
 
       let vars = await env.master.getNewCurrentVariables();
+      console.log("diff5")
       const values = [1000, 1000, 1000, 1000, 1000];
 
       //Try mine first slot with incorrect nonce
@@ -164,6 +169,7 @@ contract("Difficulty tests", function(accounts) {
           from: accounts[39],
         })
       );
+      console.log("diff6")
 
       // Mine 4 slots bypassing the nonce:
       for (var i = 0; i < 4; i++) {
@@ -176,23 +182,28 @@ contract("Difficulty tests", function(accounts) {
           }
         );
       }
+      console.log("diff7")
 
       //Mine the 5th with any nonce
       await master.submitMiningSolution("nonce", vars["1"], values, {
-        from: accounts[20],
+        from: accounts[39],
       });
+      console.log("diff8")
 
       let requestId = vars["1"][0];
+      console.log("diff9")
       let count = await master.getNewValueCountbyRequestId(requestId);
+      console.log("diff10")
       let timestamp = await master.getTimestampbyRequestIDandIndex(
         requestId,
         count.toNumber() - 1
       );
-
+      console.log("diff11")
       let miners = await master.getMinersByRequestIdAndTimestamp(
         requestId,
         timestamp
       );
+      console.log("diff12")
       assert(miners.indexOf(accounts[20]) != -1, "miner should have mined");
     });
   });

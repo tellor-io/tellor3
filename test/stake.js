@@ -51,8 +51,10 @@ contract("Staking Tests", function(accounts) {
     let info = await master.getStakerInfo(accounts[1]);
     let stake = web3.utils.hexToNumberString(info["0"]);
     let startDate = web3.utils.hexToNumberString(info["1"]);
+    console.log(startDate*1, "startDate")
     let _date = new Date();
     let d = (_date - (_date % 86400000)) / 1000;
+    console.log(d*1)
     assert(startDate >= d * 1, "startDate is today");
     assert(stake * 1 == 1, "Should be 1 for staked address");
   });

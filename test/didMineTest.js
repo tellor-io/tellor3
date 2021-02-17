@@ -34,10 +34,12 @@ contract("DidMine test", function(accounts) {
     await helper.advanceTime(60 * 16);
     //TestLib.mineBlock(env) already fetches the currentVariables. Fetching here to use in the verification
     let v = await master.getNewCurrentVariables();
-    console.log(v);
+    console.log(v, "v");
    await TestLib.mineBlock(env);
+   console.log("mineblock")
     //Could use the short version
     let didMine = await master.didMine(v[0], accounts[2]);
+    console.log("didmine", didMine)
     assert(didMine);
   });
 });
