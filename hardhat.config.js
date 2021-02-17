@@ -1,4 +1,6 @@
 require("@nomiclabs/hardhat-truffle5");
+require("hardhat-gas-reporter");
+require("solidity-coverage");
 
 /**
  * @type import('hardhat/config').HardhatUserConfig

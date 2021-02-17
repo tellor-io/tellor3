@@ -4,6 +4,7 @@ pragma solidity 0.7.4;
 import "./TellorTransfer.sol";
 import "./TellorGetters.sol";
 import "./Utilities.sol";
+import "./ITellor.sol";
 import "./SafeMath.sol";
 import "hardhat/console.sol";
 
@@ -47,6 +48,26 @@ contract Tellor is TellorTransfer {
         bytes32 indexed _currentChallenge,
         uint256 _slot
     );
+
+    function _migrate(address _user) internal {
+        require(!migrated[_user], "alredy migrated");
+        _doMint(
+            _user,
+            ITellor(addresses[keccak256("_oldTellor")]).balanceOf(_user)
+        );
+        migrated[_user] = true;
+    }
+
+    function migrate(address user) external {
+        _migrate(user);
+    }
+
+    // If one of the addresses migrated, this will revert everythign
+    function batchMigrate(address[] calldata users) external {
+        for (uint256 i = 0; i < users.length; i++) {
+            _migrate(users[i]);
+        }
+    }
 
     function submitMiningSolution(
         string calldata _nonce,

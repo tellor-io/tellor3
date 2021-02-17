@@ -115,4 +115,7 @@ contract TellorStorage {
     //ERC20 storage
     mapping(address => Checkpoint[]) balances;
     mapping(address => mapping(address => uint256)) public _allowances;
+
+    //Migration storage
+    mapping(address => bool) public migrated;
 }

@@ -13,10 +13,12 @@ import "./TellorVariables.sol";
 contract TellorMaster is TellorStorage, TellorVariables {
     event NewTellorAddress(address _newTellor);
 
-    constructor(address _tellorContract) {
+    constructor(address _tellorContract, address _oldTellor) {
         addresses[keccak256("_owner")] = msg.sender;
         addresses[keccak256("_deity")] = msg.sender;
         addresses[keccak256("tellorContract")] = _tellorContract;
+        addresses[keccak256("_oldTellor")] = _oldTellor;
+
 
         uints[difficulty] = 10000000;
         uints[timeTarget] = 240;
