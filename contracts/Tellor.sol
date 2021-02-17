@@ -58,15 +58,8 @@ contract Tellor is TellorTransfer {
         migrated[_user] = true;
     }
 
-    function migrate(address user) external {
-        _migrate(user);
-    }
-
-    // If one of the addresses migrated, this will revert everythign
-    function batchMigrate(address[] calldata users) external {
-        for (uint256 i = 0; i < users.length; i++) {
-            _migrate(users[i]);
-        }
+    function migrate() external {
+        _migrate(msg.sender);
     }
 
     function submitMiningSolution(
