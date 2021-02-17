@@ -304,6 +304,7 @@ contract Tellor is TellorTransfer {
         _currChallenge = keccak256(
             abi.encode(_nonce, _currChallenge, blockhash(block.number - 1))
         );
+
         bytesVars[currentChallenge] = _currChallenge; // Save hash for next proof
         emit NewChallenge(
             _currChallenge,
@@ -328,7 +329,7 @@ contract Tellor is TellorTransfer {
         } else {
             require(_requestId < _count, "RequestId is not less than count");
         }
-        _doBurn(msg.sender,_tip);
+        _doBurn(msg.sender, _tip);
         //Update the information for the request that should be mined next based on the tip submitted
         updateOnDeck(_requestId, _tip);
         emit TipAdded(

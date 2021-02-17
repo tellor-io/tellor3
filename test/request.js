@@ -51,54 +51,64 @@ contract("Request and tip tests", function(accounts) {
       "value pool should be 20"
     );
   });
-  it("several request data", async function() {
+it("several request data", async function() {
     let req1 = await master.addTip(41, 500, { from: accounts[2] });
     req1 = await master.addTip(42, 500, { from: accounts[2] });
     req1 = await master.addTip(43, 500, { from: accounts[2] });
     req1 = await master.addTip(44, 500, { from: accounts[2] });
     req1 = await master.addTip(31, 400, { from: accounts[2] });
     data = await master.getNewVariablesOnDeck();
+    // console.log("vars on deck", data)
     let ids = data["0"].map((i) => i.toString());
     let tips = data["1"].map((i) => i.toString());
-    console.log("tips",)
+    // console.log("ids 31?",ids)
+    // console.log("tips 400 + 1 tipped on beforeEach?",tips)
     assert(ids.includes("41"), "ID on deck should be 41");
     assert(ids.includes("31"), "ID on deck should be 31");
-    assert(tips.includes("400"), "Tip should include 400");
+    assert(tips.includes("401"), "Tip should include 401");
     req1 = await master.addTip(32, 410, { from: accounts[2] });
     data = await master.getNewVariablesOnDeck();
     ids = data["0"].map((i) => i.toString());
     tips = data["1"].map((i) => i.toString());
+    // console.log("ids 32?",ids)
+    // console.log("tips 411?",tips)
     assert(ids.includes("42"), "ID on deck should be 41");
-    assert(ids.includes("32"), "ID on deck should be 30");
-    assert(tips.includes("431"), "Tip should be 110");
+    assert(ids.includes("32"), "ID on deck should be 32");
+    assert(tips.includes("411"), "Tip should be 411");
     await master.addTip(33, 550, { from: accounts[2] });
     data = await master.getNewVariablesOnDeck();
     ids = data["0"].map((i) => i.toString());
     tips = data["1"].map((i) => i.toString());
+    // console.log("ids 33?",ids)
+    // console.log("tips 551?",tips)
     assert(ids.includes("43"), "ID on deck should be 43");
     assert(ids.includes("33"), "ID on deck should be 33");
-    assert(tips.includes("570"), "Tip should be 150");
+    assert(tips.includes("551"), "Tip should be 551");
     req1 = await master.addTip(34, 660, { from: accounts[2] });
     data = await master.getNewVariablesOnDeck();
     ids = data["0"].map((i) => i.toString());
     tips = data["1"].map((i) => i.toString());
+    console.log("ids 34?",ids)
+    console.log("tips 661?",tips)
     assert(ids.includes("43"), "ID on deck should be 43");
     assert(ids.includes("34"), "ID on deck should be 34");
-    assert(tips.includes("679"), "Tip should be 60");
+    assert(tips.includes("661"), "Tip should be 601");
   });
   it("Request data and change on queue with another request", async function() {
+    // were the outputs for getRequestVars changed from 5 items to 2 ? will this affect other stuff?
     let vars31 = await master.getRequestVars(31);
     let vars32 = await master.getRequestVars(32);
-    let tipBefore31 = vars31[5];
-    let tipBefore32 = vars32[5];
-
+    let tipBefore31 = vars31[1];
+    // console.log("tipBefore31", tipBefore31)
+    let tipBefore32 = vars32[1];
+    // console.log("tipBefore32", tipBefore32)
     balance1 = await master.balanceOf(accounts[2], { from: accounts[1] });
     let pay = new BN(web3.utils.toWei("20", "ether"));
     let pay2 = new BN(web3.utils.toWei("50", "ether"));
     let res3 = await master.addTip(31, pay, { from: accounts[2] });
     apiVars = await master.getRequestVars(31);
-    console.log(apiVars[1] * 1)
-    console.log(tipBefore31)
+    // console.log(apiVars[1] * 1)
+    // console.log("tipBefore31", tipBefore31)
     assert(apiVars[1].eq(pay.add(tipBefore31)), "value pool should be 20");
     data = await master.getNewVariablesOnDeck();
     ids = data["0"].map((i) => i.toString());
@@ -123,7 +133,6 @@ contract("Request and tip tests", function(accounts) {
       "balance should be down by 70"
     );
   });
-
   it("Test 51 request and lowest is kicked out", async function() {
     let previousTips = [];
     for (var i = 0; i <= 56; i++) {
@@ -155,13 +164,16 @@ contract("Request and tip tests", function(accounts) {
       apiOnQ[i] = apiOnQ[i] * 1 - 0;
     }
 
+    // console.log(apiIdforpayoutPoolIndex.toString());
+
     assert(
-      apiIdforpayoutPoolIndex.toString() == "56",
+      apiIdforpayoutPoolIndex.toString() == "50",
       "position 1 should be booted"
     );
     assert(apiPayout.includes(56), "API on Q payout should be 56");
     assert(apiOnQ.includes(56), "API on Q should be 56");
-    assert(apiVars[4] == 5, "position 1 should have correct value");
+    // console.log(apiVars);
+    assert(apiVars[0].toNumber() == 47, "position 1 should have correct value");
   });
 
   it("Test Throw on wrong apiId", async function() {
