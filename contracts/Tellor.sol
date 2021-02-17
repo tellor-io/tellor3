@@ -77,10 +77,11 @@ contract Tellor is TellorTransfer {
             stakerDetails[msg.sender].currentStatus == 1,
             "Miner status is not staker"
         );
-        require(
-            block.timestamp - uints[_hashMsgSender] > 15 minutes,
-            "Miner can only win rewards once per 15 min"
-        );
+        //is this duplicate?
+        // require(
+        //     block.timestamp - uints[_hashMsgSender] > 15 minutes,
+        //     "Miner can only win rewards once per 15 min"
+        // );
         require(
             _requestIds[0] == currentMiners[0].value,
             "Request ID is wrong"

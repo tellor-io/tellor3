@@ -105,17 +105,11 @@ contract("Dispute Tests", function(accounts) {
       voted = await master.didVote(1, accounts[5]);
       assert(voted == false, "account 5 did not vote");
       balance2 = await master.balanceOf(accounts[2]);
-      console.log(web3.utils.fromWei(balance2*1), "endbalance")
       dispBal2 = await master.balanceOf(accounts[1]);
       assert(
         web3.utils.fromWei(balance1) - web3.utils.fromWei(balance2) == 500,
         "reported miner's balance should change correctly"
       );
-
-      console.log(web3.utils.fromWei(dispBal2) -
-          web3.utils.fromWei(dispBal1) -
-          web3.utils.fromWei(disputeFee))
-
       assert(
         web3.utils.fromWei(dispBal2) -
           web3.utils.fromWei(dispBal1) -
@@ -130,9 +124,7 @@ contract("Dispute Tests", function(accounts) {
     it("Test multiple dispute rounds, passing all three", async function() {
       let balance1 = await master.balanceOf(accounts[2]);
       let dispBal1 = await master.balanceOf(accounts[1]);
-
       let count = await master.getUintVar(hash("disputeCount"));
-
       //vote 1 passes
       await master.vote(disputeId, true);
       await helper.advanceTime(86400 * 3);

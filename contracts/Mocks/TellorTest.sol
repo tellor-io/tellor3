@@ -15,6 +15,12 @@ contract TellorTest is Tellor {
         uint256[5] calldata _requestId,
         uint256[5] calldata _value
     ) external {
+        bytes32 _hashMsgSender = keccak256(abi.encode(msg.sender));
+        require(
+            uints[_hashMsgSender] == 0 ||
+                block.timestamp - uints[_hashMsgSender] > 15 minutes,
+            "Miner can only win rewards once per 15 min"
+        );
         _submitMiningSolution(_nonce, _requestId, _value);
     }
 
