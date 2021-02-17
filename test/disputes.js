@@ -89,19 +89,12 @@ contract("Dispute Tests", function(accounts) {
     it("Test basic dispute", async function() {
       console.log("basic disp 1")
       balance1 = await master.balanceOf(accounts[2]);
-      console.log(web3.utils.fromWei(balance1*1), "start balance")
       dispBal1 = await master.balanceOf(accounts[1]);
-      
       count = await master.getUintVar(web3.utils.keccak256("disputeCount"));
-      
       await master.vote(1, true, { from: accounts[3] });
-      
-      await helper.advanceTime(86400 * 22);
-      
+      await helper.advanceTime(86400 * 22);   
       await master.tallyVotes(1);
-      
       await helper.advanceTime(86400 * 2);
-      
       await master.unlockDisputeFee(1);
       dispInfo = await master.getAllDisputeVars(1);
       assert(dispInfo[7][0] == 1, "request id should be right");

@@ -20,7 +20,7 @@ contract UtilitiesTest {
     /**
      * @dev The constructor sets the owner
      */
-    constructor(address payable _TellorMasterAddress) public {
+    constructor(address payable _TellorMasterAddress) {
         owner = msg.sender;
         tellorMasterAddress = _TellorMasterAddress;
         tellorMaster = ITellor(tellorMasterAddress);

@@ -13,7 +13,7 @@ import "./TellorVariables.sol";
 contract TellorMaster is TellorStorage, TellorVariables {
     event NewTellorAddress(address _newTellor);
 
-    constructor(address _tellorContract) public {
+    constructor(address _tellorContract) {
         addresses[keccak256("_owner")] = msg.sender;
         addresses[keccak256("_deity")] = msg.sender;
         addresses[keccak256("tellorContract")] = _tellorContract;
@@ -22,7 +22,7 @@ contract TellorMaster is TellorStorage, TellorVariables {
         uints[timeTarget] = 240;
         uints[targetMiners] = 200;
         uints[currentReward] = 1e18;
-        uints[disputeFee] = 500e17;
+        uints[disputeFee] = 500e18;
         uints[stakeAmount] = 500e18;
         uints[timeOfLastNewValue] = block.timestamp - 240;
 
@@ -33,7 +33,7 @@ contract TellorMaster is TellorStorage, TellorVariables {
         currentMiners[4].value = 4;
 
         // Bootstraping Request Queue
-        for (uint256 index = 1; index < 50; index++) {
+        for (uint256 index = 1; index < 51; index++) {
             Request storage req = requestDetails[index];
             req.apiUintVars[requestQPosition] = index;
             requestIdByRequestQIndex[index] = index;
