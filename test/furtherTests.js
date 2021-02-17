@@ -57,7 +57,7 @@ contract("Further tests", function(accounts) {
 
   it("Test token fee burning", async function() {
     await master.theLazyCoon(accounts[1], web3.utils.toWei("10000", "ether"));
-
+    initTotalSupply = await master.totalSupply();
     await master.addTip(1, web3.utils.toWei("8000", "ether"), {from: accounts[1]});
     vars = await master.getNewCurrentVariables();
     // assert(vars[3] >= web3.utils.toWei("1000", "ether"), "tip should be big");
@@ -65,7 +65,6 @@ contract("Further tests", function(accounts) {
     for (var i = 0; i < 6; i++) {
       balances[i] = await master.balanceOf(accounts[i]);
     }
-    initTotalSupply = await master.totalSupply();
     await takeFifteen();
     await TestLib.mineBlock(env);
     await takeFifteen();
@@ -87,8 +86,6 @@ contract("Further tests", function(accounts) {
     // assert(changes[4] <= web3.utils.toWei("109.24", "ether"));
 
     let diff = initTotalSupply.sub(newTotalSupply);
-    console.log(web3.utils.fromWei(diff, "ether"))
-    console.log(newTotalSupply.lt(initTotalSupply));
     assert(
       newTotalSupply.lt(initTotalSupply),
       "total supply should have dropped"

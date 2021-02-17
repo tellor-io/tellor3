@@ -328,7 +328,7 @@ contract Tellor is TellorTransfer {
         } else {
             require(_requestId < _count, "RequestId is not less than count");
         }
-        _doTransfer(msg.sender, address(this), _tip);
+        _doBurn(msg.sender,_tip);
         //Update the information for the request that should be mined next based on the tip submitted
         updateOnDeck(_requestId, _tip);
         emit TipAdded(

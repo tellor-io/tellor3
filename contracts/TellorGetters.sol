@@ -21,7 +21,7 @@ contract TellorGetters is TellorStorage, TellorVariables, Utilities {
      * @return true if the _miner address provided solved the
      */
     function didMine(bytes32 _challenge, address _miner)
-        external
+        public
         view
         returns (bool)
     {
