@@ -1,0 +1,50 @@
+
+const { artifacts } = require("hardhat");
+
+const Master = artifacts.require("./TellorMaster.sol")
+const Tellor = artifacts.require("./Tellor.sol")
+const Stake = artifacts.require("./TellorStake.sol")
+
+//rinkeby
+oldTellor = '0x9FAC705A49e0c8789483c518E71C6483e495ECC4'
+
+//mainnet
+// oldTellor = ''
+
+// module.exports =async function(callback) {
+
+// let tellor = await Tellor.new()
+// console.log("tellor", tellor.address)
+// let tellorMaster = await Master.new(tellor.address, oldTellor.address)
+// console.log("tellorMaster", tellorMaster.address)
+// let stake = await Stake.new()
+// console.log("tellorStake", tellorStake)
+// await tellorMaster.changeTellorStake(stake.address)
+
+// process.exit()
+
+
+// }
+
+async function main(oldTellor) {
+    // We get the contract to deploy
+    const Tellor = await ethers.getContractFactory("Tellor");
+    const tellor= await Tellor.deploy();
+    console.log("Tellor deployed to:", tellor.address);
+
+    const Master = await ethers.getContractFactory("TellorMaster");
+    const tellorMaster= await Master.deploy(tellor.address, oldTellor );
+    console.log("Tellor deployed to:", tellorMaster.address);
+
+    const Stake = await ethers.getContractFactory("TellorStake");
+    const stake = await Stake.deploy( );
+    console.log("tellorStake", stake.address)
+    await tellorMaster.changeTellorStake(stake.address)
+  }
+
+  main()
+  .then(() => process.exit(0))
+  .catch(error => {
+    console.error(error);
+    process.exit(1);
+  });
