@@ -34,12 +34,34 @@ contract("DidMine test", function(accounts) {
     await helper.advanceTime(60 * 16);
     //TestLib.mineBlock(env) already fetches the currentVariables. Fetching here to use in the verification
     let v = await master.getNewCurrentVariables();
-    console.log(v, "v");
+
    await TestLib.mineBlock(env);
-   console.log("mineblock")
-    //Could use the short version
     let didMine = await master.didMine(v[0], accounts[2]);
-    console.log("didmine", didMine)
     assert(didMine);
+  });
+
+    it("Test can't mine twice ", async function() {
+    await helper.advanceTime(60 * 16);
+    //TestLib.mineBlock(env) already fetches the currentVariables. Fetching here to use in the verification
+    let v = await master.getNewCurrentVariables();
+    await master.testSubmitMiningSolution(
+        "nonce",
+        v["1"],
+        ["1000","1000","1000","1000","1000"],
+        {
+          from: accounts[1],
+          value: "0",
+        })
+       await helper.advanceTime(60 * 16);
+
+       helper.expectThrow(
+     master.testSubmitMiningSolution(
+        "nonce",
+        v["1"],
+        ["1000","1000","1000","1000","1000"],
+        {
+          from: accounts[1],
+          value: "0",
+        }))
   });
 });

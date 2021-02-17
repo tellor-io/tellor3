@@ -427,7 +427,7 @@ contract TellorGetters is TellorStorage, TellorVariables, Utilities {
             _requestIds[i] = currentMiners[i].value;
         }
         return (
-            currentChallenge,
+            bytesVars[currentChallenge],
             _requestIds,
             uints[difficulty],
             uints[currentTotalTips]

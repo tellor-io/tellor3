@@ -87,7 +87,7 @@ contract("Dispute Tests", function(accounts) {
       disputeFee = await master.getUintVar(hash("disputeFee"));
     });
     it("Test basic dispute", async function() {
-      console.log("basic disp 1")
+      // console.log("basic disp 1")
       balance1 = await master.balanceOf(accounts[2]);
       dispBal1 = await master.balanceOf(accounts[1]);
       count = await master.getUintVar(web3.utils.keccak256("disputeCount"));
@@ -110,8 +110,8 @@ contract("Dispute Tests", function(accounts) {
         web3.utils.fromWei(balance1) - web3.utils.fromWei(balance2) == 500,
         "reported miner's balance should change correctly"
       );
-      console.log(web3.utils.fromWei(dispBal2)*1,
-          web3.utils.fromWei(dispBal1)*1)
+      // console.log(web3.utils.fromWei(dispBal2)*1,
+      //     web3.utils.fromWei(dispBal1)*1)
       assert(
         web3.utils.fromWei(dispBal2) -
           web3.utils.fromWei(dispBal1) ==
@@ -225,28 +225,17 @@ contract("Dispute Tests", function(accounts) {
       balance2 = await master.balanceOf(accounts[2]);
       dispBal2 = await master.balanceOf(accounts[1]);
       let disputeFee = await master.getUintVar(hash("disputeFee"));
+      let stakeAmount = await master.getUintVar(hash("stakeAmount"));
 
-      console.log(dispInfo2[7][8] * 1 - 0)
-      console.log(disputeFee)
-      console.log(        dispBal1
-        .sub(dispBal2)
-        .sub(disputeFee)
-        .sub(disputeFee) * 1 - 0)
+      // console.log(dispInfo2[7][8].toString())
+      // console.log(stakeAmount.mul(new BN("2")).toString())
+      // console.log(dispBal1.sub(dispBal2).toString())
+
 
       assert(
         dispBal1
           .sub(dispBal2)
-          .sub(disputeFee)
-          .sub(disputeFee)
           .eq(dispInfo2[7][8]),
-        "disputing party's balance should change correctly"
-      );
-
-      assert(
-        dispBal1
-          .sub(dispBal2)
-          .sub(disputeFee)
-          .eq(dispInfo[7][8]),
         "disputing party's balance should change correctly"
       );
     });
@@ -432,10 +421,10 @@ contract("Dispute Tests", function(accounts) {
     await master.unlockDisputeFee(3, { from: accounts[0] });
 
     dispInfo = await master.getAllDisputeVars(1);
-    console.log(dispInfo);
+    // console.log(dispInfo);
 
     assert(dispInfo[7][0] == requetsId);
-    console.log(blocks[0]);
+    // console.log(blocks[0]);
     assert(dispInfo["7"][2] == blocks[0].submitted[requetsId][2]);
     assert(dispInfo[2] == true, "Dispute Vote passed");
     voted = await master.didVote(1, accounts[1]);
@@ -548,7 +537,7 @@ contract("Dispute Tests", function(accounts) {
       "account 2 should be the disputed miner"
     );
     assert(dispInfo[2] == true, "Dispute Vote passed");
-    console.log(web3.utils.fromWei(dispInfo[7][8].toString()));
+    // console.log(web3.utils.fromWei(dispInfo[7][8].toString()));
     assert(web3.utils.fromWei(dispInfo[7][8]) == 400, "fee should be correct");
     //vote 2 - fails
     await master.theLazyCoon(accounts[6], web3.utils.toWei("5000", "ether"));
