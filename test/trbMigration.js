@@ -27,6 +27,7 @@ contract("Token Migration and Deity Tests", function(accounts) {
   it("Good Migration - User Balance", async function() {
     for (var i = 0; i < 10; i++) {
       console.log("here")
+      console.log(await oldTellor.balanceOf(accounts[i]))
       await master.migrate({from:accounts[i]});
       console.log("here2")
       let pay = new BN(i);
@@ -44,9 +45,9 @@ contract("Token Migration and Deity Tests", function(accounts) {
   });
   it("Migration fails if no balance", async function() {
     await helper.expectThrow(
-     master.migrate({from:accounts[11]}))
-    });
-
+     master.migrate({from:accounts[11]})
+    )
+  });
   it("Migration fails if trying to migrate twice", async function() {
     for (var i = 0; i < 10; i++) {
       console.log(i)
