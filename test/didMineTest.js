@@ -1,9 +1,9 @@
 const TestLib = require("./helpers/testLib");
 const helper = require("./helpers/test_helpers");
 const Master = artifacts.require("./TellorMaster.sol")
-const Tellor = artifacts.require("./TellorTest.sol")
+const Tellor = artifacts.require("./contracts/TellorTest.sol")
 const Stake = artifacts.require("./TellorStake.sol")
-const ITellor = artifacts.require("./ITellor")
+const ITellor = artifacts.require("./ITellor.sol")
 
 contract("DidMine test", function(accounts) {
   let tellorMaster = {};

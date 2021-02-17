@@ -1,8 +1,8 @@
 const { artifacts } = require("hardhat");
-const Master = artifacts.require("./TellorMaster.sol")
+const Master = artifacts.require("./contracts/TellorMaster.sol")
 const Stake = artifacts.require("./TellorStake.sol")
 const Tellor = artifacts.require("./TellorTest.sol")
-const ITellor = artifacts.require("./ITellor")
+const ITellor = artifacts.require("./ITellor.sol")
 const hash = web3.utils.keccak256;
 
 contract("Token Migration and Deity Tests", function(accounts) {
@@ -57,4 +57,5 @@ contract("Token Migration and Deity Tests", function(accounts) {
       assert(await master.getAddressVars(hash("tellorContract")) == newTellor.address)
       await tellorMaster.changeDeity(accounts[1])
       assert(await master.getAddressVars(hash("_deity")) == accounts[1])
+    });
 })
