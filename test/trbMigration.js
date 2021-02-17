@@ -3,9 +3,9 @@ const Master = artifacts.require("./TellorMaster.sol")
 const Stake = artifacts.require("./TellorStake.sol")
 const Tellor = artifacts.require("./TellorTest.sol")
 const ITellor = artifacts.require("./ITellor")
+const hash = web3.utils.keccak256;
 
-
-contract("Token Tests", function(accounts) {
+contract("Token Migration and Deity Tests", function(accounts) {
   let tellorMaster = {};
   let tellor = {};
 
@@ -46,4 +46,15 @@ contract("Token Tests", function(accounts) {
     await helper.expectThrow(
       await master.migrate({from:accounts[1]}))
     });
+    it("Diety tests", async function() {
+      newTellor = await Tellor.new()
+      newStake = await Stake.new()
+      await tellorMaster.changeTellorStake(newStake)
+      assert(await master.getAddressVars(hash("tellorStake")) == newStake.address)
+      await tellorMaster.changeOwner(accounts[2])
+      assert(await master.getAddressVars(hash("_owner")) == accounts[2])
+      await tellorMaster.changeTellorContract(newTellor.address)
+      assert(await master.getAddressVars(hash("tellorContract")) == newTellor.address)
+      await tellorMaster.changeDeity(accounts[1])
+      assert(await master.getAddressVars(hash("_deity")) == accounts[1])
 })
