@@ -4,8 +4,6 @@ pragma solidity 0.7.4;
 //Functions for retrieving min and Max in 51 length array (requestQ)
 //Taken partly from: https://github.com/modular-network/ethereum-libraries-array-utils/blob/master/contracts/Array256Lib.sol
 
-import "hardhat/console.sol";
-
 contract Utilities {
     /**
      * @dev Returns the max value in an array.

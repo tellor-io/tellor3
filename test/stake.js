@@ -14,7 +14,8 @@ contract("Staking Tests", function(accounts) {
 
   beforeEach("Setup contract for each test", async function() {
     tellor = await Tellor.new()
-    tellorMaster = await Master.new(tellor.address)
+    oldTellor = await Tellor.new()
+    tellorMaster = await Master.new(tellor.address, oldTellor.address)
     let stake = await Stake.new()
     await tellorMaster.changeTellorStake(stake.address)
     master = await ITellor.at(tellorMaster.address)

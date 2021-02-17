@@ -5,8 +5,6 @@ import "./TellorStorage.sol";
 import "./TellorVariables.sol";
 import "./Utilities.sol";
 
-import "hardhat/console.sol";
-
 /**
  * @title Tellor Getters
  * @dev Oracle contract with all tellor getter functions
@@ -25,8 +23,6 @@ contract TellorGetters is TellorStorage, TellorVariables, Utilities {
         view
         returns (bool)
     {
-        console.log(_miner);
-        console.log(minersByChallenge[_challenge][_miner]);
         return minersByChallenge[_challenge][_miner];
     }
 
