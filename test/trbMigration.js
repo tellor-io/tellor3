@@ -19,10 +19,9 @@ contract("Token Migration and Deity Tests", function(accounts) {
     master = await ITellor.at(tellorMaster.address)
     baseNum = new BN(web3.utils.toWei("1000", "ether"))
     for (var i = 0; i < 10; i++) {
-      let pay = new BN(i);
+      let pay = new BN(i+1);
       await oldTellor.theLazyCoon(accounts[i], pay.mul(baseNum));
-      console.log(await oldTellor.balanceOf(accounts[i]))
-      assert(await oldTellor.balanceOf(accounts[i]) == pay.mul(baseNum))
+      assert(await oldTellor.balanceOf(accounts[i]) - pay.mul(baseNum) == 0)
     }
   });
   it("Good Migration - User Balance", async function() {
