@@ -1,6 +1,8 @@
+// SPDX-License-Identifier: MIT
 pragma solidity 0.7.4;
 
 import "./TellorStorage.sol";
+import "./TellorVariables.sol";
 
 /**
  * @title Tellor Master
@@ -8,25 +10,54 @@ import "./TellorStorage.sol";
  * The logic for the functions on this contract is saved on the TellorGettersLibrary, TellorTransfer,
  * TellorGettersLibrary, and TellorStake
  */
-contract TellorMaster is TellorStorage {
+contract TellorMaster is TellorStorage, TellorVariables {
     event NewTellorAddress(address _newTellor);
 
-    constructor(address _tellorContract) public {
-        tellor.init();
-        tellor.addressVars[keccak256("_owner")] = msg.sender;
-        tellor.addressVars[keccak256("_deity")] = msg.sender;
-        tellor.addressVars[keccak256("tellorContract")] = _tellorContract;
+    constructor(address _tellorContract) {
+        addresses[keccak256("_owner")] = msg.sender;
+        addresses[keccak256("_deity")] = msg.sender;
+        addresses[keccak256("tellorContract")] = _tellorContract;
+
+        uints[difficulty] = 10000000;
+        uints[timeTarget] = 240;
+        uints[targetMiners] = 200;
+        uints[currentReward] = 1e18;
+        uints[disputeFee] = 500e18;
+        uints[stakeAmount] = 500e18;
+        uints[timeOfLastNewValue] = block.timestamp - 240;
+
+        currentMiners[0].value = 0;
+        currentMiners[1].value = 1;
+        currentMiners[2].value = 2;
+        currentMiners[3].value = 3;
+        currentMiners[4].value = 4;
+
+        // Bootstraping Request Queue
+        for (uint256 index = 1; index < 51; index++) {
+            Request storage req = requestDetails[index];
+            req.apiUintVars[requestQPosition] = index;
+            requestIdByRequestQIndex[index] = index;
+        }
+
         emit NewTellorAddress(_tellorContract);
     }
 
     /**
-     * @dev Gets the 5 miners who mined the value for the specified requestId/_timestamp
-     * @dev Only needs to be in library
      * @param _newDeity the new Deity in the contract
      */
 
     function changeDeity(address _newDeity) external {
-        tellor.changeDeity(_newDeity);
+        require(msg.sender == addresses[keccak256("_deity")]);
+        addresses[keccak256("_deity")] = _newDeity;
+    }
+
+    /**
+     * @param _newOwner the new Deity in the contract
+     */
+
+    function changeOwner(address _newOwner) external {
+        require(msg.sender == addresses[keccak256("_owner")]);
+        addresses[keccak256("_owner")] = _newOwner;
     }
 
     /**
@@ -34,7 +65,17 @@ contract TellorMaster is TellorStorage {
      * @param _tellorContract the address of the new Tellor Contract
      */
     function changeTellorContract(address _tellorContract) external {
-        tellor.changeTellorContract(_tellorContract);
+        require(msg.sender == addresses[keccak256("_deity")]);
+        addresses[keccak256("tellorContract")] = _tellorContract;
+    }
+
+    /**
+     * @dev  allows for the deity to make fast upgrades.  Deity should be 0 address if decentralized
+     * @param _tellorStake the address of the new Tellor Contract
+     */
+    function changeTellorStake(address _tellorStake) external {
+        require(msg.sender == addresses[keccak256("_deity")]);
+        addresses[keccak256("tellorStake")] = _tellorStake;
     }
 
     function _delegate(address implementation) internal virtual {

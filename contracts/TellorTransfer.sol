@@ -1,14 +1,18 @@
+// SPDX-License-Identifier: MIT
 pragma solidity 0.7.4;
 
 import "./SafeMath.sol";
 import "./TellorStorage.sol";
+import "./TellorVariables.sol";
+
+import "hardhat/console.sol";
 
 /**
  * @title Tellor Transfer
  * @dev Contains the methods related to transfers and ERC20. Tellor.sol and TellorGetters.sol
  * reference this library for function's logic.
  */
-contract TellorTransfer is TellorStorage {
+contract TellorTransfer is TellorStorage, TellorVariables {
     using SafeMath for uint256;
 
     event Transfer(address indexed from, address indexed to, uint256 value);
@@ -17,9 +21,6 @@ contract TellorTransfer is TellorStorage {
         address indexed spender,
         uint256 value
     );
-
-    bytes32 public constant stakeAmount =
-        0x7be108969d31a3f0b261465c71f2b0ba9301cd914d55d9091c3b36a49d4d41b2; //keccak256("stakeAmount")
 
     /*Functions*/
 
@@ -116,6 +117,40 @@ contract TellorTransfer is TellorStorage {
         emit Transfer(_from, _to, _amount);
     }
 
+    function _doMint(address _to, uint256 _amount) internal {
+        require(_amount != 0, "Tried to mint non-positive amount");
+        require(_to != address(0), "Receiver is 0 address");
+        uint256 previousBalance = balanceOf(_to);
+        require(
+            previousBalance + _amount >= previousBalance,
+            "Overflow happened"
+        ); // Check for overflow
+        uint256 previousSupply = uints[total_supply];
+        require(
+            previousSupply + _amount >= previousSupply,
+            "Overflow happened"
+        );
+        uints[total_supply] += _amount;
+        updateBalanceAtNow(_to, previousBalance + _amount);
+        emit Transfer(address(0), _to, _amount);
+    }
+
+    function _doBurn(address _from, uint256 _amount) internal {
+        if(_amount == 0 ) return;
+        uint256 previousBalance = balanceOf(_from);
+        require(
+            previousBalance - _amount <= previousBalance,
+            "Overflow happened"
+        ); // Check for overflow
+        uint256 previousSupply = uints[total_supply];
+        require(
+            previousSupply - _amount <= previousSupply,
+            "Overflow happened"
+        );
+        updateBalanceAtNow(_from, previousBalance - _amount);
+        uints[total_supply] -= _amount;
+    }
+
     /**
      * @dev Gets balance of owner specified
      * @param _user is the owner address used to look up the balance
@@ -207,67 +242,5 @@ contract TellorTransfer is TellorStorage {
                 checkpoints[checkpoints.length - 1];
             oldCheckPoint.value = uint128(_value);
         }
-    }
-
-    /**
-     * @dev Returns the name of the token.
-     */
-    function name() public view virtual returns (string memory) {
-        return _name;
-    }
-
-    /**
-     * @dev Returns the symbol of the token, usually a shorter version of the
-     * name.
-     */
-    function symbol() public view virtual returns (string memory) {
-        return _symbol;
-    }
-
-    function decimals() public view virtual returns (uint8) {
-        return 18;
-    }
-
-    function totalSupply() public view returns (uint256) {
-        return _totalSupply;
-    }
-
-    /** @dev Creates `amount` tokens and assigns them to `account`, increasing
-     * the total supply.
-     *
-     * Emits a {Transfer} event with `from` set to the zero address.
-     *
-     * Requirements:
-     *
-     * - `to` cannot be the zero address.
-     */
-    function _mint(address account, uint256 amount) internal {
-        require(account != address(0), "ERC20: mint to the zero address");
-
-        _totalSupply += amount;
-        _balances[account] += amount;
-        emit Transfer(address(0), account, amount);
-    }
-
-    /**
-     * @dev Destroys `amount` tokens from `account`, reducing the
-     * total supply.
-     *
-     * Emits a {Transfer} event with `to` set to the zero address.
-     *
-     * Requirements:
-     *
-     * - `account` cannot be the zero address.
-     * - `account` must have at least `amount` tokens.
-     */
-    function _burn(address account, uint256 amount) internal {
-        require(account != address(0), "ERC20: burn from the zero address");
-
-        uint256 accountBalance = _balances[account];
-        require(accountBalance >= amount, "ERC20: burn amount exceeds balance");
-        _balances[account] = accountBalance - amount;
-        _totalSupply -= amount;
-
-        emit Transfer(account, address(0), amount);
     }
 }

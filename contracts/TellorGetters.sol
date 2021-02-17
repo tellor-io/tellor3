@@ -1,333 +1,470 @@
+// SPDX-License-Identifier: MIT
 pragma solidity 0.7.4;
 import "./SafeMath.sol";
 import "./TellorStorage.sol";
+import "./TellorVariables.sol";
+import "./Utilities.sol";
+
+import "hardhat/console.sol";
+
 /**
-* @title Tellor Getters
-* @dev Oracle contract with all tellor getter functions. The logic for the functions on this contract
-* is saved on the TellorGettersLibrary, TellorTransfer, TellorGettersLibrary, and TellorStake
-*/
-contract TellorGetters {
+ * @title Tellor Getters
+ * @dev Oracle contract with all tellor getter functions
+ */
+contract TellorGetters is TellorStorage, TellorVariables, Utilities {
     using SafeMath for uint256;
 
-    TellorStorage.TellorStorageStruct tellor;
-
     /**
-    * @param _user address
-    * @param _spender address
-    * @return Returns the remaining allowance of tokens granted to the _spender from the _user
-    */
-    function allowance(address _user, address _spender) external view returns (uint256) {
-        return tellor.allowance(_user, _spender);
+     * @dev This function tells you if a given challenge has been completed by a given miner
+     * @param _challenge the challenge to search for
+     * @param _miner address that you want to know if they solved the challenge
+     * @return true if the _miner address provided solved the
+     */
+    function didMine(bytes32 _challenge, address _miner)
+        public
+        view
+        returns (bool)
+    {
+        console.log(_miner);
+        console.log(minersByChallenge[_challenge][_miner]);
+        return minersByChallenge[_challenge][_miner];
     }
 
     /**
-    * @dev This function returns whether or not a given user is allowed to trade a given amount
-    * @param _user address
-    * @param _amount uint of amount
-    * @return true if the user is allowed to trade the amount specified
-    */
-    function allowedToTrade(address _user, uint256 _amount) external view returns (bool) {
-        return tellor.allowedToTrade(_user, _amount);
+     * @dev Checks if an address voted in a given dispute
+     * @param _disputeId to look up
+     * @param _address to look up
+     * @return bool of whether or not party voted
+     */
+    function didVote(uint256 _disputeId, address _address)
+        external
+        view
+        returns (bool)
+    {
+        return disputesById[_disputeId].voted[_address];
     }
 
     /**
-    * @dev Gets balance of owner specified
-    * @param _user is the owner address used to look up the balance
-    * @return Returns the balance associated with the passed in _user
-    */
-    function balanceOf(address _user) external view returns (uint256) {
-        return tellor.balanceOf(_user);
-    }
-
-    /**
-    * @dev Queries the balance of _user at a specific _blockNumber
-    * @param _user The address from which the balance will be retrieved
-    * @param _blockNumber The block number when the balance is queried
-    * @return The balance at _blockNumber
-    */
-    function balanceOfAt(address _user, uint256 _blockNumber) external view returns (uint256) {
-        return tellor.balanceOfAt(_user, _blockNumber);
-    }
-
-    /**
-    * @dev This function tells you if a given challenge has been completed by a given miner
-    * @param _challenge the challenge to search for
-    * @param _miner address that you want to know if they solved the challenge
-    * @return true if the _miner address provided solved the
-    */
-    function didMine(bytes32 _challenge, address _miner) external view returns (bool) {
-        return tellor.didMine(_challenge, _miner);
-    }
-
-    /**
-    * @dev Checks if an address voted in a given dispute
-    * @param _disputeId to look up
-    * @param _address to look up
-    * @return bool of whether or not party voted
-    */
-    function didVote(uint256 _disputeId, address _address) external view returns (bool) {
-        return tellor.didVote(_disputeId, _address);
-    }
-
-    /**
-    * @dev allows Tellor to read data from the addressVars mapping
-    * @param _data is the keccak256("variable_name") of the variable that is being accessed.
-    * These are examples of how the variables are saved within other functions:
-    * addressVars[keccak256("_owner")]
-    * addressVars[keccak256("tellorContract")]
-    * @return address of the requested variable 
-    */
+     * @dev allows Tellor to read data from the addressVars mapping
+     * @param _data is the keccak256("variable_name") of the variable that is being accessed.
+     * These are examples of how the variables are saved within other functions:
+     * addressVars[keccak256("_owner")]
+     * addressVars[keccak256("tellorContract")]
+     * @return address of the requested variable
+     */
     function getAddressVars(bytes32 _data) external view returns (address) {
-        return tellor.getAddressVars(_data);
+        return addresses[_data];
     }
 
     /**
-    * @dev Gets all dispute variables
-    * @param _disputeId to look up
-    * @return bytes32 hash of dispute
-    * bool executed where true if it has been voted on
-    * bool disputeVotePassed
-    * bool isPropFork true if the dispute is a proposed fork
-    * address of reportedMiner
-    * address of reportingParty
-    * address of proposedForkAddress
-    * uint of requestId
-    * uint of timestamp
-    * uint of value
-    * uint of minExecutionDate
-    * uint of numberOfVotes
-    * uint of blocknumber
-    * uint of minerSlot
-    * uint of quorum
-    * uint of fee
-    * int count of the current tally
-    */
+     * @dev Gets all dispute variables
+     * @param _disputeId to look up
+     * @return bytes32 hash of dispute
+     * bool executed where true if it has been voted on
+     * bool disputeVotePassed
+     * bool isPropFork true if the dispute is a proposed fork
+     * address of reportedMiner
+     * address of reportingParty
+     * address of proposedForkAddress
+     * uint of requestId
+     * uint of timestamp
+     * uint of value
+     * uint of minExecutionDate
+     * uint of numberOfVotes
+     * uint of blocknumber
+     * uint of minerSlot
+     * uint of quorum
+     * uint of fee
+     * int count of the current tally
+     */
     function getAllDisputeVars(uint256 _disputeId)
         public
         view
-        returns (bytes32, bool, bool, bool, address, address, address, uint256[9] memory, int256)
+        returns (
+            bytes32,
+            bool,
+            bool,
+            bool,
+            address,
+            address,
+            address,
+            uint256[9] memory,
+            int256
+        )
     {
-        return tellor.getAllDisputeVars(_disputeId);
+        Dispute storage disp = disputesById[_disputeId];
+        return (
+            disp.hash,
+            disp.executed,
+            disp.disputeVotePassed,
+            disp.isPropFork,
+            disp.reportedMiner,
+            disp.reportingParty,
+            disp.proposedForkAddress,
+            [
+                disp.disputeUintVars[keccak256("requestId")],
+                disp.disputeUintVars[keccak256("timestamp")],
+                disp.disputeUintVars[keccak256("value")],
+                disp.disputeUintVars[keccak256("minExecutionDate")],
+                disp.disputeUintVars[keccak256("numberOfVotes")],
+                disp.disputeUintVars[keccak256("blockNumber")],
+                disp.disputeUintVars[keccak256("minerSlot")],
+                disp.disputeUintVars[keccak256("quorum")],
+                disp.disputeUintVars[keccak256("fee")]
+            ],
+            disp.tally
+        );
     }
 
     /**
-    * @dev Getter function for variables for the requestId being currently mined(currentRequestId)
-    * @return current challenge, currentRequestId, level of difficulty, api/query string, and granularity(number of decimals requested), total tip for the request
-    */
-    function getCurrentVariables() external view returns (bytes32, uint256, uint256, string memory, uint256, uint256) {
-        return tellor.getCurrentVariables();
+     * @dev Checks if a given hash of miner,requestId has been disputed
+     * @param _hash is the sha256(abi.encodePacked(_miners[2],_requestId));
+     * @return uint disputeId
+     */
+    function getDisputeIdByDisputeHash(bytes32 _hash)
+        external
+        view
+        returns (uint256)
+    {
+        return disputeIdByDisputeHash[_hash];
     }
 
     /**
-    * @dev Checks if a given hash of miner,requestId has been disputed
-    * @param _hash is the sha256(abi.encodePacked(_miners[2],_requestId));
-    * @return uint disputeId
-    */
-    function getDisputeIdByDisputeHash(bytes32 _hash) external view returns (uint256) {
-        return tellor.getDisputeIdByDisputeHash(_hash);
+     * @dev Checks for uint variables in the disputeUintVars mapping based on the disputeId
+     * @param _disputeId is the dispute id;
+     * @param _data the variable to pull from the mapping. _data = keccak256("variable_name") where variable_name is
+     * the variables/strings used to save the data in the mapping. The variables names are
+     * commented out under the disputeUintVars under the Dispute struct
+     * @return uint value for the bytes32 data submitted
+     */
+    function getDisputeUintVars(uint256 _disputeId, bytes32 _data)
+        external
+        view
+        returns (uint256)
+    {
+        return disputesById[_disputeId].disputeUintVars[_data];
     }
 
     /**
-    * @dev Checks for uint variables in the disputeUintVars mapping based on the disputeId
-    * @param _disputeId is the dispute id;
-    * @param _data the variable to pull from the mapping. _data = keccak256("variable_name") where variable_name is
-    * the variables/strings used to save the data in the mapping. The variables names are
-    * commented out under the disputeUintVars under the Dispute struct
-    * @return uint value for the bytes32 data submitted
-    */
-    function getDisputeUintVars(uint256 _disputeId, bytes32 _data) external view returns (uint256) {
-        return tellor.getDisputeUintVars(_disputeId, _data);
-    }
-
-    /**
-    * @dev Gets the a value for the latest timestamp available
-    * @return value for timestamp of last proof of work submitted
-    * @return true if the is a timestamp for the lastNewValue
-    */
+     * @dev Gets the a value for the latest timestamp available
+     * @return value for timestamp of last proof of work submitted
+     * @return true if the is a timestamp for the lastNewValue
+     */
     function getLastNewValue() external view returns (uint256, bool) {
-        return tellor.getLastNewValue();
+        return (
+            retrieveData(
+                requestIdByTimestamp[uints[keccak256("timeOfLastNewValue")]],
+                uints[timeOfLastNewValue]
+            ),
+            true
+        );
     }
 
     /**
-    * @dev Gets the a value for the latest timestamp available
-    * @param _requestId being requested
-    * @return value for timestamp of last proof of work submitted and if true if it exist or 0 and false if it doesn't
-    */
-    function getLastNewValueById(uint256 _requestId) external view returns (uint256, bool) {
-        return tellor.getLastNewValueById(_requestId);
+     * @dev Gets the a value for the latest timestamp available
+     * @param _requestId being requested
+     * @return value for timestamp of last proof of work submitted and if true if it exist or 0 and false if it doesn't
+     */
+    function getLastNewValueById(uint256 _requestId)
+        external
+        view
+        returns (uint256, bool)
+    {
+        Request storage _request = requestDetails[_requestId];
+        if (_request.requestTimestamps.length != 0) {
+            return (
+                retrieveData(
+                    _requestId,
+                    _request.requestTimestamps[
+                        _request.requestTimestamps.length - 1
+                    ]
+                ),
+                true
+            );
+        } else {
+            return (0, false);
+        }
     }
 
     /**
-    * @dev Gets blocknumber for mined timestamp
-    * @param _requestId to look up
-    * @param _timestamp is the timestamp to look up blocknumber
-    * @return uint of the blocknumber which the dispute was mined
-    */
-    function getMinedBlockNum(uint256 _requestId, uint256 _timestamp) external view returns (uint256) {
-        return tellor.getMinedBlockNum(_requestId, _timestamp);
+     * @dev Gets blocknumber for mined timestamp
+     * @param _requestId to look up
+     * @param _timestamp is the timestamp to look up blocknumber
+     * @return uint of the blocknumber which the dispute was mined
+     */
+    function getMinedBlockNum(uint256 _requestId, uint256 _timestamp)
+        external
+        view
+        returns (uint256)
+    {
+        return requestDetails[_requestId].minedBlockNum[_timestamp];
     }
 
     /**
-    * @dev Gets the 5 miners who mined the value for the specified requestId/_timestamp
-    * @param _requestId to look up
-    * @param _timestamp is the timestamp to look up miners for
-    * @return the 5 miners' addresses
-    */
-    function getMinersByRequestIdAndTimestamp(uint256 _requestId, uint256 _timestamp) external view returns (address[5] memory) {
-        return tellor.getMinersByRequestIdAndTimestamp(_requestId, _timestamp);
+     * @dev Gets the 5 miners who mined the value for the specified requestId/_timestamp
+     * @param _requestId to look up
+     * @param _timestamp is the timestamp to look up miners for
+     * @return the 5 miners' addresses
+     */
+    function getMinersByRequestIdAndTimestamp(
+        uint256 _requestId,
+        uint256 _timestamp
+    ) external view returns (address[5] memory) {
+        return requestDetails[_requestId].minersByValue[_timestamp];
     }
 
     /**
-    * @dev Counts the number of values that have been submitted for the request
-    * if called for the currentRequest being mined it can tell you how many miners have submitted a value for that
-    * request so far
-    * @param _requestId the requestId to look up
-    * @return uint count of the number of values received for the requestId
-    */
-    function getNewValueCountbyRequestId(uint256 _requestId) external view returns (uint256) {
-        return tellor.getNewValueCountbyRequestId(_requestId);
+     * @dev Counts the number of values that have been submitted for the request
+     * if called for the currentRequest being mined it can tell you how many miners have submitted a value for that
+     * request so far
+     * @param _requestId the requestId to look up
+     * @return uint count of the number of values received for the requestId
+     */
+    function getNewValueCountbyRequestId(uint256 _requestId)
+        external
+        view
+        returns (uint256)
+    {
+        return requestDetails[_requestId].requestTimestamps.length;
     }
 
     /**
-    * @dev Getter function for the specified requestQ index
-    * @param _index to look up in the requestQ array
-    * @return uint of requestId
-    */
-    function getRequestIdByRequestQIndex(uint256 _index) external view returns (uint256) {
-        return tellor.getRequestIdByRequestQIndex(_index);
+     * @dev Getter function for the specified requestQ index
+     * @param _index to look up in the requestQ array
+     * @return uint of requestId
+     */
+    function getRequestIdByRequestQIndex(uint256 _index)
+        external
+        view
+        returns (uint256)
+    {
+        require(_index <= 50, "RequestQ index is above 50");
+        return requestIdByRequestQIndex[_index];
     }
 
     /**
-    * @dev Getter function for requestId based on timestamp
-    * @param _timestamp to check requestId
-    * @return uint of requestId
-    */
-    function getRequestIdByTimestamp(uint256 _timestamp) external view returns (uint256) {
-        return tellor.getRequestIdByTimestamp(_timestamp);
+     * @dev Getter function for requestId based on timestamp
+     * @param _timestamp to check requestId
+     * @return uint of requestId
+     */
+    function getRequestIdByTimestamp(uint256 _timestamp)
+        external
+        view
+        returns (uint256)
+    {
+        return requestIdByTimestamp[_timestamp];
     }
 
     /**
-    * @dev Getter function for requestId based on the queryHash
-    * @param _request is the hash(of string api and granularity) to check if a request already exists
-    * @return uint requestId
-    */
-    function getRequestIdByQueryHash(bytes32 _request) external view returns (uint256) {
-        return tellor.getRequestIdByQueryHash(_request);
-    }
-
-    /**
-    * @dev Getter function for the requestQ array
-    * @return the requestQ array
-    */
+     * @dev Getter function for the requestQ array
+     * @return the requestQ array
+     */
     function getRequestQ() public view returns (uint256[51] memory) {
-        return tellor.getRequestQ();
+        return requestQ;
     }
 
     /**
-    * @dev Allows access to the uint variables saved in the apiUintVars under the requestDetails struct
-    * for the requestId specified
-    * @param _requestId to look up
-    * @param _data the variable to pull from the mapping. _data = keccak256("variable_name") where variable_name is
-    * the variables/strings used to save the data in the mapping. The variables names are
-    * commented out under the apiUintVars under the requestDetails struct
-    * @return uint value of the apiUintVars specified in _data for the requestId specified
-    */
-    function getRequestUintVars(uint256 _requestId, bytes32 _data) external view returns (uint256) {
-        return tellor.getRequestUintVars(_requestId, _data);
+     * @dev Allows access to the uint variables saved in the apiUintVars under the requestDetails struct
+     * for the requestId specified
+     * @param _requestId to look up
+     * @param _data the variable to pull from the mapping. _data = keccak256("variable_name") where variable_name is
+     * the variables/strings used to save the data in the mapping. The variables names are
+     * commented out under the apiUintVars under the requestDetails struct
+     * @return uint value of the apiUintVars specified in _data for the requestId specified
+     */
+    function getRequestUintVars(uint256 _requestId, bytes32 _data)
+        external
+        view
+        returns (uint256)
+    {
+        return requestDetails[_requestId].apiUintVars[_data];
     }
 
     /**
-    * @dev Gets the API struct variables that are not mappings
-    * @param _requestId to look up
-    * @return string of api to query
-    * @return string of symbol of api to query
-    * @return bytes32 hash of string
-    * @return bytes32 of the granularity(decimal places) requested
-    * @return uint of index in requestQ array
-    * @return uint of current payout/tip for this requestId
-    */
-    function getRequestVars(uint256 _requestId) external view returns (string memory, string memory, bytes32, uint256, uint256, uint256) {
-        return tellor.getRequestVars(_requestId);
+     * @dev Gets the API struct variables that are not mappings
+     * @param _requestId to look up
+     * @return uint of index in requestQ array
+     * @return uint of current payout/tip for this requestId
+     */
+    function getRequestVars(uint256 _requestId)
+        external
+        view
+        returns (uint256, uint256)
+    {
+        Request storage _request = requestDetails[_requestId];
+        return (
+            _request.apiUintVars[keccak256("requestQPosition")],
+            _request.apiUintVars[totalTip]
+        );
     }
 
     /**
-    * @dev This function allows users to retrieve all information about a staker
-    * @param _staker address of staker inquiring about
-    * @return uint current state of staker
-    * @return uint startDate of staking
-    */
-    function getStakerInfo(address _staker) external view returns (uint256, uint256) {
-        return tellor.getStakerInfo(_staker);
+     * @dev This function allows users to retrieve all information about a staker
+     * @param _staker address of staker inquiring about
+     * @return uint current state of staker
+     * @return uint startDate of staking
+     */
+    function getStakerInfo(address _staker)
+        external
+        view
+        returns (uint256, uint256)
+    {
+        return (
+            stakerDetails[_staker].currentStatus,
+            stakerDetails[_staker].startDate
+        );
     }
 
     /**
-    * @dev Gets the 5 miners who mined the value for the specified requestId/_timestamp
-    * @param _requestId to look up
-    * @param _timestamp is the timestamp to look up miners for
-    * @return address[5] array of 5 addresses of miners that mined the requestId
-    */
-    function getSubmissionsByTimestamp(uint256 _requestId, uint256 _timestamp) external view returns (uint256[5] memory) {
-        return tellor.getSubmissionsByTimestamp(_requestId, _timestamp);
-    }
-
-
-    /**
-    * @dev Gets the timestamp for the value based on their index
-    * @param _requestID is the requestId to look up
-    * @param _index is the value index to look up
-    * @return uint timestamp
-    */
-    function getTimestampbyRequestIDandIndex(uint256 _requestID, uint256 _index) external view returns (uint256) {
-        return tellor.getTimestampbyRequestIDandIndex(_requestID, _index);
+     * @dev Gets the 5 miners who mined the value for the specified requestId/_timestamp
+     * @param _requestId to look up
+     * @param _timestamp is the timestamp to look up miners for
+     * @return address[5] array of 5 addresses of miners that mined the requestId
+     */
+    function getSubmissionsByTimestamp(uint256 _requestId, uint256 _timestamp)
+        external
+        view
+        returns (uint256[5] memory)
+    {
+        return requestDetails[_requestId].valuesByTimestamp[_timestamp];
     }
 
     /**
-    * @dev Getter for the variables saved under the TellorStorageStruct uintVars variable
-    * @param _data the variable to pull from the mapping. _data = keccak256("variable_name") where variable_name is
-    * the variables/strings used to save the data in the mapping. The variables names are
-    * commented out under the uintVars under the TellorStorageStruct struct
-    * This is an example of how data is saved into the mapping within other functions:
-    * self.uintVars[keccak256("stakerCount")]
-    * @return uint of specified variable
-    */
+     * @dev Gets the timestamp for the value based on their index
+     * @param _requestID is the requestId to look up
+     * @param _index is the value index to look up
+     * @return uint timestamp
+     */
+    function getTimestampbyRequestIDandIndex(uint256 _requestID, uint256 _index)
+        external
+        view
+        returns (uint256)
+    {
+        return requestDetails[_requestID].requestTimestamps[_index];
+    }
+
+    /**
+     * @dev Getter for the variables saved under the TellorStorageStruct uints variable
+     * @param _data the variable to pull from the mapping. _data = keccak256("variable_name") where variable_name is
+     * the variables/strings used to save the data in the mapping. The variables names in the TellorVariables contract
+     * @return uint of specified variable
+     */
     function getUintVar(bytes32 _data) public view returns (uint256) {
-        return tellor.getUintVar(_data);
+        return uints[_data];
     }
 
     /**
-    * @dev Getter function for next requestId on queue/request with highest payout at time the function is called
-    * @return onDeck/info on request with highest payout-- RequestId, TotalTips, and API query string
-    */
-    function getVariablesOnDeck() external view returns (uint256, uint256, string memory) {
-        return tellor.getVariablesOnDeck();
+     * @dev Gets the 5 miners who mined the value for the specified requestId/_timestamp
+     * @param _requestId to look up
+     * @param _timestamp is the timestamp to look up miners for
+     * @return bool true if requestId/timestamp is under dispute
+     */
+    function isInDispute(uint256 _requestId, uint256 _timestamp)
+        external
+        view
+        returns (bool)
+    {
+        return requestDetails[_requestId].inDispute[_timestamp];
     }
 
     /**
-    * @dev Gets the 5 miners who mined the value for the specified requestId/_timestamp
-    * @param _requestId to look up
-    * @param _timestamp is the timestamp to look up miners for
-    * @return bool true if requestId/timestamp is under dispute
-    */
-    function isInDispute(uint256 _requestId, uint256 _timestamp) external view returns (bool) {
-        return tellor.isInDispute(_requestId, _timestamp);
+     * @dev Retrieve value from oracle based on timestamp
+     * @param _requestId being requested
+     * @param _timestamp to retrieve data/value from
+     * @return value for timestamp submitted
+     */
+    function retrieveData(uint256 _requestId, uint256 _timestamp)
+        public
+        view
+        returns (uint256)
+    {
+        return requestDetails[_requestId].finalValues[_timestamp];
     }
 
     /**
-    * @dev Retrieve value from oracle based on timestamp
-    * @param _requestId being requested
-    * @param _timestamp to retrieve data/value from
-    * @return value for timestamp submitted
-    */
-    function retrieveData(uint256 _requestId, uint256 _timestamp) external view returns (uint256) {
-        return tellor.retrieveData(_requestId, _timestamp);
-    }
-
-    /**
-    * @dev Getter for the total_supply of oracle tokens
-    * @return uint total supply
-    */
+     * @dev Getter for the total_supply of oracle tokens
+     * @return uint total supply
+     */
     function totalSupply() external view returns (uint256) {
-        return tellor.totalSupply();
+        return uints[total_supply];
     }
 
+    /**
+     * @dev Allows users to access the token's name
+     */
+    function name() external pure returns (string memory) {
+        return "Tellor Tributes";
+    }
+
+    /**
+     * @dev Allows users to access the token's symbol
+     */
+    function symbol() external pure returns (string memory) {
+        return "TRB";
+    }
+
+    /**
+     * @dev Allows users to access the number of decimals
+     */
+    function decimals() external pure returns (uint8) {
+        return 18;
+    }
+
+    /**
+     * @dev Getter function for the requestId being mined
+     */
+    function getNewCurrentVariables()
+        public
+        view
+        returns (
+            bytes32 _challenge,
+            uint256[5] memory _requestIds,
+            uint256 _difficulty,
+            uint256 _tip
+        )
+    {
+        for (uint256 i = 0; i < 5; i++) {
+            _requestIds[i] = currentMiners[i].value;
+        }
+        return (
+            currentChallenge,
+            _requestIds,
+            uints[difficulty],
+            uints[currentTotalTips]
+        );
+    }
+
+    /**
+     * @dev Getter function for next requestId on queue/request with highest payout at time the function is called
+     */
+    function getNewVariablesOnDeck()
+        public
+        view
+        returns (uint256[5] memory idsOnDeck, uint256[5] memory tipsOnDeck)
+    {
+        idsOnDeck = getTopRequestIDs();
+        for (uint256 i = 0; i < 5; i++) {
+            tipsOnDeck[i] = requestDetails[idsOnDeck[i]].apiUintVars[totalTip];
+        }
+    }
+
+    /**
+     * @dev Getter function for the top 5 requests with highest payouts. This function is used within the getNewVariablesOnDeck function
+     */
+    function getTopRequestIDs()
+        public
+        view
+        returns (uint256[5] memory _requestIds)
+    {
+        uint256[5] memory _max;
+        uint256[5] memory _index;
+        (_max, _index) = getMax5(requestQ);
+        for (uint256 i = 0; i < 5; i++) {
+            if (_max[i] != 0) {
+                _requestIds[i] = requestIdByRequestQIndex[_index[i]];
+            } else {
+                _requestIds[i] = currentMiners[4 - i].value;
+            }
+        }
+    }
 }

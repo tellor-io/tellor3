@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 pragma solidity 0.7.4;
 
 //Slightly modified SafeMath library - includes a min and max function, removes useless div function

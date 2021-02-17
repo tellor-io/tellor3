@@ -1,11 +1,12 @@
+// SPDX-License-Identifier: MIT
 pragma solidity 0.7.4;
-
 
 // Helper contract to store hashes of variables
 contract TellorVariables {
     // bytes32 public constant devShare = 0x8fe9ded8d7c08f720cf0340699024f83522ea66b2bbfb8f557851cb9ee63b54c; //keccak256("devShare")
     // bytes32 public constant runningTips = 0xdb21f0c4accc4f2f5f1045353763a9ffe7091ceaf0fcceb5831858d96cf84631; //keccak256("runningTips")
-    // bytes32 public constant currentReward = 0x9b6853911475b07474368644a0d922ee13bc76a15cd3e97d3e334326424a47d4; //keccak256("currentReward")
+    bytes32 public constant currentReward =
+        0x9b6853911475b07474368644a0d922ee13bc76a15cd3e97d3e334326424a47d4; //keccak256("currentReward")
     bytes32 public constant requestCount =
         0x05de9147d05477c0a5dc675aeea733157f5092f82add148cf39d579cafe3dc98; //keccak256("requestCount")
     bytes32 public constant totalTip =
@@ -32,9 +33,12 @@ contract TellorVariables {
         0x44b2657a0f8a90ed8e62f4c4cceca06eacaa9b4b25751ae1ebca9280a70abd68; //keccak256("pending_owner")
     bytes32 public constant currentRequestId =
         0x7584d7d8701714da9c117f5bf30af73b0b88aca5338a84a21eb28de2fe0d93b8; //keccak256("currentRequestId")
-
+    bytes32 public constant stakeAmount =
+        0x7be108969d31a3f0b261465c71f2b0ba9301cd914d55d9091c3b36a49d4d41b2; //keccak256("stakeAmount");
 
     //Calculate this hashes
-     bytes32 public constant currentChallenge = keccak256("currentChallenge");
-     
+    bytes32 public constant currentChallenge = keccak256("currentChallenge");
+    bytes32 public constant stakerCount = keccak256("stakerCount");
+    bytes32 public constant targetMiners = keccak256("targetMiners");
+    bytes32 public constant disputeFee = keccak256("disputeFee");
 }
