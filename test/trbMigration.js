@@ -21,11 +21,15 @@ contract("Token Migration and Deity Tests", function(accounts) {
     for (var i = 0; i < 10; i++) {
       let pay = new BN(i);
       await oldTellor.theLazyCoon(accounts[i], pay.mul(baseNum));
+      console.log(await oldTellor.balanceOf(accounts[i]))
+      assert(await oldTellor.balanceOf(accounts[i]) == pay.mul(baseNum))
     }
   });
   it("Good Migration - User Balance", async function() {
     for (var i = 0; i < 10; i++) {
+      console.log("here")
       await master.migrate({from:accounts[i]});
+      console.log("here2")
       let pay = new BN(i);
       assert(await master.balanceOf(accounts[i]) == pay.mul(baseNum))
     }
@@ -43,17 +47,20 @@ contract("Token Migration and Deity Tests", function(accounts) {
     await helper.expectThrow(
      master.migrate({from:accounts[11]}))
     });
-    it("Migration fails if trying to migrate twice", async function() {
+
+  it("Migration fails if trying to migrate twice", async function() {
     for (var i = 0; i < 10; i++) {
+      console.log(i)
       await master.migrate({from:accounts[i]});
       let pay = new BN(i);
       assert(await master.balanceOf(accounts[i]) == pay.mul(baseNum))
+      console.log(i)
     }
     await helper.expectThrow(
       master.migrate({from:accounts[1]})
     )
-    });
-    it("Diety tests", async function() {
+  });
+  it("Diety tests", async function() {
       newTellor = await Tellor.new()
       newStake = await Stake.new()
       await tellorMaster.changeTellorStake(newStake)
