@@ -254,7 +254,7 @@ contract("Test Oracle", function(accounts) {
     assert(data > 0, "Should be true if Data exist for that point in time");
     for (var i = 41; i <= 55; i++) {
       apix = "api" + i;
-      console.log("Adding tip for req: ", i);
+      //console.log("Adding tip for req: ", i);
       await master.addTip(i + 2, i, { from: accounts[2] });
     }
     await master.addTip(1, 56, { from: accounts[2] });
