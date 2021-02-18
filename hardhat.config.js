@@ -2,6 +2,7 @@ require("@nomiclabs/hardhat-truffle5");
 require("hardhat-gas-reporter");
 require("solidity-coverage");
 require("@nomiclabs/hardhat-ethers");
+require("@nomiclabs/hardhat-etherscan");
 require("dotenv").config();
 
 //npx hardhat deploy --oldtelloraddress 0x9FAC705A49e0c8789483c518E71C6483e495ECC4 --network rinkeby
@@ -72,6 +73,8 @@ task("deploy", "Deploy and verify the contracts")
     },
     )
 
+    await master.changeTellorStake(stake.address)
+    console.log("tellorStake address updated to", stake.address)
   });
 
 
