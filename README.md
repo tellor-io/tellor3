@@ -25,14 +25,16 @@ Quick references are included below:
 
 ## Setting up and testing
 
+Install Dependencies
 ```
 npm i
 ```
-
+Compile Smart Contracts
 ```
 npx hardhat compile
 ```
 
+Test Locally
 ```
 npx hardhat test
 ```
