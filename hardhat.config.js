@@ -104,23 +104,23 @@ module.exports = {
         count: 40,
       }
     },
-      rinkeby: {
-        url: `${process.env.NODE_URL_RINKEBY}`,
-        accounts: [process.env.PRIVATE_KEY],
-        gas: 10000000 ,
-        gasPrice: 8000000000
-      },
-      mainnet: {
-        url: `${process.env.NODE_URL_MAINNET}`,
-        accounts: [process.env.PRIVATE_KEY],
-        gas: 10000000 ,
-        gasPrice: 8000000000
-      }  
+      // rinkeby: {
+      //   url: `${process.env.NODE_URL_RINKEBY}`,
+      //   accounts: [process.env.PRIVATE_KEY],
+      //   gas: 10000000 ,
+      //   gasPrice: 8000000000
+      // },
+      // mainnet: {
+      //   url: `${process.env.NODE_URL_MAINNET}`,
+      //   accounts: [process.env.PRIVATE_KEY],
+      //   gas: 10000000 ,
+      //   gasPrice: 8000000000
+      // }  
   },
-  etherscan: {
-      // Your API key for Etherscan
-      // Obtain one at https://etherscan.io/
-      apiKey: process.env.ETHERSCAN
-    },
+  // etherscan: {
+  //     // Your API key for Etherscan
+  //     // Obtain one at https://etherscan.io/
+  //     apiKey: process.env.ETHERSCAN
+  //   },
 
 };
