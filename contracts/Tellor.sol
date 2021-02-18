@@ -111,12 +111,7 @@ contract Tellor is TellorStake {
             stakerDetails[msg.sender].currentStatus == 1,
             "Miner status is not staker"
         );
-        //is this duplicate?
-        // BL--yeah I think so since it is checked on submitMiningSolution external fx
-        // require(
-        //     block.timestamp - uints[_hashMsgSender] > 15 minutes,
-        //     "Miner can only win rewards once per 15 min"
-        // );
+
         require(
             _requestIds[0] == currentMiners[0].value,
             "Request ID is wrong"

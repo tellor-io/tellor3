@@ -57,13 +57,13 @@ task("deploy", "Deploy and verify the contracts")
     },
     )
 
-
+    console.log("deploy tellorGetters")
     const Getters = await ethers.getContractFactory("TellorGetters");
     const getters = await Getters.deploy();
     console.log("Getters deployed to:", getters.address);
-    await tellor.deployed();
-    console.log("TellorStake deployed to:", "https://" + network + ".etherscan.io/address/" + stake.address);
-    console.log("    transaction hash:", "https://" + network + ".etherscan.io/tx/" + stake.deployTransaction.hash);
+    await getters.deployed();
+    console.log("TellorGetters deployed to:", "https://" + network + ".etherscan.io/address/" + getters.address);
+    console.log("    transaction hash:", "https://" + network + ".etherscan.io/tx/" + getters.deployTransaction.hash);
 
     // Wait for few confirmed transactions.
     // Otherwise the etherscan api doesn't find the deployed contract.
@@ -78,7 +78,7 @@ task("deploy", "Deploy and verify the contracts")
     )
 
     await master.changeTellorGetters(getters.address)
-    console.log("tellorStake address updated to", getters.address)
+    console.log("tellorGetters address updated to", getters.address)
   });
 
 
@@ -106,11 +106,15 @@ module.exports = {
     },
       rinkeby: {
         url: `${process.env.NODE_URL_RINKEBY}`,
-        accounts: [process.env.PRIVATE_KEY]
+        accounts: [process.env.PRIVATE_KEY],
+        gas: 10000000 ,
+        gasPrice: 8000000000
       },
       mainnet: {
         url: `${process.env.NODE_URL_MAINNET}`,
-        accounts: [process.env.PRIVATE_KEY]
+        accounts: [process.env.PRIVATE_KEY],
+        gas: 10000000 ,
+        gasPrice: 8000000000
       }  
   },
   etherscan: {
