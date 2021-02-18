@@ -5,7 +5,7 @@ require("@nomiclabs/hardhat-ethers");
 require("@nomiclabs/hardhat-etherscan");
 require("dotenv").config();
 
-//npx hardhat deploy --oldtelloraddress 0x9FAC705A49e0c8789483c518E71C6483e495ECC4 --network rinkeby
+//npx hardhat deploy --oldtelloraddress 0x9FAC705A49e0c8789483c518E71C6483e495ECC4 --net rinkeby --network rinkeby
 
 task("deploy", "Deploy and verify the contracts")
   .addParam("oldtelloraddress", "The old master contract address")
