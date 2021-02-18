@@ -1,9 +1,9 @@
 const { artifacts } = require("hardhat");
 const Master = artifacts.require("./TellorMaster.sol")
 const Tellor = artifacts.require("./TellorTest.sol")
-const ITellor = artifacts.require("./ITellor")
+const ITellor = artifacts.require("./ITellor.sol")
 const UtilitiesTests = artifacts.require("./UtilitiesTest")
-const Stake = artifacts.require("./TellorStake.sol")
+const Getters = artifacts.require("./TellorGetters.sol")
 const helper = require("./helpers/test_helpers");
 const BN = web3.utils.BN;
 
@@ -13,9 +13,10 @@ contract("Request and tip tests", function(accounts) {
 
   beforeEach("Setup contract for each test", async function() {
     tellor = await Tellor.new()
-    tellorMaster = await Master.new(tellor.address)
-    let stake = await Stake.new()
-    await tellorMaster.changeTellorStake(stake.address)
+    oldTellor = await Tellor.new()
+    tellorMaster = await Master.new(tellor.address, oldTellor.address)
+    let getter = await Getters.new()
+    await tellorMaster.changeTellorGetters(getter.address)
     master = await ITellor.at(tellorMaster.address)
 
     for (var i = 0; i < accounts.length; i++) {
@@ -58,11 +59,8 @@ it("several request data", async function() {
     req1 = await master.addTip(44, 500, { from: accounts[2] });
     req1 = await master.addTip(31, 400, { from: accounts[2] });
     data = await master.getNewVariablesOnDeck();
-    // console.log("vars on deck", data)
     let ids = data["0"].map((i) => i.toString());
     let tips = data["1"].map((i) => i.toString());
-    // console.log("ids 31?",ids)
-    // console.log("tips 400 + 1 tipped on beforeEach?",tips)
     assert(ids.includes("41"), "ID on deck should be 41");
     assert(ids.includes("31"), "ID on deck should be 31");
     assert(tips.includes("401"), "Tip should include 401");
@@ -70,8 +68,6 @@ it("several request data", async function() {
     data = await master.getNewVariablesOnDeck();
     ids = data["0"].map((i) => i.toString());
     tips = data["1"].map((i) => i.toString());
-    // console.log("ids 32?",ids)
-    // console.log("tips 411?",tips)
     assert(ids.includes("42"), "ID on deck should be 41");
     assert(ids.includes("32"), "ID on deck should be 32");
     assert(tips.includes("411"), "Tip should be 411");
@@ -79,8 +75,6 @@ it("several request data", async function() {
     data = await master.getNewVariablesOnDeck();
     ids = data["0"].map((i) => i.toString());
     tips = data["1"].map((i) => i.toString());
-    // console.log("ids 33?",ids)
-    // console.log("tips 551?",tips)
     assert(ids.includes("43"), "ID on deck should be 43");
     assert(ids.includes("33"), "ID on deck should be 33");
     assert(tips.includes("551"), "Tip should be 551");
@@ -88,8 +82,6 @@ it("several request data", async function() {
     data = await master.getNewVariablesOnDeck();
     ids = data["0"].map((i) => i.toString());
     tips = data["1"].map((i) => i.toString());
-    console.log("ids 34?",ids)
-    console.log("tips 661?",tips)
     assert(ids.includes("43"), "ID on deck should be 43");
     assert(ids.includes("34"), "ID on deck should be 34");
     assert(tips.includes("661"), "Tip should be 601");

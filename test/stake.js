@@ -2,7 +2,7 @@ const { artifacts } = require("hardhat");
 const helper = require("./helpers/test_helpers");
 const Master = artifacts.require("./TellorMaster.sol")
 const Tellor = artifacts.require("./TellorTest.sol")
-const Stake = artifacts.require("./TellorStake.sol")
+const Getters = artifacts.require("./TellorGetters.sol")
 const ITellor = artifacts.require("./ITellor")
 
 contract("Staking Tests", function(accounts) {
@@ -14,9 +14,10 @@ contract("Staking Tests", function(accounts) {
 
   beforeEach("Setup contract for each test", async function() {
     tellor = await Tellor.new()
-    tellorMaster = await Master.new(tellor.address)
-    let stake = await Stake.new()
-    await tellorMaster.changeTellorStake(stake.address)
+    oldTellor = await Tellor.new()
+    tellorMaster = await Master.new(tellor.address, oldTellor.address)
+    let getter = await Getters.new()
+    await tellorMaster.changeTellorGetters(getter.address)
     master = await ITellor.at(tellorMaster.address)
 
     for (var i = 0; i < accounts.length; i++) {

@@ -5,8 +5,6 @@ import "./TellorStorage.sol";
 import "./TellorVariables.sol";
 import "./Utilities.sol";
 
-import "hardhat/console.sol";
-
 /**
  * @title Tellor Getters
  * @dev Oracle contract with all tellor getter functions
@@ -25,8 +23,6 @@ contract TellorGetters is TellorStorage, TellorVariables, Utilities {
         view
         returns (bool)
     {
-        console.log(_miner);
-        console.log(minersByChallenge[_challenge][_miner]);
         return minersByChallenge[_challenge][_miner];
     }
 
@@ -52,7 +48,11 @@ contract TellorGetters is TellorStorage, TellorVariables, Utilities {
      * addressVars[keccak256("tellorContract")]
      * @return address of the requested variable
      */
-    function getAddressVars(bytes32 _data) external view returns (address) {
+    function getAddressVars(bytes32 _data) 
+        external 
+        view 
+        returns (address) 
+    {
         return addresses[_data];
     }
 
@@ -150,7 +150,11 @@ contract TellorGetters is TellorStorage, TellorVariables, Utilities {
      * @return value for timestamp of last proof of work submitted
      * @return true if the is a timestamp for the lastNewValue
      */
-    function getLastNewValue() external view returns (uint256, bool) {
+    function getLastNewValue() 
+        external 
+        view 
+        returns (uint256, bool) 
+    {
         return (
             retrieveData(
                 requestIdByTimestamp[uints[keccak256("timeOfLastNewValue")]],
@@ -206,10 +210,11 @@ contract TellorGetters is TellorStorage, TellorVariables, Utilities {
      * @param _timestamp is the timestamp to look up miners for
      * @return the 5 miners' addresses
      */
-    function getMinersByRequestIdAndTimestamp(
-        uint256 _requestId,
-        uint256 _timestamp
-    ) external view returns (address[5] memory) {
+    function getMinersByRequestIdAndTimestamp(uint256 _requestId, uint256 _timestamp) 
+        external 
+        view 
+        returns (address[5] memory) 
+    {
         return requestDetails[_requestId].minersByValue[_timestamp];
     }
 
@@ -259,7 +264,11 @@ contract TellorGetters is TellorStorage, TellorVariables, Utilities {
      * @dev Getter function for the requestQ array
      * @return the requestQ array
      */
-    function getRequestQ() public view returns (uint256[51] memory) {
+    function getRequestQ() 
+        public 
+        view 
+        returns (uint256[51] memory) 
+    {
         return requestQ;
     }
 
@@ -345,8 +354,9 @@ contract TellorGetters is TellorStorage, TellorVariables, Utilities {
 
     /**
      * @dev Getter for the variables saved under the TellorStorageStruct uints variable
-     * @param _data the variable to pull from the mapping. _data = keccak256("variable_name") where variable_name is
-     * the variables/strings used to save the data in the mapping. The variables names in the TellorVariables contract
+     * @param _data the variable to pull from the mapping. _data = keccak256("variable_name")
+     * where variable_name is the variables/strings used to save the data in the mapping. 
+     * The variables names in the TellorVariables contract
      * @return uint of specified variable
      */
     function getUintVar(bytes32 _data) public view returns (uint256) {
@@ -385,28 +395,44 @@ contract TellorGetters is TellorStorage, TellorVariables, Utilities {
      * @dev Getter for the total_supply of oracle tokens
      * @return uint total supply
      */
-    function totalSupply() external view returns (uint256) {
+    function totalSupply() 
+        external 
+        view 
+        returns (uint256) 
+    {
         return uints[total_supply];
     }
 
     /**
      * @dev Allows users to access the token's name
      */
-    function name() external pure returns (string memory) {
+    function name() 
+        external 
+        pure 
+        returns (string memory) 
+    {
         return "Tellor Tributes";
     }
 
     /**
      * @dev Allows users to access the token's symbol
      */
-    function symbol() external pure returns (string memory) {
+    function symbol() 
+        external 
+        pure 
+        returns (string memory) 
+    {
         return "TRB";
     }
 
     /**
      * @dev Allows users to access the number of decimals
      */
-    function decimals() external pure returns (uint8) {
+    function decimals() 
+        external 
+        pure 
+        returns (uint8) 
+    {
         return 18;
     }
 

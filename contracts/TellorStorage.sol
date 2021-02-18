@@ -54,7 +54,6 @@ contract TellorStorage {
         //Each of the variables below is saved in the mapping apiUintVars for each api request
         //e.g. requestDetails[_requestId].apiUintVars[keccak256("totalTip")]
         //These are the variables saved in this mapping:
-        // uint keccak256("granularity"); //multiplier for miners
         // uint keccak256("requestQPosition"); //index in requestQ
         // uint keccak256("totalTip");//bonus portion of payout
         mapping(uint256 => uint256) minedBlockNum; //[apiId][minedTimestamp]=>block.number
@@ -115,4 +114,7 @@ contract TellorStorage {
     //ERC20 storage
     mapping(address => Checkpoint[]) balances;
     mapping(address => mapping(address => uint256)) public _allowances;
+
+    //Migration storage
+    mapping(address => bool) public migrated;
 }

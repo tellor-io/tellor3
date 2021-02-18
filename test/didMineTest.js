@@ -1,9 +1,9 @@
 const TestLib = require("./helpers/testLib");
 const helper = require("./helpers/test_helpers");
-const Master = artifacts.require("./TellorMaster.sol")
-const Tellor = artifacts.require("./TellorTest.sol")
-const Stake = artifacts.require("./TellorStake.sol")
-const ITellor = artifacts.require("./ITellor")
+const Master = artifacts.require("TellorMaster")
+const Tellor = artifacts.require("TellorTest")
+const Getters = artifacts.require("TellorGetters")
+const ITellor = artifacts.require("ITellor")
 
 contract("DidMine test", function(accounts) {
   let tellorMaster = {};
@@ -16,9 +16,10 @@ contract("DidMine test", function(accounts) {
   beforeEach("Setup contract for each test", async function() {
     //Could use the getV25(accounts, true), since you're upgrading in the first line of tests. I added full tips to getV25 in testLib already
     tellor = await Tellor.new()
-    tellorMaster = await Master.new(tellor.address)
-    let stake = await Stake.new()
-    await tellorMaster.changeTellorStake(stake.address)
+    oldTellor = await Tellor.new()
+    tellorMaster = await Master.new(tellor.address, oldTellor.address)
+    let getter = await Getters.new()
+    await tellorMaster.changeTellorGetters(getter.address)
     master = await ITellor.at(tellorMaster.address)
 
     env = {

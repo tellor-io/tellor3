@@ -2,7 +2,7 @@ const { artifacts } = require("hardhat");
 const Master = artifacts.require("./TellorMaster.sol")
 const Tellor = artifacts.require("./TellorTest.sol")
 const ITellor = artifacts.require("./ITellor")
-const Stake = artifacts.require("./TellorStake.sol")
+const Getters = artifacts.require("./TellorGetters.sol")
 const UtilitiesTests = artifacts.require("./UtilitiesTest")
 const helper = require("./helpers/test_helpers");
 const TestLib = require("./helpers/testLib");
@@ -23,10 +23,11 @@ contract("Utilities Tests", function(accounts) {
   beforeEach("Setup contract for each test", async function() {
     this.timeout(40000)
     tellor = await Tellor.new()
-    tellorMaster = await Master.new(tellor.address)
+    oldTellor = await Tellor.new()
+    tellorMaster = await Master.new(tellor.address, oldTellor.address)
 
-    let stake = await Stake.new()
-    await tellorMaster.changeTellorStake(stake.address)
+    let getter = await Getters.new()
+    await tellorMaster.changeTellorGetters(getter.address)
     master = await ITellor.at(tellorMaster.address)
 
     for (var i = 0; i < accounts.length; i++) {
@@ -110,7 +111,6 @@ contract("Utilities Tests", function(accounts) {
       await master.addTip(j, j, { from: accounts[2] });
     }
     max = await utilities.testgetMax();
-    console.log(max)
     assert(max["0"].toString() == "45", "Max should be 45");
     assert(max["1"].toString() == "45", "Max should be 6"); //note first 5 are added
   });

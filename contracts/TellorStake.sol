@@ -5,14 +5,14 @@ import "./TellorTransfer.sol";
 import "./TellorGetters.sol";
 import "./Utilities.sol";
 
-//TODO both stake and dispute are rarely used, so we'll keep them as separate contracts
 /**
  * title Tellor Stake
- * @dev Contains the methods related to miners staking and unstaking. Tellor.sol
+ * @dev Contains the methods related to miners staking, unstaking, initiating disputes, 
+ * voting on them. Tellor.sol
  * references this library for function's logic.
  */
 
-contract TellorStake is TellorTransfer, TellorGetters {
+contract TellorStake is TellorTransfer{
     using SafeMath for uint256;
     using SafeMath for int256;
 
@@ -69,7 +69,8 @@ contract TellorStake is TellorTransfer, TellorGetters {
     }
 
     /**
-     * @dev This function allows users to withdraw their stake after a 7 day waiting period from request
+     * @dev This function allows users to withdraw their stake after a 7 day waiting
+     * period from request
      */
     function withdrawStake() public {
         StakeInfo storage stakes = stakerDetails[msg.sender];
@@ -93,13 +94,11 @@ contract TellorStake is TellorTransfer, TellorGetters {
      */
     function depositStake() public {
         newStake(msg.sender);
-        //self adjusting disputeFee
-        //TODO update is reverting
         updateMinDisputeFee();
     }
 
     /**
-     * @dev This function is used by the init function to successfully stake the initial 5 miners.
+     * @dev This internal function is used the depositStake function to successfully stake miners.
      * The function updates their status/state and status start date so they are locked it so they can't withdraw
      * and updates the number of stakers in the system.
      */
@@ -125,7 +124,7 @@ contract TellorStake is TellorTransfer, TellorGetters {
 
     /**
      * @dev Helps initialize a dispute by assigning it a disputeId
-     * when a miner returns a false on the validate array(in Tellor.ProofOfWork) it sends the
+     * when a miner returns a false/bad value on the validate array(in Tellor.ProofOfWork) it sends the
      * invalidated value information to POS voting
      * @param _requestId being disputed
      * @param _timestamp being disputed
@@ -260,7 +259,9 @@ contract TellorStake is TellorTransfer, TellorGetters {
      * @param _disputeId is the dispute id
      * @param _supportsDispute is the vote (true=the dispute has basis false = vote against dispute)
      */
-    function vote(uint256 _disputeId, bool _supportsDispute) public {
+    function vote(uint256 _disputeId, bool _supportsDispute) 
+        public 
+    {
         Dispute storage disp = disputesById[_disputeId];
 
         //Get the voteWeight or the balance of the user at the time/blockNumber the dispute began
@@ -304,7 +305,9 @@ contract TellorStake is TellorTransfer, TellorGetters {
      * @dev tallies the votes and locks the stake disbursement(currentStatus = 4) if the vote passes
      * @param _disputeId is the dispute id
      */
-    function tallyVotes(uint256 _disputeId) public {
+    function tallyVotes(uint256 _disputeId) 
+        public 
+    {
         Dispute storage disp = disputesById[_disputeId];
         //Ensure this has not already been executed/tallied
         require(disp.executed == false, "Dispute has been already executed");
@@ -347,7 +350,9 @@ contract TellorStake is TellorTransfer, TellorGetters {
      * @dev Allows disputer to unlock the dispute fee
      * @param _disputeId to unlock fee from
      */
-    function unlockDisputeFee(uint256 _disputeId) public {
+    function unlockDisputeFee(uint256 _disputeId) 
+        public 
+    {
         uint256 origID = disputeIdByDisputeHash[disputesById[_disputeId].hash];
         uint256 lastID =
             disputesById[origID].disputeUintVars[
@@ -459,7 +464,9 @@ contract TellorStake is TellorTransfer, TellorGetters {
      * @dev This function updates the minimum dispute fee as a function of the amount
      * of staked miners
      */
-    function updateMinDisputeFee() public {
+    function updateMinDisputeFee() 
+        public 
+    {
         uint256 _stakeAmount = uints[stakeAmount];
         uint256 _targetMiners = uints[targetMiners];
         uints[disputeFee] = SafeMath.max(
