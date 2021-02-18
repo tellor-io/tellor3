@@ -9,16 +9,18 @@ require("dotenv").config();
 
 task("deploy", "Deploy and verify the contracts")
   .addParam("oldtelloraddress", "The old master contract address")
+  .addParam("net", "rinkeby or empty for mainnet")
   .setAction(async taskArgs => {
     console.log("deploy tellor")
     var oldtelloraddress = taskArgs.oldtelloraddress
+    var network = taskArgs.net
     await run("compile");
     const Tellor = await ethers.getContractFactory("Tellor");
     const tellor= await Tellor.deploy();
     console.log("Tellor deployed to:", tellor.address);
     await tellor.deployed();
-    console.log("Tellor contract deployed to:", "https://" + taskArgs.network + ".etherscan.io/address/" + tellor.address);
-    console.log("    transaction hash:", "https://" + taskArgs.network + ".etherscan.io/tx/" + tellor.deployTransaction.hash);
+    console.log("Tellor contract deployed to:", "https://" + network + ".etherscan.io/address/" + tellor.address);
+    console.log("    transaction hash:", "https://" + network + ".etherscan.io/tx/" + tellor.deployTransaction.hash);
 
     // Wait for few confirmed transactions.
     // Otherwise the etherscan api doesn't find the deployed contract.
@@ -37,8 +39,8 @@ task("deploy", "Deploy and verify the contracts")
     const master= await Master.deploy(tellor.address,oldtelloraddress);
     console.log("Tellor Master deployed to:", master.address);
     await master.deployed();
-    console.log("TellorMaster deployed to:", "https://" + taskArgs.network + ".etherscan.io/address/" + master.address);
-    console.log("    transaction hash:", "https://" + taskArgs.network + ".etherscan.io/tx/" + master.deployTransaction.hash);
+    console.log("TellorMaster deployed to:", "https://" + network + ".etherscan.io/address/" + master.address);
+    console.log("    transaction hash:", "https://" + network + ".etherscan.io/tx/" + master.deployTransaction.hash);
 
     // Wait for few confirmed transactions.
     // Otherwise the etherscan api doesn't find the deployed contract.
@@ -58,8 +60,8 @@ task("deploy", "Deploy and verify the contracts")
     const stake = await Stake.deploy();
     console.log("Stake deployed to:", stake.address);
     await tellor.deployed();
-    console.log("TellorStake deployed to:", "https://" + taskArgs.network + ".etherscan.io/address/" + stake.address);
-    console.log("    transaction hash:", "https://" + taskArgs.network + ".etherscan.io/tx/" + stake.deployTransaction.hash);
+    console.log("TellorStake deployed to:", "https://" + network + ".etherscan.io/address/" + stake.address);
+    console.log("    transaction hash:", "https://" + network + ".etherscan.io/tx/" + stake.deployTransaction.hash);
 
     // Wait for few confirmed transactions.
     // Otherwise the etherscan api doesn't find the deployed contract.
