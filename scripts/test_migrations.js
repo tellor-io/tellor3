@@ -22,7 +22,7 @@ async function migrations(masterAddr, ) {
     const Stake = await ethers.getContractFactory("TellorStake");
     const stake = await Stake.deploy( );
     console.log("tellorStake", stake.address)
-    await tellorMaster.changeTellorStake(stake.address)
+    await tellorMaster.changeTellorGetters(getter.address)
     console.log('TellorStake has been set on tellorMaster')
   }
 

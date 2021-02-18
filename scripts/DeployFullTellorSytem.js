@@ -8,7 +8,7 @@ const { artifacts } = require("hardhat");
 
 const Master = artifacts.require("./TellorMaster.sol")
 const Tellor = artifacts.require("./Tellor.sol")
-const Stake = artifacts.require("./TellorStake.sol")
+const Getters = artifacts.require("./TellorGetters.sol")
 
 //rinkeby
 oldTellor = '0xFe41Cb708CD98C5B20423433309E55b53F79134a'
@@ -29,7 +29,7 @@ async function main(_oldTellor) {
     const Stake = await ethers.getContractFactory("TellorStake");
     const stake = await Stake.deploy( );
     console.log("tellorStake", stake.address)
-    await tellorMaster.changeTellorStake(stake.address)
+    await tellorMaster.changeTellorGetters(getter.address)
     console.log('TellorStake has been set on tellorMaster')
   }
 

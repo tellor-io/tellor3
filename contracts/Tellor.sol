@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.7.4;
 
-import "./TellorTransfer.sol";
+import "./TellorStake.sol";
 import "./TellorGetters.sol";
 import "./Utilities.sol";
 import "./ITellor.sol";
@@ -12,7 +12,7 @@ import "./SafeMath.sol";
  * @title Tellor Oracle System
  * @dev Oracle contract where miners can submit the proof of work along with the value.
  */
-contract Tellor is TellorTransfer {
+contract Tellor is TellorStake {
     using SafeMath for uint256;
 
     event TipAdded(
@@ -46,15 +46,12 @@ contract Tellor is TellorTransfer {
         uint256 _slot
     );
 
-
     /**
      * @dev This is an internal function used by the function migrate  that helps to
      *  swap old trb tokens for new ones based on the user's old Tellor balance
      * @param _user is the msg.sender address of the user to migrate the balance from
      */
-    function _migrate(address _user) 
-        internal 
-    {
+    function _migrate(address _user) internal {
         require(!migrated[_user], "alredy migrated");
         _doMint(
             _user,
@@ -64,12 +61,10 @@ contract Tellor is TellorTransfer {
     }
 
     /**
-     * @dev This function allows users to swap old trb tokens for new ones based 
+     * @dev This function allows users to swap old trb tokens for new ones based
      * on the user's old Tellor balance
      */
-    function migrate() 
-        external 
-    {
+    function migrate() external {
         _migrate(msg.sender);
     }
 
@@ -98,8 +93,8 @@ contract Tellor is TellorTransfer {
     }
 
     /**
-     * @dev This is an internal function used by submitMiningSolution to  allows miners to submit 
-     * their mining solution and data requested. It checks the miner is staked, has not 
+     * @dev This is an internal function used by submitMiningSolution to  allows miners to submit
+     * their mining solution and data requested. It checks the miner is staked, has not
      * won in the las 15 min, and checks they are submitting all the correct requestids
      * @param _nonce is the mining solution
      * @param _requestIds iare the 5 request ids being mined
@@ -192,16 +187,13 @@ contract Tellor is TellorTransfer {
     }
 
     /**
-     * @dev This is an internal function used by submitMiningSolution to allows miners to submit 
-     * their mining solution and data requested. It checks the miner has submitted a 
+     * @dev This is an internal function used by submitMiningSolution to allows miners to submit
+     * their mining solution and data requested. It checks the miner has submitted a
      * valid nonce or allows any solution if 15 minutes or more have passed since last
      *  mine values
      * @param _nonce is the mining solution
      */
-    function _verifyNonce(string memory _nonce) 
-        internal 
-        view 
-    {
+    function _verifyNonce(string memory _nonce) internal view {
         require(
             uint256(
                 sha256(
@@ -228,13 +220,11 @@ contract Tellor is TellorTransfer {
     }
 
     /**
-     * @dev This is an internal function used by submitMiningSolution and adjusts the difficulty 
-     * based on the the difference between the target time and how long it took to solve 
+     * @dev This is an internal function used by submitMiningSolution and adjusts the difficulty
+     * based on the the difference between the target time and how long it took to solve
      * the previous challenge otherwise it sets it to 1
      */
-    function _adjustDifficulty() 
-        internal 
-    {
+    function _adjustDifficulty() internal {
         // If the difference between the timeTarget and how long it takes to solve the challenge this updates the challenge
         //difficulty up or down by the difference between the target time and how long it took to solve the previous challenge
         //otherwise it sets it to 1
@@ -249,7 +239,7 @@ contract Tellor is TellorTransfer {
     }
 
     /**
-     * @dev This is an internal function used by submitMiningSolution to 
+     * @dev This is an internal function used by submitMiningSolution to
      * calculate and pay rewards to miners
      * @param miners are the 5 miners to reward
      * @param _previousTime is the previous mine time based on the 4th entry
@@ -278,8 +268,8 @@ contract Tellor is TellorTransfer {
     }
 
     /**
-     * @dev This is an internal function called by submitMiningSolution and adjusts the difficulty, 
-     * sorts and stores the first 5 values received, pays the miners, the dev share and 
+     * @dev This is an internal function called by submitMiningSolution and adjusts the difficulty,
+     * sorts and stores the first 5 values received, pays the miners, the dev share and
      * assigns a new challenge
      * @param _nonce or solution for the PoW  for the requestId
      * @param _requestIds for the current request being mined
@@ -380,9 +370,7 @@ contract Tellor is TellorTransfer {
      * @param _tip amount the requester is willing to pay to be get on queue. Miners
      * mine the onDeckQueryHash, or the api with the highest payout pool
      */
-    function addTip(uint256 _requestId, uint256 _tip) 
-        external 
-    {
+    function addTip(uint256 _requestId, uint256 _tip) external {
         require(_requestId != 0, "RequestId is 0");
         require(_tip != 0, "Tip should be greater than 0");
         uint256 _count = uints[requestCount] + 1;
@@ -407,9 +395,7 @@ contract Tellor is TellorTransfer {
      * @param _requestId being requested
      * @param _tip is the tip to add
      */
-    function updateOnDeck(uint256 _requestId, uint256 _tip) 
-        internal 
-    {
+    function updateOnDeck(uint256 _requestId, uint256 _tip) internal {
         Request storage _request = requestDetails[_requestId];
         _request.apiUintVars[totalTip] = _request.apiUintVars[totalTip].add(
             _tip
@@ -502,7 +488,7 @@ contract Tellor is TellorTransfer {
     }
 
     /**
-     * @dev Getter function for the top 5 requests with highest payouts. 
+     * @dev Getter function for the top 5 requests with highest payouts.
      * This function is used within the newBlock function
      * @return _requestIds the top 5 requests ids based on tips or the last 5 requests ids mined
      */
@@ -525,7 +511,7 @@ contract Tellor is TellorTransfer {
 
     /**
      * @dev This is an internal function called within the fallback function to help delegate calls.
-     * This functions helps delegate calls to the TellorStake 
+     * This functions helps delegate calls to the TellorStake
      * contract.
      */
     function _delegate(address implementation)
@@ -538,11 +524,11 @@ contract Tellor is TellorTransfer {
 
     /**
      * @dev The tellor logic does not fit in one contract so it has been split into two:
-     * Tellor and TellorStake. This functions helps delegate calls to the TellorStake 
+     * Tellor and TellorStake. This functions helps delegate calls to the TellorStake
      * contract.
      */
     fallback() external payable {
-        address addr = addresses[keccak256("tellorStake")];
+        address addr = addresses[keccak256("tellorGetters")];
         (bool result, ) = _delegate(addr);
         assembly {
             returndatacopy(0, 0, returndatasize())

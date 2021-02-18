@@ -76,15 +76,21 @@ contract TellorMaster is TellorStorage, TellorVariables {
     function changeTellorContract(address _tellorContract) external {
         require(msg.sender == addresses[keccak256("_deity")]);
         addresses[keccak256("tellorContract")] = _tellorContract;
+        bytes32 slot =
+            0x7050c9e0f4ca769c69bd3a8ef740bc37934f8e2c036e5a723fd8ee048ed3f8c3;
+
+        assembly {
+            sstore(slot, _tellorContract)
+        }
     }
 
     /**
      * @dev  allows for the deity to update the TellorStake contract address
-     * @param _tellorStake the address of the new Tellor Contract
+     * @param _tellorGetters the address of the new Tellor Contract
      */
-    function changeTellorStake(address _tellorStake) external {
+    function changeTellorGetters(address _tellorGetters) external {
         require(msg.sender == addresses[keccak256("_deity")]);
-        addresses[keccak256("tellorStake")] = _tellorStake;
+        addresses[keccak256("tellorGetters")] = _tellorGetters;
     }
 
     /**

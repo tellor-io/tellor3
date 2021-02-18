@@ -12,7 +12,7 @@ import "./Utilities.sol";
  * references this library for function's logic.
  */
 
-contract TellorStake is TellorTransfer, TellorGetters {
+contract TellorStake is TellorTransfer{
     using SafeMath for uint256;
     using SafeMath for int256;
 

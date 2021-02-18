@@ -58,9 +58,9 @@ task("deploy", "Deploy and verify the contracts")
     )
 
 
-    const Stake = await ethers.getContractFactory("TellorStake");
-    const stake = await Stake.deploy();
-    console.log("Stake deployed to:", stake.address);
+    const Getters = await ethers.getContractFactory("TellorGetters");
+    const getters = await Getters.deploy();
+    console.log("Getters deployed to:", getters.address);
     await tellor.deployed();
     console.log("TellorStake deployed to:", "https://" + network + ".etherscan.io/address/" + stake.address);
     console.log("    transaction hash:", "https://" + network + ".etherscan.io/tx/" + stake.deployTransaction.hash);
@@ -68,17 +68,17 @@ task("deploy", "Deploy and verify the contracts")
     // Wait for few confirmed transactions.
     // Otherwise the etherscan api doesn't find the deployed contract.
     console.log('waiting for tx confirmation...');
-    await stake.deployTransaction.wait(3)
+    await getters.deployTransaction.wait(3)
 
     console.log('submitting for etherscan verification...');
 
     await run("verify:verify", {
-      address: stake.address,
+      address: getters.address,
     },
     )
 
-    await master.changeTellorStake(stake.address)
-    console.log("tellorStake address updated to", stake.address)
+    await master.changeTellorGetters(getters.address)
+    console.log("tellorStake address updated to", getters.address)
   });
 
 
@@ -86,7 +86,15 @@ task("deploy", "Deploy and verify the contracts")
  * @type import('hardhat/config').HardhatUserConfig
  */
 module.exports = {
-  solidity: "0.7.4",
+ solidity: {
+    version: "0.7.4",
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 9999
+      }
+    }
+  },
 
   networks: {
     hardhat: {
