@@ -19,8 +19,7 @@ contract TellorMaster is TellorStorage, TellorVariables {
         addresses[keccak256("tellorContract")] = _tellorContract;
         addresses[keccak256("_oldTellor")] = _oldTellor;
 
-
-        uints[difficulty] = 10000000;
+        uints[difficulty] = 100;
         uints[timeTarget] = 240;
         uints[targetMiners] = 200;
         uints[currentReward] = 1e18;
@@ -28,17 +27,25 @@ contract TellorMaster is TellorStorage, TellorVariables {
         uints[stakeAmount] = 500e18;
         uints[timeOfLastNewValue] = block.timestamp - 240;
 
-        currentMiners[0].value = 0;
-        currentMiners[1].value = 1;
-        currentMiners[2].value = 2;
-        currentMiners[3].value = 3;
-        currentMiners[4].value = 4;
+        currentMiners[0].value = 1;
+        currentMiners[1].value = 2;
+        currentMiners[2].value = 3;
+        currentMiners[3].value = 4;
+        currentMiners[4].value = 5;
 
         // Bootstraping Request Queue
         for (uint256 index = 1; index < 51; index++) {
             Request storage req = requestDetails[index];
             req.apiUintVars[requestQPosition] = index;
             requestIdByRequestQIndex[index] = index;
+        }
+
+        // EIP1967 compatibility
+        bytes32 slot =
+            0x7050c9e0f4ca769c69bd3a8ef740bc37934f8e2c036e5a723fd8ee048ed3f8c3;
+
+        assembly {
+            sstore(slot, _tellorContract)
         }
 
         emit NewTellorAddress(_tellorContract);
@@ -48,9 +55,7 @@ contract TellorMaster is TellorStorage, TellorVariables {
      * @dev This function allows the Deity to set a new deity
      * @param _newDeity the new Deity in the contract
      */
-    function changeDeity(address _newDeity) 
-        external 
-    {
+    function changeDeity(address _newDeity) external {
         require(msg.sender == addresses[keccak256("_deity")]);
         addresses[keccak256("_deity")] = _newDeity;
     }
@@ -59,9 +64,7 @@ contract TellorMaster is TellorStorage, TellorVariables {
      * @dev This function allows the owner to set a new _owner
      * @param _newOwner the new Owner in the contract
      */
-    function changeOwner(address _newOwner) 
-        external 
-    {
+    function changeOwner(address _newOwner) external {
         require(msg.sender == addresses[keccak256("_owner")]);
         addresses[keccak256("_owner")] = _newOwner;
     }
@@ -70,9 +73,7 @@ contract TellorMaster is TellorStorage, TellorVariables {
      * @dev  allows for the deity to make fast upgrades.  Deity should be 0 address if decentralized
      * @param _tellorContract the address of the new Tellor Contract
      */
-    function changeTellorContract(address _tellorContract) 
-        external 
-    {
+    function changeTellorContract(address _tellorContract) external {
         require(msg.sender == addresses[keccak256("_deity")]);
         addresses[keccak256("tellorContract")] = _tellorContract;
     }
@@ -81,9 +82,7 @@ contract TellorMaster is TellorStorage, TellorVariables {
      * @dev  allows for the deity to update the TellorStake contract address
      * @param _tellorStake the address of the new Tellor Contract
      */
-    function changeTellorStake(address _tellorStake) 
-        external 
-    {
+    function changeTellorStake(address _tellorStake) external {
         require(msg.sender == addresses[keccak256("_deity")]);
         addresses[keccak256("tellorStake")] = _tellorStake;
     }
@@ -92,10 +91,7 @@ contract TellorMaster is TellorStorage, TellorVariables {
      * @dev This is the internal function that allows for delegate calls to the Tellor logic
      * contract address
      */
-    function _delegate(address implementation) 
-        internal 
-        virtual 
-    {
+    function _delegate(address implementation) internal virtual {
         // solhint-disable-next-line no-inline-assembly
         assembly {
             // Copy msg.data. We take full control of memory in this inline assembly
@@ -129,7 +125,7 @@ contract TellorMaster is TellorStorage, TellorVariables {
     }
 
     /**
-     * @dev This is the fallback function that allows contracts to call the tellor 
+     * @dev This is the fallback function that allows contracts to call the tellor
      * contract at the address stored
      */
     fallback() external payable {
