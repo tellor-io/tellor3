@@ -7,8 +7,8 @@ import "./TellorVariables.sol";
 
 /**
  * @title Tellor Transfer
- * @dev Contains the methods related to transfers and ERC20. Tellor.sol and TellorGetters.sol
- * reference this library for function's logic.
+ * @dev Contains the methods related to transfers and ERC20, its storage and hashes of tellor variable
+ * that are used to save gas on transactions.
  */
 contract TellorTransfer is TellorStorage, TellorVariables {
     using SafeMath for uint256;
@@ -74,7 +74,8 @@ contract TellorTransfer is TellorStorage, TellorVariables {
         return true;
     }
 
-    /**
+    /** 
+     * @dev Getter function for remaining spender balance
      * @param _user address of party with the balance
      * @param _spender address of spender of parties said balance
      * @return Returns the remaining allowance of tokens granted to the _spender from the _user
@@ -88,7 +89,8 @@ contract TellorTransfer is TellorStorage, TellorVariables {
     }
 
     /**
-     * @dev Completes POWO transfers by updating the balances on the current block number
+     * @dev Completes transfers by updating the balances on the current block number
+     * and ensuring the amount does not contain tokens staked for mining
      * @param _from address to transfer from
      * @param _to address to transfer to
      * @param _amount to transfer
@@ -115,6 +117,11 @@ contract TellorTransfer is TellorStorage, TellorVariables {
         emit Transfer(_from, _to, _amount);
     }
 
+    /**
+     * @dev Helps swap the old Tellor contract Tokens to the new one
+     * @param _to is the adress to send minted amount to
+     * @param _amount is the amount of TRB to send
+     */
     function _doMint(address _to, uint256 _amount) internal {
         require(_amount != 0, "Tried to mint non-positive amount");
         require(_to != address(0), "Receiver is 0 address");
@@ -133,6 +140,11 @@ contract TellorTransfer is TellorStorage, TellorVariables {
         emit Transfer(address(0), _to, _amount);
     }
 
+    /**
+     * @dev Helps burn TRB Tokens
+     * @param _from is the adress to burn or remove TRB amount 
+     * @param _amount is the amount of TRB to burn
+     */
     function _doBurn(address _from, uint256 _amount) internal {
         if(_amount == 0 ) return;
         uint256 previousBalance = balanceOf(_from);

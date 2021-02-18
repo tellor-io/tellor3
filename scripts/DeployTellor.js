@@ -6,7 +6,7 @@ const Tellor = artifacts.require("./Tellor.sol")
 const Stake = artifacts.require("./TellorStake.sol")
 
 //rinkeby
-oldTellor = '0x9FAC705A49e0c8789483c518E71C6483e495ECC4'
+oldTellor = '0xFe41Cb708CD98C5B20423433309E55b53F79134a'
 
 //mainnet
 // oldTellor = ''

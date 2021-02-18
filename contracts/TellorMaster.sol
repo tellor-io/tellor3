@@ -45,19 +45,23 @@ contract TellorMaster is TellorStorage, TellorVariables {
     }
 
     /**
+     * @dev This function allows the Deity to set a new deity
      * @param _newDeity the new Deity in the contract
      */
-
-    function changeDeity(address _newDeity) external {
+    function changeDeity(address _newDeity) 
+        external 
+    {
         require(msg.sender == addresses[keccak256("_deity")]);
         addresses[keccak256("_deity")] = _newDeity;
     }
 
     /**
-     * @param _newOwner the new Deity in the contract
+     * @dev This function allows the owner to set a new _owner
+     * @param _newOwner the new Owner in the contract
      */
-
-    function changeOwner(address _newOwner) external {
+    function changeOwner(address _newOwner) 
+        external 
+    {
         require(msg.sender == addresses[keccak256("_owner")]);
         addresses[keccak256("_owner")] = _newOwner;
     }
@@ -66,21 +70,32 @@ contract TellorMaster is TellorStorage, TellorVariables {
      * @dev  allows for the deity to make fast upgrades.  Deity should be 0 address if decentralized
      * @param _tellorContract the address of the new Tellor Contract
      */
-    function changeTellorContract(address _tellorContract) external {
+    function changeTellorContract(address _tellorContract) 
+        external 
+    {
         require(msg.sender == addresses[keccak256("_deity")]);
         addresses[keccak256("tellorContract")] = _tellorContract;
     }
 
     /**
-     * @dev  allows for the deity to make fast upgrades.  Deity should be 0 address if decentralized
+     * @dev  allows for the deity to update the TellorStake contract address
      * @param _tellorStake the address of the new Tellor Contract
      */
-    function changeTellorStake(address _tellorStake) external {
+    function changeTellorStake(address _tellorStake) 
+        external 
+    {
         require(msg.sender == addresses[keccak256("_deity")]);
         addresses[keccak256("tellorStake")] = _tellorStake;
     }
 
-    function _delegate(address implementation) internal virtual {
+    /**
+     * @dev This is the internal function that allows for delegate calls to the Tellor logic
+     * contract address
+     */
+    function _delegate(address implementation) 
+        internal 
+        virtual 
+    {
         // solhint-disable-next-line no-inline-assembly
         assembly {
             // Copy msg.data. We take full control of memory in this inline assembly
@@ -114,7 +129,8 @@ contract TellorMaster is TellorStorage, TellorVariables {
     }
 
     /**
-     * @dev This is the fallback function that allows contracts to call the tellor contract at the address stored
+     * @dev This is the fallback function that allows contracts to call the tellor 
+     * contract at the address stored
      */
     fallback() external payable {
         address addr = addresses[keccak256("tellorContract")];
