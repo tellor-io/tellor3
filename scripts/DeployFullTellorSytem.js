@@ -1,4 +1,9 @@
 //npx hardhat run --network rinkeby scripts/DeployTellor.js
+/********************************************************* */
+
+/** Use this script to deploy a full Tellor system if hardhat config fails*/
+
+/******************************************************** */
 const { artifacts } = require("hardhat");
 
 const Master = artifacts.require("./TellorMaster.sol")
@@ -9,22 +14,7 @@ const Stake = artifacts.require("./TellorStake.sol")
 oldTellor = '0xFe41Cb708CD98C5B20423433309E55b53F79134a'
 
 //mainnet
-// oldTellor = ''
-
-// module.exports =async function(callback) {
-
-// let tellor = await Tellor.new()
-// console.log("tellor", tellor.address)
-// let tellorMaster = await Master.new(tellor.address, oldTellor.address)
-// console.log("tellorMaster", tellorMaster.address)
-// let stake = await Stake.new()
-// console.log("tellorStake", tellorStake)
-// await tellorMaster.changeTellorStake(stake.address)
-
-// process.exit()
-
-
-// }
+// oldTellor = '0x0Ba45A8b5d5575935B8158a88C631E9F9C95a2e5'
 
 async function main(_oldTellor) {
     // We get the contract to deploy
@@ -40,6 +30,7 @@ async function main(_oldTellor) {
     const stake = await Stake.deploy( );
     console.log("tellorStake", stake.address)
     await tellorMaster.changeTellorStake(stake.address)
+    console.log('TellorStake has been set on tellorMaster')
   }
 
   main(oldTellor)

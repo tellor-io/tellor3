@@ -5,7 +5,9 @@ require("@nomiclabs/hardhat-ethers");
 require("@nomiclabs/hardhat-etherscan");
 require("dotenv").config();
 
+//Run this commands to deploy tellor:
 //npx hardhat deploy --oldtelloraddress 0xFe41Cb708CD98C5B20423433309E55b53F79134a --net rinkeby --network rinkeby
+//npx hardhat deploy --oldtelloraddress 0x0Ba45A8b5d5575935B8158a88C631E9F9C95a2e5 --net  --network mainnet
 
 task("deploy", "Deploy and verify the contracts")
   .addParam("oldtelloraddress", "The old master contract address")
