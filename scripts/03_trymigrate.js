@@ -1,4 +1,4 @@
-//npx hardhat run --network rinkeby scripts/02_add58Tips.js
+//npx hardhat run --network rinkeby scripts/03_trymigrate.js
 /*******************************************************************/
 
 /**********MIGRATE and tip 58 requests***************************************/
@@ -13,12 +13,23 @@ const loadJsonFile = require('load-json-file')
 const Tellor = artifacts.require("./Tellor.sol");
 var tellorAbi = Tellor.abi;
 
+netw = "rinkeby"
 //Rinkeby
 tellorMaster = '0x4756942F9B7c3824bBAb8F61ea536033FfD9BcD4'
-netw = "rinkeby"
+oldTellor = '0xFe41Cb708CD98C5B20423433309E55b53F79134a'
+
 
 //mainnet
 //tellorMaster = ''
+//oldTellor = '0x0Ba45A8b5d5575935B8158a88C631E9F9C95a2e5'
+
+//Address to migrate with old tellor balance--SHOULD GO THROUGH
+var pubAddr = process.env.MIGRATE_PUB
+var privKey = process.env.MIGRATE_PK
+
+//Address to migrate without old tellor balance- SHOULD FAIL
+// var pubAddr = process.env.PUBLIC_KEY
+// var privKey = process.env.PRIVATE_KEY
 
 
 var _UTCtime = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
@@ -42,7 +53,7 @@ async function fetchGasPrice() {
 
 }
 
-async function add58tips(masterAdd, net ) {
+async function add58tips(masterAdd, oldMasterAdd, net ) {
     try {
         if (net == "mainnet") {
             var network = "mainnet"
@@ -56,8 +67,8 @@ async function add58tips(masterAdd, net ) {
 
         var infuraKey = process.env.WEB3_INFURA_PROJECT_ID
         var tellorMasterAddress = masterAdd
-        var pubAddr = process.env.MIGRATE_PUB
-        var privKey = process.env.MIGRATE_PK
+        var oldTellorMaster = oldMasterAdd
+
         console.log("infuraKey", infuraKey)
         console.log("Tellor Address: ", tellorMasterAddress)
         console.log("nework", network)
@@ -85,6 +96,9 @@ async function add58tips(masterAdd, net ) {
       let contract = new ethers.Contract(tellorMasterAddress, tellorAbi, provider);
       var contractWithSigner = contract.connect(wallet);
 
+      let oldcontract = new ethers.Contract(oldTellorMaster, tellorAbi, provider);
+      var oldcontractWithSigner = oldcontract.connect(wallet);
+
     } catch (error) {
         console.error(error)
         console.log("oracle not instantiated")
@@ -96,6 +110,10 @@ async function add58tips(masterAdd, net ) {
         console.log("Requests Address", pubAddr)
         console.log("Requester ETH Balance", balNow)
         //before migrate
+        //balance on old contract
+        var oldttbalancestart = ethers.utils.formatEther(await oldcontractWithSigner.balanceOf(pubAddr))
+        console.log('old Tellor Tributes balance', oldttbalancestart)
+        //balance on new contract
         var ttbalancestart = ethers.utils.formatEther(await contractWithSigner.balanceOf(pubAddr))
         console.log('before migration Tellor Tributes balance', ttbalancestart)
         if (ttbalancestart ==0){
@@ -116,33 +134,11 @@ async function add58tips(masterAdd, net ) {
         process.exit(1)
     }
 
-    //add tip if gas is retrieved correctly
-    if (gasP != 0 ) {
-        console.log("Send request")
-        for (var i = 1; i < 58; i++) {
-            try {
-              var gasP1 = await fetchGasPrice()
-              let tx = await contractWithSigner.addTip(i, 1, { from: pubAddr, gasLimit: gas_limit, gasPrice: gasP1 });
-              var link = "".concat(etherscanUrl, '/tx/', tx.hash)
-              var ownerlink = "".concat(etherscanUrl, '/address/', tellorMasterAddress)
-              console.log('Yes, a tip was sent for request id ', i)
-              console.log("Hash link: ", link)
-              console.log("Contract link: ", ownerlink)
-              console.log('Waiting for the transaction to be mined');
-              await tx.wait() // If there's an out of gas error the second parameter is the receipt.
-        } catch (error) {
-            console.error(error)
-            process.exit(1)
-        }
-        
-        
-        }
-
-    }
+ 
     process.exit()
 }
  
-add58tips(tellorMaster, netw)
+add58tips(tellorMaster,oldTellor, netw)
     .then(() => process.exit(0))
     .catch(error => {
         console.error(error);
