@@ -29,8 +29,8 @@ contract("Difficulty tests", function(accounts) {
 
     await tellorMaster.changeTellorContract(tellor.address)
 
-    let getter = await Getters.new()
-    await tellorMaster.changeTellorGetters(getter.address)
+    // let getter = await Getters.new()
+    // await tellorMaster.changeTellorGetters(getter.address)
     master = await ITellor.at(tellorMaster.address)
 
     env = {

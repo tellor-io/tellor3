@@ -91,7 +91,7 @@ module.exports = {
     settings: {
       optimizer: {
         enabled: true,
-        runs: 9999
+        runs: 999999
       }
     }
   },
@@ -102,7 +102,8 @@ module.exports = {
         mnemonic:
           "nick lucian brenda kevin sam fiscal patch fly damp ocean produce wish",
         count: 40,
-      }
+      },
+      allowUnlimitedContractSize: true,
     },
       // rinkeby: {
       //   url: `${process.env.NODE_URL_RINKEBY}`,

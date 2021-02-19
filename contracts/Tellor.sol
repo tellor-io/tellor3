@@ -13,7 +13,7 @@ import "hardhat/console.sol";
  * @title Tellor Oracle System
  * @dev Oracle contract where miners can submit the proof of work along with the value.
  */
-contract Tellor is TellorStake {
+contract Tellor is TellorStake, TellorGetters {
     using SafeMath for uint256;
 
     event TipAdded(
@@ -432,98 +432,6 @@ contract Tellor is TellorStake {
                 min = data[i];
                 minIndex = i;
             }
-        }
-    }
-
-    /**
-     * @dev This is an internal function called by updateOnDeck that gets the top 5 values
-     * @param data is an array [51] to determine the top 5 values from
-     * @return max the top 5 values and their index values in the data array
-     */
-    function _getMax5(uint256[51] memory data)
-        internal
-        pure
-        returns (uint256[5] memory max, uint256[5] memory maxIndex)
-    {
-        uint256 min5 = data[1];
-        uint256 minI = 0;
-        for (uint256 j = 0; j < 5; j++) {
-            max[j] = data[j + 1]; //max[0]=data[1]
-            maxIndex[j] = j + 1; //maxIndex[0]= 1
-            if (max[j] < min5) {
-                min5 = max[j];
-                minI = j;
-            }
-        }
-        for (uint256 i = 6; i < data.length; i++) {
-            if (data[i] > min5) {
-                max[minI] = data[i];
-                maxIndex[minI] = i;
-                min5 = data[i];
-                for (uint256 j = 0; j < 5; j++) {
-                    if (max[j] < min5) {
-                        min5 = max[j];
-                        minI = j;
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * @dev Getter function for the top 5 requests with highest payouts.
-     * This function is used within the newBlock function
-     * @return _requestIds the top 5 requests ids based on tips or the last 5 requests ids mined
-     */
-    function _getTopRequestIDs()
-        internal
-        view
-        returns (uint256[5] memory _requestIds)
-    {
-        uint256[5] memory _max;
-        uint256[5] memory _index;
-        (_max, _index) = _getMax5(requestQ);
-        for (uint256 i = 0; i < 5; i++) {
-            if (_max[i] != 0) {
-                _requestIds[i] = requestIdByRequestQIndex[_index[i]];
-            } else {
-                _requestIds[i] = currentMiners[4 - i].value;
-            }
-        }
-    }
-
-    /**
-     * @dev This is an internal function called within the fallback function to help delegate calls.
-     * This functions helps delegate calls to the TellorGetters
-     * contract.
-     */
-    function _delegate(address implementation)
-        internal
-        virtual
-        returns (bool succ, bytes memory ret)
-    {
-        (succ, ret) = implementation.delegatecall(msg.data);
-    }
-
-    /**
-     * @dev The tellor logic does not fit in one contract so it has been split into two:
-     * Tellor and TellorGetters This functions helps delegate calls to the TellorGetters
-     * contract.
-     */
-    fallback() external payable {
-        address addr = addresses[_TELLOR_GETTERS];
-        (bool result, ) = _delegate(addr);
-        assembly {
-            returndatacopy(0, 0, returndatasize())
-
-            switch result
-                // delegatecall returns 0 on error.
-                case 0 {
-                    revert(0, returndatasize())
-                }
-                default {
-                    return(0, returndatasize())
-                }
         }
     }
 }

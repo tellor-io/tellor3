@@ -58,9 +58,9 @@ contract("Token Migration and Deity Tests", function(accounts) {
   });
   it("Diety tests", async function() {
       newTellor = await Tellor.new()
-      newGetters = await Getters.new()
-      await tellorMaster.changeTellorGetters(newGetters.address)
-      assert(await master.getAddressVars(hash("_TELLOR_GETTERS")) == newGetters.address)
+      // newGetters = await Getters.new()
+      // await tellorMaster.changeTellorGetters(newGetters.address)
+      // assert(await master.getAddressVars(hash("_TELLOR_GETTERS")) == newGetters.address)
       await tellorMaster.changeOwner(accounts[2])
       assert(await master.getAddressVars(hash("_OWNER")) == accounts[2])
       await tellorMaster.changeTellorContract(newTellor.address)

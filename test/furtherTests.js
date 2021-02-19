@@ -16,8 +16,8 @@ contract("Further tests", function(accounts) {
     tellor = await Tellor.new()
     oldTellor = await Tellor.new()
     tellorMaster = await Master.new(tellor.address, oldTellor.address)
-    let getter = await Getters.new()
-    await tellorMaster.changeTellorGetters(getter.address)
+    // let getter = await Getters.new()
+    // await tellorMaster.changeTellorGetters(getter.address)
     master = await ITellor.at(tellorMaster.address)
 
     for (var i = 0; i < 5; i++) {
