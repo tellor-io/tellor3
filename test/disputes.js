@@ -24,7 +24,7 @@ contract("Dispute Tests", function(accounts) {
       count.toNumber() - 1
     );
     await master.beginDispute(requestId, timestamp, minerIndex, { from: from });
-    let disputeId = await master.getUintVar(hash("disputeCount"));
+    let disputeId = await master.getUintVar(hash("_DISPUTE_COUNT"));
     let disp = await master.getAllDisputeVars(disputeId);
     return {
       fee: disp["8"],
@@ -71,7 +71,7 @@ contract("Dispute Tests", function(accounts) {
     await TestLib.mineBlock(env);
     await helper.advanceTime(86400 * 22);
     await startADispute(accounts[1]);
-    let count = await master.getUintVar(hash("disputeCount"));
+    let count = await master.getUintVar(hash("_DISPUTE_COUNT"));
     assert(count == 1);
   });
 
@@ -85,13 +85,13 @@ contract("Dispute Tests", function(accounts) {
       disputeId = disp.id;
       diputer = disp.disputer;
       disputed = disp.disputed;
-      disputeFee = await master.getUintVar(hash("disputeFee"));
+      disputeFee = await master.getUintVar(hash("_DISPUTE_FEE"));
     });
     it("Test basic dispute", async function() {
       // console.log("basic disp 1")
       balance1 = await master.balanceOf(accounts[2]);
       dispBal1 = await master.balanceOf(accounts[1]);
-      count = await master.getUintVar(web3.utils.keccak256("disputeCount"));
+      count = await master.getUintVar(web3.utils.keccak256("_DISPUTE_COUNT"));
       await master.vote(1, true, { from: accounts[3] });
       await helper.advanceTime(86400 * 22);   
       await master.tallyVotes(1);
@@ -126,7 +126,7 @@ contract("Dispute Tests", function(accounts) {
     it("Test multiple dispute rounds, passing all three", async function() {
       let balance1 = await master.balanceOf(accounts[2]);
       let dispBal1 = await master.balanceOf(accounts[1]);
-      let count = await master.getUintVar(hash("disputeCount"));
+      let count = await master.getUintVar(hash("_DISPUTE_COUNT"));
       //vote 1 passes
       await master.vote(disputeId, true);
       await helper.advanceTime(86400 * 3);
@@ -147,7 +147,7 @@ contract("Dispute Tests", function(accounts) {
       //vote 2 - passes
       await master.theLazyCoon(accounts[6], web3.utils.toWei("5000", "ether"));
       let disp2 = await startADispute(accounts[6]);
-      count = await master.getUintVar(hash("disputeCount"));
+      count = await master.getUintVar(hash("_DISPUTE_COUNT"));
       await master.vote(disp2.id, true, { from: accounts[6] });
       await master.vote(disp2.id, true, { from: accounts[4] });
       await helper.advanceTime(86400 * 5);
@@ -158,7 +158,7 @@ contract("Dispute Tests", function(accounts) {
       // vote 3 - passes
       await master.theLazyCoon(accounts[3], web3.utils.toWei("5000", "ether"));
       let disp3 = await startADispute(accounts[3]);
-      count = await master.getUintVar(hash("disputeCount"));
+      count = await master.getUintVar(hash("_DISPUTE_COUNT"));
       assert(count == 3);
 
       await master.vote(disp3.id, false, { from: accounts[6] });
@@ -177,7 +177,7 @@ contract("Dispute Tests", function(accounts) {
       assert(dispInfo[2] == true, "Dispute Vote passed");
       let balance2 = await master.balanceOf(accounts[2]);
       let dispBal2 = await master.balanceOf(accounts[1]);
-      let disputeFee = await master.getUintVar(hash("disputeFee"));
+      let disputeFee = await master.getUintVar(hash("_DISPUTE_FEE"));
 
       assert(
         balance1.sub(balance2).toString() == web3.utils.toWei("500"),
@@ -192,7 +192,7 @@ contract("Dispute Tests", function(accounts) {
     it("Test multiple dispute rounds - passing, then failing", async function() {
       balance1 = await master.balanceOf(accounts[2]);
       dispBal1 = await master.balanceOf(accounts[1]);
-      count = await master.getUintVar(hash("disputeCount"));
+      count = await master.getUintVar(hash("_DISPUTE_COUNT"));
       await master.vote(1, { from: accounts[3] });
 
       await helper.advanceTime(86400 * 3);
@@ -208,7 +208,7 @@ contract("Dispute Tests", function(accounts) {
       );
       assert(dispInfo[2] == true, "Dispute Vote passed");
       let disp2 = await startADispute(accounts[1]);
-      count = await master.getUintVar(hash("disputeCount"));
+      count = await master.getUintVar(hash("_DISPUTE_COUNT"));
       await master.vote(disp2.id, false, { from: accounts[6] });
       await master.vote(disp2.id, false, { from: accounts[4] });
       await helper.advanceTime(86400 * 5);
@@ -225,8 +225,8 @@ contract("Dispute Tests", function(accounts) {
       dispInfo2 = await master.getAllDisputeVars(2);
       balance2 = await master.balanceOf(accounts[2]);
       dispBal2 = await master.balanceOf(accounts[1]);
-      let disputeFee = await master.getUintVar(hash("disputeFee"));
-      let stakeAmount = await master.getUintVar(hash("stakeAmount"));
+      let disputeFee = await master.getUintVar(hash("_DISPUTE_FEE"));
+      let stakeAmount = await master.getUintVar(hash("_stakeAmount"));
 
       // console.log(dispInfo2[7][8].toString())
       // console.log(stakeAmount.mul(new BN("2")).toString())
@@ -245,7 +245,7 @@ contract("Dispute Tests", function(accounts) {
       balance1 = await master.balanceOf(accounts[2]);
       dispBal1 = await master.balanceOf(accounts[1]);
 
-      count = await master.getUintVar(web3.utils.keccak256("disputeCount"));
+      count = await master.getUintVar(web3.utils.keccak256("_DISPUTE_COUNT"));
       //vote 1 fails
       await master.vote(1, false);
 
@@ -263,7 +263,7 @@ contract("Dispute Tests", function(accounts) {
       //vote 2 - passes
       let disp2 = await startADispute(accounts[1]);
 
-      count = await master.getUintVar(web3.utils.keccak256("disputeCount"));
+      count = await master.getUintVar(web3.utils.keccak256("_DISPUTE_COUNT"));
       await master.vote(disp2.id, true, { from: accounts[6] });
       await master.vote(disp2.id, true, { from: accounts[4] });
 
@@ -277,11 +277,11 @@ contract("Dispute Tests", function(accounts) {
 
       balance2 = await master.balanceOf(accounts[2]);
       dispBal2 = await master.balanceOf(accounts[1]);
-      let disputeFee = await master.getUintVar(hash("disputeFee"));
+      let disputeFee = await master.getUintVar(hash("_DISPUTE_FEE"));
 
       assert(
         balance1 - balance2 ==
-          (await master.getUintVar(web3.utils.keccak256("stakeAmount"))),
+          (await master.getUintVar(web3.utils.keccak256("_STAKE_AMOUNT"))),
         "reported miner's balance should change correctly"
       );
       assert(
@@ -462,7 +462,7 @@ contract("Dispute Tests", function(accounts) {
     let dispBal1 = await master.balanceOf(accounts[1]);
     await startADispute(accounts[1]);
 
-    count = await master.getUintVar(web3.utils.keccak256("disputeCount"));
+    count = await master.getUintVar(web3.utils.keccak256("_DISPUTE_COUNT"));
     //vote 1 passes
     await master.vote(1, true, { from: accounts[3] });
 
@@ -481,7 +481,7 @@ contract("Dispute Tests", function(accounts) {
     await master.theLazyCoon(accounts[6], web3.utils.toWei("5000", "ether"));
     await startADispute(accounts[1]);
 
-    count = await master.getUintVar(web3.utils.keccak256("disputeCount"));
+    count = await master.getUintVar(web3.utils.keccak256("_DISPUTE_COUNT"));
     await master.vote(2, true, { from: accounts[4] });
     await master.vote(2, true, { from: accounts[6] });
 
@@ -524,7 +524,7 @@ contract("Dispute Tests", function(accounts) {
     let dispBal1 = await master.balanceOf(accounts[1]);
     await startADispute(accounts[1], 1, 3);
 
-    count = await master.getUintVar(web3.utils.keccak256("disputeCount"));
+    count = await master.getUintVar(web3.utils.keccak256("_DISPUTE_COUNT"));
     //vote 1 passes
     await master.vote(1, true, { from: accounts[2] });
 
@@ -544,7 +544,7 @@ contract("Dispute Tests", function(accounts) {
     await master.theLazyCoon(accounts[6], web3.utils.toWei("5000", "ether"));
     await startADispute(accounts[0], 1, 3);
 
-    count = await master.getUintVar(web3.utils.keccak256("disputeCount"));
+    count = await master.getUintVar(web3.utils.keccak256("_DISPUTE_COUNT"));
     await master.vote(2, true, { from: accounts[6] });
     await master.vote(2, true, { from: accounts[4] });
 

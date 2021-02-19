@@ -72,7 +72,7 @@ contract("Difficulty tests", function(accounts) {
 
   it("Test lower difficulty target (4 min)", async function() {
     assert(
-      (await master.getUintVar(web3.utils.keccak256("timeTarget"))) ==
+      (await master.getUintVar(web3.utils.keccak256("_TIME_TARGET"))) ==
         timeTarget
     ),
       "difficulty should be 240";

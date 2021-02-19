@@ -45,7 +45,7 @@ contract("Staking Tests", function(accounts) {
 
   it("getStakersCount", async function() {
     await master.depositStake({from:accounts[7]})
-    let count = await master.getUintVar(web3.utils.keccak256("stakerCount"));
+    let count = await master.getUintVar(web3.utils.keccak256("_STAKE_COUNT"));
     assert(web3.utils.hexToNumberString(count) == 1, "count is 6"); //added miner
   });
   it("getStakersInfo", async function() {

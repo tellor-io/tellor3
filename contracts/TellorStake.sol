@@ -7,12 +7,12 @@ import "./Utilities.sol";
 
 /**
  * title Tellor Stake
- * @dev Contains the methods related to miners staking, unstaking, initiating disputes, 
+ * @dev Contains the methods related to miners staking, unstaking, initiating disputes,
  * voting on them. Tellor.sol
  * references this library for function's logic.
  */
 
-contract TellorStake is TellorTransfer{
+contract TellorStake is TellorTransfer {
     using SafeMath for uint256;
     using SafeMath for int256;
 
@@ -61,7 +61,7 @@ contract TellorStake is TellorTransfer{
         stakes.startDate = block.timestamp - (block.timestamp % 86400);
 
         //Reduce the staker count
-        uints[keccak256("stakerCount")] -= 1;
+        uints[_STAKE_COUNT] -= 1;
 
         //Update the minimum dispute fee that is based on the number of stakers
         updateMinDisputeFee();
@@ -104,7 +104,7 @@ contract TellorStake is TellorTransfer{
      */
     function newStake(address _staker) internal {
         require(
-            balanceOf(_staker) >= uints[stakeAmount],
+            balanceOf(_staker) >= uints[_STAKE_AMOUNT],
             "Balance is lower than stake amount"
         );
         //Ensure they can only stake if they are not currently staked or if their stake time frame has ended
@@ -114,7 +114,7 @@ contract TellorStake is TellorTransfer{
                 stakerDetails[_staker].currentStatus == 2,
             "Miner is in the wrong state"
         );
-        uints[stakerCount] += 1;
+        uints[_STAKE_COUNT] += 1;
         stakerDetails[_staker] = StakeInfo({
             currentStatus: 1, //this resets their stake start date to today
             startDate: block.timestamp - (block.timestamp % 86400)
@@ -147,26 +147,21 @@ contract TellorStake is TellorTransfer{
             keccak256(abi.encodePacked(_miner, _requestId, _timestamp));
 
         //Increase the dispute count by 1
-        uint256 disputeId = uints[keccak256("disputeCount")] + 1;
-        uints[keccak256("disputeCount")] = disputeId;
+        uint256 disputeId = uints[_DISPUTE_COUNT] + 1;
+        uints[_DISPUTE_COUNT] = disputeId;
 
         //Ensures that a dispute is not already open for the that miner, requestId and timestamp
         uint256 hashId = disputeIdByDisputeHash[_hash];
         if (hashId != 0) {
-            disputesById[disputeId].disputeUintVars[
-                keccak256("origID")
-            ] = hashId;
+            disputesById[disputeId].disputeUintVars[_ORIGINAL_ID] = hashId;
         } else {
             disputeIdByDisputeHash[_hash] = disputeId;
             hashId = disputeId;
         }
         uint256 origID = hashId;
         uint256 dispRounds =
-            disputesById[origID].disputeUintVars[keccak256("disputeRounds")] +
-                1;
-        disputesById[origID].disputeUintVars[
-            keccak256("disputeRounds")
-        ] = dispRounds;
+            disputesById[origID].disputeUintVars[_DISPUTE_ROUNDS] + 1;
+        disputesById[origID].disputeUintVars[_DISPUTE_ROUNDS] = dispRounds;
         disputesById[origID].disputeUintVars[
             keccak256(abi.encode(dispRounds))
         ] = disputeId;
@@ -176,17 +171,14 @@ contract TellorStake is TellorTransfer{
                     keccak256(abi.encode(dispRounds - 1))
                 ];
             require(
-                disputesById[lastID].disputeUintVars[
-                    keccak256("minExecutionDate")
-                ] <= block.timestamp,
+                disputesById[lastID].disputeUintVars[_MIN_EXECUTION_DATE] <=
+                    block.timestamp,
                 "Dispute is already open"
             );
             if (disputesById[lastID].executed) {
                 require(
                     block.timestamp -
-                        disputesById[lastID].disputeUintVars[
-                            keccak256("tallyDate")
-                        ] <=
+                        disputesById[lastID].disputeUintVars[_TALLY_DATE] <=
                         1 days,
                     "Time for voting haven't elapsed"
                 );
@@ -194,19 +186,15 @@ contract TellorStake is TellorTransfer{
         }
         uint256 _fee;
         if (_minerIndex == 2) {
-            requestDetails[_requestId].apiUintVars[keccak256("disputeCount")] =
-                requestDetails[_requestId].apiUintVars[
-                    keccak256("disputeCount")
-                ] +
+            requestDetails[_requestId].apiUintVars[_DISPUTE_COUNT] =
+                requestDetails[_requestId].apiUintVars[_DISPUTE_COUNT] +
                 1;
             //update dispute fee for this case
             _fee =
-                uints[keccak256("stakeAmount")] *
-                requestDetails[_requestId].apiUintVars[
-                    keccak256("disputeCount")
-                ];
+                uints[_STAKE_AMOUNT] *
+                requestDetails[_requestId].apiUintVars[_DISPUTE_COUNT];
         } else {
-            _fee = uints[keccak256("disputeFee")] * dispRounds;
+            _fee = uints[_DISPUTE_FEE] * dispRounds;
         }
 
         //maps the dispute to the Dispute struct
@@ -220,25 +208,17 @@ contract TellorStake is TellorTransfer{
         disputesById[disputeId].tally = 0;
 
         //Saves all the dispute variables for the disputeId
-        disputesById[disputeId].disputeUintVars[
-            keccak256("requestId")
-        ] = _requestId;
-        disputesById[disputeId].disputeUintVars[
-            keccak256("timestamp")
-        ] = _timestamp;
-        disputesById[disputeId].disputeUintVars[keccak256("value")] = _request
+        disputesById[disputeId].disputeUintVars[_REQUEST_ID] = _requestId;
+        disputesById[disputeId].disputeUintVars[_TIMESTAMP] = _timestamp;
+        disputesById[disputeId].disputeUintVars[_VALUE] = _request
             .valuesByTimestamp[_timestamp][_minerIndex];
-        disputesById[disputeId].disputeUintVars[keccak256("minExecutionDate")] =
+        disputesById[disputeId].disputeUintVars[_MIN_EXECUTION_DATE] =
             block.timestamp +
             2 days *
             dispRounds;
-        disputesById[disputeId].disputeUintVars[
-            keccak256("blockNumber")
-        ] = block.number;
-        disputesById[disputeId].disputeUintVars[
-            keccak256("minerSlot")
-        ] = _minerIndex;
-        disputesById[disputeId].disputeUintVars[keccak256("fee")] = _fee;
+        disputesById[disputeId].disputeUintVars[_BLOCK_NUMBER] = block.number;
+        disputesById[disputeId].disputeUintVars[_MINER_SLOT] = _minerIndex;
+        disputesById[disputeId].disputeUintVars[_FEE] = _fee;
         _doTransfer(msg.sender, address(this), _fee);
 
         //Values are sorted as they come in and the official value is the median of the first five
@@ -257,17 +237,12 @@ contract TellorStake is TellorTransfer{
      * @param _disputeId is the dispute id
      * @param _supportsDispute is the vote (true=the dispute has basis false = vote against dispute)
      */
-    function vote(uint256 _disputeId, bool _supportsDispute) 
-        public 
-    {
+    function vote(uint256 _disputeId, bool _supportsDispute) public {
         Dispute storage disp = disputesById[_disputeId];
 
         //Get the voteWeight or the balance of the user at the time/blockNumber the dispute began
         uint256 voteWeight =
-            balanceOfAt(
-                msg.sender,
-                disp.disputeUintVars[keccak256("blockNumber")]
-            );
+            balanceOfAt(msg.sender, disp.disputeUintVars[_BLOCK_NUMBER]);
 
         //Require that the msg.sender has not voted
         require(disp.voted[msg.sender] != true, "Sender has already voted");
@@ -285,7 +260,7 @@ contract TellorStake is TellorTransfer{
         disp.voted[msg.sender] = true;
 
         //Update the number of votes for the dispute
-        disp.disputeUintVars[keccak256("numberOfVotes")] += 1;
+        disp.disputeUintVars[_NUM_OF_VOTES] += 1;
 
         //If the user supports the dispute increase the tally for the dispute by the voteWeight
         //otherwise decrease it
@@ -303,15 +278,12 @@ contract TellorStake is TellorTransfer{
      * @dev tallies the votes and locks the stake disbursement(currentStatus = 4) if the vote passes
      * @param _disputeId is the dispute id
      */
-    function tallyVotes(uint256 _disputeId) 
-        public 
-    {
+    function tallyVotes(uint256 _disputeId) public {
         Dispute storage disp = disputesById[_disputeId];
         //Ensure this has not already been executed/tallied
         require(disp.executed == false, "Dispute has been already executed");
         require(
-            block.timestamp >=
-                disp.disputeUintVars[keccak256("minExecutionDate")],
+            block.timestamp >= disp.disputeUintVars[_MIN_EXECUTION_DATE],
             "Time for voting haven't elapsed"
         );
         require(
@@ -333,7 +305,7 @@ contract TellorStake is TellorTransfer{
                 stakes.currentStatus = 4;
             }
         }
-        disp.disputeUintVars[keccak256("tallyDate")] = block.timestamp;
+        disp.disputeUintVars[_TALLY_DATE] = block.timestamp;
         disp.executed = true;
         emit DisputeVoteTallied(
             _disputeId,
@@ -348,17 +320,13 @@ contract TellorStake is TellorTransfer{
      * @dev Allows disputer to unlock the dispute fee
      * @param _disputeId to unlock fee from
      */
-    function unlockDisputeFee(uint256 _disputeId) 
-        public 
-    {
+    function unlockDisputeFee(uint256 _disputeId) public {
         uint256 origID = disputeIdByDisputeHash[disputesById[_disputeId].hash];
         uint256 lastID =
             disputesById[origID].disputeUintVars[
                 keccak256(
                     abi.encode(
-                        disputesById[origID].disputeUintVars[
-                            keccak256("disputeRounds")
-                        ]
+                        disputesById[origID].disputeUintVars[_DISPUTE_ROUNDS]
                     )
                 )
             ];
@@ -368,28 +336,24 @@ contract TellorStake is TellorTransfer{
         Dispute storage disp = disputesById[origID];
         Dispute storage last = disputesById[lastID];
         //disputeRounds is increased by 1 so that the _id is not a negative number when it is the first time a dispute is initiated
-        uint256 dispRounds = disp.disputeUintVars[keccak256("disputeRounds")];
+        uint256 dispRounds = disp.disputeUintVars[_DISPUTE_ROUNDS];
         if (dispRounds == 0) {
             dispRounds = 1;
         }
         uint256 _id;
+        require(disp.disputeUintVars[_PAID] == 0, "already paid out");
         require(
-            disp.disputeUintVars[keccak256("paid")] == 0,
-            "already paid out"
-        );
-        require(
-            block.timestamp - last.disputeUintVars[keccak256("tallyDate")] >
-                1 days,
+            block.timestamp - last.disputeUintVars[_TALLY_DATE] > 1 days,
             "Time for voting haven't elapsed"
         );
         StakeInfo storage stakes = stakerDetails[disp.reportedMiner];
-        disp.disputeUintVars[keccak256("paid")] = 1;
+        disp.disputeUintVars[_PAID] = 1;
         if (last.disputeVotePassed == true) {
             //Changing the currentStatus and startDate unstakes the reported miner and transfers the stakeAmount
             stakes.startDate = block.timestamp - (block.timestamp % 86400);
 
             //Reduce the staker count
-            uints[keccak256("stakerCount")] -= 1;
+            uints[_STAKE_COUNT] -= 1;
 
             //Update the minimum dispute fee that is based on the number of stakers
             updateMinDisputeFee();
@@ -399,7 +363,7 @@ contract TellorStake is TellorTransfer{
                 _doTransfer(
                     disp.reportedMiner,
                     disp.reportingParty,
-                    uints[keccak256("stakeAmount")]
+                    uints[_STAKE_AMOUNT]
                 );
                 stakes.currentStatus = 0;
             }
@@ -415,27 +379,20 @@ contract TellorStake is TellorTransfer{
                 _doTransfer(
                     address(this),
                     disp2.reportingParty,
-                    disp2.disputeUintVars[keccak256("fee")]
+                    disp2.disputeUintVars[_FEE]
                 );
             }
         } else {
             stakes.currentStatus = 1;
             TellorStorage.Request storage _request =
-                requestDetails[disp.disputeUintVars[keccak256("requestId")]];
-            if (disp.disputeUintVars[keccak256("minerSlot")] == 2) {
+                requestDetails[disp.disputeUintVars[_REQUEST_ID]];
+            if (disp.disputeUintVars[_MINER_SLOT] == 2) {
                 //note we still don't put timestamp back into array (is this an issue? (shouldn't be))
-                _request.finalValues[
-                    disp.disputeUintVars[keccak256("timestamp")]
-                ] = disp.disputeUintVars[keccak256("value")];
+                _request.finalValues[disp.disputeUintVars[_TIMESTAMP]] = disp
+                    .disputeUintVars[_VALUE];
             }
-            if (
-                _request.inDispute[
-                    disp.disputeUintVars[keccak256("timestamp")]
-                ] == true
-            ) {
-                _request.inDispute[
-                    disp.disputeUintVars[keccak256("timestamp")]
-                ] = false;
+            if (_request.inDispute[disp.disputeUintVars[_TIMESTAMP]] == true) {
+                _request.inDispute[disp.disputeUintVars[_TIMESTAMP]] = false;
             }
             for (uint256 i = 0; i < dispRounds; i++) {
                 _id = disp.disputeUintVars[
@@ -447,14 +404,15 @@ contract TellorStake is TellorTransfer{
                 _doTransfer(
                     address(this),
                     last.reportedMiner,
-                    disputesById[_id].disputeUintVars[keccak256("fee")]
+                    disputesById[_id].disputeUintVars[_FEE]
                 );
             }
         }
 
-        if (disp.disputeUintVars[keccak256("minerSlot")] == 2) {
-            requestDetails[disp.disputeUintVars[keccak256("requestId")]]
-                .apiUintVars[keccak256("disputeCount")]--;
+        if (disp.disputeUintVars[_MINER_SLOT] == 2) {
+            requestDetails[disp.disputeUintVars[_REQUEST_ID]].apiUintVars[
+                _DISPUTE_COUNT
+            ]--;
         }
     }
 
@@ -462,17 +420,15 @@ contract TellorStake is TellorTransfer{
      * @dev This function updates the minimum dispute fee as a function of the amount
      * of staked miners
      */
-    function updateMinDisputeFee() 
-        public 
-    {
-        uint256 _stakeAmount = uints[stakeAmount];
-        uint256 _targetMiners = uints[targetMiners];
-        uints[disputeFee] = SafeMath.max(
+    function updateMinDisputeFee() public {
+        uint256 _stakeAmt = uints[_STAKE_AMOUNT];
+        uint256 _trgtMiners = uints[_TARGET_MINERS];
+        uints[_DISPUTE_FEE] = SafeMath.max(
             15e18,
-            (_stakeAmount -
-                ((_stakeAmount *
-                    (SafeMath.min(_targetMiners, uints[stakerCount]) * 1000)) /
-                    _targetMiners) /
+            (_stakeAmt -
+                ((_stakeAmt *
+                    (SafeMath.min(_trgtMiners, uints[_STAKE_COUNT]) * 1000)) /
+                    _trgtMiners) /
                 1000)
         );
     }

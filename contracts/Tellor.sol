@@ -7,6 +7,8 @@ import "./Utilities.sol";
 import "./ITellor.sol";
 import "./SafeMath.sol";
 
+import "hardhat/console.sol";
+
 /**
  * @title Tellor Oracle System
  * @dev Oracle contract where miners can submit the proof of work along with the value.
@@ -52,10 +54,7 @@ contract Tellor is TellorStake {
      */
     function _migrate(address _user) internal {
         require(!migrated[_user], "alredy migrated");
-        _doMint(
-            _user,
-            ITellor(addresses[keccak256("_oldTellor")]).balanceOf(_user)
-        );
+        _doMint(_user, ITellor(addresses[_OLD_TELLOR]).balanceOf(_user));
         migrated[_user] = true;
     }
 
@@ -84,7 +83,7 @@ contract Tellor is TellorStake {
                 block.timestamp - uints[_hashMsgSender] > 15 minutes,
             "Miner can only win rewards once per 15 min"
         );
-        if (uints[slotProgress] != 4) {
+        if (uints[_SLOT_PROGRESS] != 4) {
             _verifyNonce(_nonce);
         }
         uints[_hashMsgSender] = block.timestamp;
@@ -133,8 +132,8 @@ contract Tellor is TellorStake {
         );
         uints[_hashMsgSender] = block.timestamp;
 
-        bytes32 _currChallenge = bytesVars[currentChallenge];
-        uint256 _slotProgress = uints[slotProgress];
+        bytes32 _currChallenge = bytesVars[_CURRENT_CHALLENGE];
+        uint256 _slotP = uints[_SLOT_PROGRESS];
         //Checking and updating Miner Status
         require(
             minersByChallenge[_currChallenge][msg.sender] == false,
@@ -143,29 +142,29 @@ contract Tellor is TellorStake {
         //Update the miner status to true once they submit a value so they don't submit more than once
         minersByChallenge[_currChallenge][msg.sender] = true;
         //Updating Request
-        Request storage _tblock = requestDetails[uints[_tBlock]];
+        Request storage _tblock = requestDetails[uints[_T_BLOCK]];
         //Assigning directly is cheaper than using a for loop
-        _tblock.valuesByTimestamp[0][_slotProgress] = _values[0];
-        _tblock.valuesByTimestamp[1][_slotProgress] = _values[1];
-        _tblock.valuesByTimestamp[2][_slotProgress] = _values[2];
-        _tblock.valuesByTimestamp[3][_slotProgress] = _values[3];
-        _tblock.valuesByTimestamp[4][_slotProgress] = _values[4];
-        _tblock.minersByValue[0][_slotProgress] = msg.sender;
-        _tblock.minersByValue[1][_slotProgress] = msg.sender;
-        _tblock.minersByValue[2][_slotProgress] = msg.sender;
-        _tblock.minersByValue[3][_slotProgress] = msg.sender;
-        _tblock.minersByValue[4][_slotProgress] = msg.sender;
+        _tblock.valuesByTimestamp[0][_slotP] = _values[0];
+        _tblock.valuesByTimestamp[1][_slotP] = _values[1];
+        _tblock.valuesByTimestamp[2][_slotP] = _values[2];
+        _tblock.valuesByTimestamp[3][_slotP] = _values[3];
+        _tblock.valuesByTimestamp[4][_slotP] = _values[4];
+        _tblock.minersByValue[0][_slotP] = msg.sender;
+        _tblock.minersByValue[1][_slotP] = msg.sender;
+        _tblock.minersByValue[2][_slotP] = msg.sender;
+        _tblock.minersByValue[3][_slotP] = msg.sender;
+        _tblock.minersByValue[4][_slotP] = msg.sender;
 
-        if (_slotProgress + 1 == 4) {
+        if (_slotP + 1 == 4) {
             _adjustDifficulty();
         }
 
-        if (_slotProgress + 1 == 5) {
+        if (_slotP + 1 == 5) {
             //slotProgress has been incremented, but we're using the variable on stack to save gas
             _newBlock(_nonce, _requestIds);
-            uints[slotProgress] = 0;
+            uints[_SLOT_PROGRESS] = 0;
         } else {
-            uints[slotProgress]++;
+            uints[_SLOT_PROGRESS]++;
         }
         emit NonceSubmitted(
             msg.sender,
@@ -173,7 +172,7 @@ contract Tellor is TellorStake {
             _requestIds,
             _values,
             _currChallenge,
-            _slotProgress
+            _slotP
         );
     }
 
@@ -193,7 +192,7 @@ contract Tellor is TellorStake {
                             abi.encodePacked(
                                 keccak256(
                                     abi.encodePacked(
-                                        bytesVars[currentChallenge],
+                                        bytesVars[_CURRENT_CHALLENGE],
                                         msg.sender,
                                         _nonce
                                     )
@@ -203,9 +202,9 @@ contract Tellor is TellorStake {
                     )
                 )
             ) %
-                uints[difficulty] ==
+                uints[_DIFFICULTY] ==
                 0 ||
-                block.timestamp - uints[timeOfLastNewValue] >= 15 minutes,
+                block.timestamp - uints[_TIME_OF_LAST_NEW_VALUE] >= 15 minutes,
             "Incorrect nonce for current challenge"
         );
     }
@@ -219,14 +218,14 @@ contract Tellor is TellorStake {
         // If the difference between the timeTarget and how long it takes to solve the challenge this updates the challenge
         //difficulty up or down by the difference between the target time and how long it took to solve the previous challenge
         //otherwise it sets it to 1
-        uint256 timeDiff = block.timestamp - uints[timeOfLastNewValue];
+        uint256 timeDiff = block.timestamp - uints[_TIME_OF_LAST_NEW_VALUE];
         int256 _change = int256(SafeMath.min(1200, timeDiff));
-        int256 _diff = int256(uints[difficulty]);
-        _change = (_diff * (int256(uints[timeTarget]) - _change)) / 4000;
+        int256 _diff = int256(uints[_DIFFICULTY]);
+        _change = (_diff * (int256(uints[_TIME_TARGET]) - _change)) / 4000;
         if (_change == 0) {
             _change = 1;
         }
-        uints[difficulty] = uint256(SafeMath.max(_diff + _change, 1));
+        uints[_DIFFICULTY] = uint256(SafeMath.max(_diff + _change, 1));
     }
 
     /**
@@ -240,12 +239,12 @@ contract Tellor is TellorStake {
     {
         //_timeDiff is how many seconds passed since last block
         uint256 _timeDiff = block.timestamp - _previousTime;
-        uint256 reward = (_timeDiff * uints[currentReward]) / 300;
-        uint256 _tip = uints[currentTotalTips] / 10;
+        uint256 reward = (_timeDiff * uints[_CURRENT_REWARD]) / 300;
+        uint256 _tip = uints[_CURRENT_TOTAL_TIPS] / 10;
         uint256 _devShare = reward / 2;
 
         // Burn half of tips
-        _doBurn(address(this), uints[currentTotalTips] / 2);
+        _doBurn(address(this), uints[_CURRENT_TOTAL_TIPS] / 2);
 
         _doMint(miners[0], reward + _tip);
         _doMint(miners[1], reward + _tip);
@@ -253,8 +252,8 @@ contract Tellor is TellorStake {
         _doMint(miners[3], reward + _tip);
         _doMint(miners[4], reward + _tip);
 
-        _doMint(addresses[_owner], _devShare);
-        uints[currentTotalTips] = 0;
+        _doMint(addresses[_OWNER], _devShare);
+        uints[_CURRENT_TOTAL_TIPS] = 0;
     }
 
     /**
@@ -267,11 +266,11 @@ contract Tellor is TellorStake {
     function _newBlock(string memory _nonce, uint256[5] memory _requestIds)
         internal
     {
-        Request storage _tblock = requestDetails[uints[_tBlock]];
-        bytes32 _currChallenge = bytesVars[currentChallenge];
-        uint256 _previousTime = uints[timeOfLastNewValue];
-        uint256 _timeOfLastNewValue = block.timestamp;
-        uints[timeOfLastNewValue] = _timeOfLastNewValue;
+        Request storage _tblock = requestDetails[uints[_T_BLOCK]];
+        bytes32 _currChallenge = bytesVars[_CURRENT_CHALLENGE];
+        uint256 _previousTime = uints[_TIME_OF_LAST_NEW_VALUE];
+        uint256 _timeOfLastNewValueVar = block.timestamp;
+        uints[_TIME_OF_LAST_NEW_VALUE] = _timeOfLastNewValueVar;
         //this loop sorts the values and stores the median as the official value
         uint256[5] memory a;
         uint256[5] memory b;
@@ -297,53 +296,54 @@ contract Tellor is TellorStake {
             Request storage _request = requestDetails[_requestIds[k]];
             //Save the official(finalValue), timestamp of it, 5 miners and their submitted values for it, and its block number
             a = _tblock.valuesByTimestamp[k];
-            _request.finalValues[_timeOfLastNewValue] = a[2];
+            _request.finalValues[_timeOfLastNewValueVar] = a[2];
             b[k] = a[2];
-            _request.minersByValue[_timeOfLastNewValue] = _tblock.minersByValue[
-                k
-            ];
-            _request.valuesByTimestamp[_timeOfLastNewValue] = _tblock
+            _request.minersByValue[_timeOfLastNewValueVar] = _tblock
+                .minersByValue[k];
+            _request.valuesByTimestamp[_timeOfLastNewValueVar] = _tblock
                 .valuesByTimestamp[k];
             delete _tblock.minersByValue[k];
             delete _tblock.valuesByTimestamp[k];
-            _request.requestTimestamps.push(_timeOfLastNewValue);
-            _request.minedBlockNum[_timeOfLastNewValue] = block.number;
-            _request.apiUintVars[totalTip] = 0;
+            _request.requestTimestamps.push(_timeOfLastNewValueVar);
+            _request.minedBlockNum[_timeOfLastNewValueVar] = block.number;
+            _request.apiUintVars[_TOTAL_TIP] = 0;
         }
         emit NewValue(
             _requestIds,
-            _timeOfLastNewValue,
+            _timeOfLastNewValueVar,
             b,
-            uints[currentTotalTips],
+            uints[_CURRENT_TOTAL_TIPS],
             _currChallenge
         );
         //add timeOfLastValue to the newValueTimestamps array
-        newValueTimestamps.push(_timeOfLastNewValue);
+        newValueTimestamps.push(_timeOfLastNewValueVar);
         address[5] memory miners =
-        requestDetails[_requestIds[0]].minersByValue[_timeOfLastNewValue];
+            requestDetails[_requestIds[0]].minersByValue[
+                _timeOfLastNewValueVar
+            ];
         //pay Miners Rewards
         _payReward(miners, _previousTime);
-        uints[_tBlock]++;
+        uints[_T_BLOCK]++;
         uint256[5] memory _topId = _getTopRequestIDs();
         for (uint256 i = 0; i < 5; i++) {
             currentMiners[i].value = _topId[i];
             requestQ[
-                requestDetails[_topId[i]].apiUintVars[requestQPosition]
+                requestDetails[_topId[i]].apiUintVars[_REQUEST_Q_POSITION]
             ] = 0;
-            uints[currentTotalTips] += requestDetails[_topId[i]].apiUintVars[
-                totalTip
+            uints[_CURRENT_TOTAL_TIPS] += requestDetails[_topId[i]].apiUintVars[
+                _TOTAL_TIP
             ];
         }
         //Issue the the next challenge
         _currChallenge = keccak256(
             abi.encode(_nonce, _currChallenge, blockhash(block.number - 1))
         );
-        bytesVars[currentChallenge] = _currChallenge; // Save hash for next proof
+        bytesVars[_CURRENT_CHALLENGE] = _currChallenge; // Save hash for next proof
         emit NewChallenge(
             _currChallenge,
             _topId,
-            uints[difficulty],
-            uints[currentTotalTips]
+            uints[_DIFFICULTY],
+            uints[_CURRENT_TOTAL_TIPS]
         );
     }
 
@@ -356,20 +356,20 @@ contract Tellor is TellorStake {
     function addTip(uint256 _requestId, uint256 _tip) external {
         require(_requestId != 0, "RequestId is 0");
         require(_tip != 0, "Tip should be greater than 0");
-        uint256 _count = uints[requestCount] + 1;
+        uint256 _count = uints[_REQUEST_COUNT] + 1;
         if (_requestId == _count) {
-            uints[requestCount] = _count;
+            uints[_REQUEST_COUNT] = _count;
         } else {
             require(_requestId < _count, "RequestId is not less than count");
         }
-        _doBurn(msg.sender, _tip);
+        _doTransfer(msg.sender, address(this), _tip);
         //Update the information for the request that should be mined next based on the tip submitted
         updateOnDeck(_requestId, _tip);
         emit TipAdded(
             msg.sender,
             _requestId,
             _tip,
-            requestDetails[_requestId].apiUintVars[totalTip]
+            requestDetails[_requestId].apiUintVars[_TOTAL_TIP]
         );
     }
 
@@ -380,7 +380,7 @@ contract Tellor is TellorStake {
      */
     function updateOnDeck(uint256 _requestId, uint256 _tip) internal {
         Request storage _request = requestDetails[_requestId];
-        _request.apiUintVars[totalTip] = _request.apiUintVars[totalTip].add(
+        _request.apiUintVars[_TOTAL_TIP] = _request.apiUintVars[_TOTAL_TIP].add(
             _tip
         );
         if (
@@ -390,27 +390,27 @@ contract Tellor is TellorStake {
             currentMiners[3].value == _requestId ||
             currentMiners[4].value == _requestId
         ) {
-            uints[currentTotalTips] += _tip;
+            uints[_CURRENT_TOTAL_TIPS] += _tip;
         } else {
             //if the request is not part of the requestQ[51] array
             //then add to the requestQ[51] only if the _payout/tip is greater than the minimum(tip) in the requestQ[51] array
-            if (_request.apiUintVars[requestQPosition] == 0) {
+            if (_request.apiUintVars[_REQUEST_Q_POSITION] == 0) {
                 uint256 _min;
                 uint256 _index;
                 (_min, _index) = _getMin(requestQ);
                 //we have to zero out the oldOne
                 //if the _payout is greater than the current minimum payout in the requestQ[51] or if the minimum is zero
                 //then add it to the requestQ array and map its index information to the requestId and the apiUintVars
-                if (_request.apiUintVars[totalTip] > _min || _min == 0) {
-                    requestQ[_index] = _request.apiUintVars[totalTip];
+                if (_request.apiUintVars[_TOTAL_TIP] > _min || _min == 0) {
+                    requestQ[_index] = _request.apiUintVars[_TOTAL_TIP];
                     requestDetails[requestIdByRequestQIndex[_index]]
-                        .apiUintVars[requestQPosition] = 0;
+                        .apiUintVars[_REQUEST_Q_POSITION] = 0;
                     requestIdByRequestQIndex[_index] = _requestId;
-                    _request.apiUintVars[requestQPosition] = _index;
+                    _request.apiUintVars[_REQUEST_Q_POSITION] = _index;
                 }
                 // else if the requestId is part of the requestQ[51] then update the tip for it
             } else {
-                requestQ[_request.apiUintVars[requestQPosition]] += _tip;
+                requestQ[_request.apiUintVars[_REQUEST_Q_POSITION]] += _tip;
             }
         }
     }
@@ -511,7 +511,7 @@ contract Tellor is TellorStake {
      * contract.
      */
     fallback() external payable {
-        address addr = addresses[keccak256("tellorGetters")];
+        address addr = addresses[_TELLOR_GETTERS];
         (bool result, ) = _delegate(addr);
         assembly {
             returndatacopy(0, 0, returndatasize())

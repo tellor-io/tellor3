@@ -177,7 +177,6 @@ contract("Test Oracle", function(accounts) {
     // assert(x == 2);
   });
 
-  //TODO fix this test
   it("Test 50 requests, proper booting, and mining of 5", async function() {
       // Mining 11 blocks to get the requestQ alright
     for (let index = 0; index < 12; index++) {

@@ -65,7 +65,7 @@ contract TellorStorage {
     }
 
     uint256[51] requestQ; //uint50 array of the top50 requests by payment amount
-    uint256[] newValueTimestamps; //array of all timestamps requested TODO do we need this?
+    uint256[] newValueTimestamps; //array of all timestamps requested
     //Address fields in the Tellor contract are saved the addressVars mapping
     //e.g. addressVars[keccak256("tellorContract")] = address
     //These are the variables saved in this mapping:
@@ -95,7 +95,7 @@ contract TellorStorage {
     // keccak256("currentReward"); // The current reward
     // keccak256("devShare"); // The amount directed towards th devShare
     // keccak256("currentTotalTips"); //
-    //TODO review these fields
+
     //This is a boolean that tells you if a given challenge has been completed by a given miner
     mapping(uint256 => uint256) requestIdByTimestamp; //minedTimestamp to apiId
     mapping(uint256 => uint256) requestIdByRequestQIndex; //link from payoutPoolIndex (position in payout pool array) to apiId

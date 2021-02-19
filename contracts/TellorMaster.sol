@@ -13,19 +13,19 @@ import "./TellorVariables.sol";
 contract TellorMaster is TellorStorage, TellorVariables {
     event NewTellorAddress(address _newTellor);
 
-    constructor(address _tellorContract, address _oldTellor) {
-        addresses[keccak256("_owner")] = msg.sender;
-        addresses[keccak256("_deity")] = msg.sender;
-        addresses[keccak256("tellorContract")] = _tellorContract;
-        addresses[keccak256("_oldTellor")] = _oldTellor;
-        bytesVars[currentChallenge] = bytes32("1");
-        uints[difficulty] = 100;
-        uints[timeTarget] = 240;
-        uints[targetMiners] = 200;
-        uints[currentReward] = 1e18;
-        uints[disputeFee] = 500e18;
-        uints[stakeAmount] = 500e18;
-        uints[timeOfLastNewValue] = block.timestamp - 240;
+    constructor(address _tContract, address _oTellor) {
+        addresses[_OWNER] = msg.sender;
+        addresses[_DEITY] = msg.sender;
+        addresses[_TELLOR_CONTRACT] = _tContract;
+        addresses[_OLD_TELLOR] = _oTellor;
+        bytesVars[_CURRENT_CHALLENGE] = bytes32("1");
+        uints[_DIFFICULTY] = 100;
+        uints[_TIME_TARGET] = 240;
+        uints[_TARGET_MINERS] = 200;
+        uints[_CURRENT_REWARD] = 1e18;
+        uints[_DISPUTE_FEE] = 500e18;
+        uints[_STAKE_AMOUNT] = 500e18;
+        uints[_TIME_OF_LAST_NEW_VALUE] = block.timestamp - 240;
 
         currentMiners[0].value = 1;
         currentMiners[1].value = 2;
@@ -36,19 +36,15 @@ contract TellorMaster is TellorStorage, TellorVariables {
         // Bootstraping Request Queue
         for (uint256 index = 1; index < 51; index++) {
             Request storage req = requestDetails[index];
-            req.apiUintVars[requestQPosition] = index;
+            req.apiUintVars[_REQUEST_Q_POSITION] = index;
             requestIdByRequestQIndex[index] = index;
         }
 
-        // EIP1967 compatibility
-        bytes32 slot =
-            0x7050c9e0f4ca769c69bd3a8ef740bc37934f8e2c036e5a723fd8ee048ed3f8c3;
-
         assembly {
-            sstore(slot, _tellorContract)
+            sstore(_EIP_SLOT, _tContract)
         }
 
-        emit NewTellorAddress(_tellorContract);
+        emit NewTellorAddress(_tContract);
     }
 
     /**
@@ -56,8 +52,8 @@ contract TellorMaster is TellorStorage, TellorVariables {
      * @param _newDeity the new Deity in the contract
      */
     function changeDeity(address _newDeity) external {
-        require(msg.sender == addresses[keccak256("_deity")]);
-        addresses[keccak256("_deity")] = _newDeity;
+        require(msg.sender == addresses[_DEITY]);
+        addresses[_DEITY] = _newDeity;
     }
 
     /**
@@ -65,32 +61,30 @@ contract TellorMaster is TellorStorage, TellorVariables {
      * @param _newOwner the new Owner in the contract
      */
     function changeOwner(address _newOwner) external {
-        require(msg.sender == addresses[keccak256("_owner")]);
-        addresses[keccak256("_owner")] = _newOwner;
+        require(msg.sender == addresses[_OWNER]);
+        addresses[_OWNER] = _newOwner;
     }
 
     /**
      * @dev  allows for the deity to make fast upgrades.  Deity should be 0 address if decentralized
-     * @param _tellorContract the address of the new Tellor Contract
+     * @param _tContract the address of the new Tellor Contract
      */
-    function changeTellorContract(address _tellorContract) external {
-        require(msg.sender == addresses[keccak256("_deity")]);
-        addresses[keccak256("tellorContract")] = _tellorContract;
-        bytes32 slot =
-            0x7050c9e0f4ca769c69bd3a8ef740bc37934f8e2c036e5a723fd8ee048ed3f8c3;
+    function changeTellorContract(address _tContract) external {
+        require(msg.sender == addresses[_DEITY]);
+        addresses[_TELLOR_CONTRACT] = _tContract;
 
         assembly {
-            sstore(slot, _tellorContract)
+            sstore(_EIP_SLOT, _tContract)
         }
     }
 
     /**
      * @dev  allows for the deity to update the TellorStake contract address
-     * @param _tellorGetters the address of the new Tellor Contract
+     * @param _tGetters the address of the new Tellor Contract
      */
-    function changeTellorGetters(address _tellorGetters) external {
-        require(msg.sender == addresses[keccak256("_deity")]);
-        addresses[keccak256("tellorGetters")] = _tellorGetters;
+    function changeTellorGetters(address _tGetters) external {
+        require(msg.sender == addresses[_DEITY]);
+        addresses[_TELLOR_GETTERS] = _tGetters;
     }
 
     /**
@@ -135,7 +129,7 @@ contract TellorMaster is TellorStorage, TellorVariables {
      * contract at the address stored
      */
     fallback() external payable {
-        address addr = addresses[keccak256("tellorContract")];
+        address addr = addresses[_TELLOR_CONTRACT];
         _delegate(addr);
     }
 }
