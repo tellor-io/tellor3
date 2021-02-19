@@ -74,7 +74,7 @@ contract TellorTransfer is TellorStorage, TellorVariables {
         return true;
     }
 
-    /** 
+    /**
      * @dev Getter function for remaining spender balance
      * @param _user address of party with the balance
      * @param _spender address of spender of parties said balance
@@ -130,35 +130,35 @@ contract TellorTransfer is TellorStorage, TellorVariables {
             previousBalance + _amount >= previousBalance,
             "Overflow happened"
         ); // Check for overflow
-        uint256 previousSupply = uints[total_supply];
+        uint256 previousSupply = uints[_TOTAL_SUPPLY];
         require(
             previousSupply + _amount >= previousSupply,
             "Overflow happened"
         );
-        uints[total_supply] += _amount;
+        uints[_TOTAL_SUPPLY] += _amount;
         updateBalanceAtNow(_to, previousBalance + _amount);
         emit Transfer(address(0), _to, _amount);
     }
 
     /**
      * @dev Helps burn TRB Tokens
-     * @param _from is the adress to burn or remove TRB amount 
+     * @param _from is the adress to burn or remove TRB amount
      * @param _amount is the amount of TRB to burn
      */
     function _doBurn(address _from, uint256 _amount) internal {
-        if(_amount == 0 ) return;
+        if (_amount == 0) return;
         uint256 previousBalance = balanceOf(_from);
         require(
             previousBalance - _amount <= previousBalance,
             "Overflow happened"
         ); // Check for overflow
-        uint256 previousSupply = uints[total_supply];
+        uint256 previousSupply = uints[_TOTAL_SUPPLY];
         require(
             previousSupply - _amount <= previousSupply,
             "Overflow happened"
         );
         updateBalanceAtNow(_from, previousBalance - _amount);
-        uints[total_supply] -= _amount;
+        uints[_TOTAL_SUPPLY] -= _amount;
     }
 
     /**
@@ -223,7 +223,7 @@ contract TellorTransfer is TellorStorage, TellorVariables {
             stakerDetails[_user].currentStatus < 5
         ) {
             //Subtracts the stakeAmount from balance if the _user is staked
-            if (balanceOf(_user) - uints[stakeAmount] >= _amount) {
+            if (balanceOf(_user) - uints[_STAKE_AMOUNT] >= _amount) {
                 return true;
             }
             return false;

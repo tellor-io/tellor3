@@ -9,7 +9,7 @@ import "./Utilities.sol";
  * @title Tellor Getters
  * @dev Oracle contract with all tellor getter functions
  */
-contract TellorGetters is TellorStorage, TellorVariables, Utilities {
+contract TellorGetters is TellorStorage, TellorVariables {
     using SafeMath for uint256;
 
     /**
@@ -48,11 +48,7 @@ contract TellorGetters is TellorStorage, TellorVariables, Utilities {
      * addressVars[keccak256("tellorContract")]
      * @return address of the requested variable
      */
-    function getAddressVars(bytes32 _data) 
-        external 
-        view 
-        returns (address) 
-    {
+    function getAddressVars(bytes32 _data) external view returns (address) {
         return addresses[_data];
     }
 
@@ -102,15 +98,15 @@ contract TellorGetters is TellorStorage, TellorVariables, Utilities {
             disp.reportingParty,
             disp.proposedForkAddress,
             [
-                disp.disputeUintVars[keccak256("requestId")],
-                disp.disputeUintVars[keccak256("timestamp")],
-                disp.disputeUintVars[keccak256("value")],
-                disp.disputeUintVars[keccak256("minExecutionDate")],
-                disp.disputeUintVars[keccak256("numberOfVotes")],
-                disp.disputeUintVars[keccak256("blockNumber")],
-                disp.disputeUintVars[keccak256("minerSlot")],
+                disp.disputeUintVars[_REQUEST_ID],
+                disp.disputeUintVars[_TIMESTAMP],
+                disp.disputeUintVars[_VALUE],
+                disp.disputeUintVars[_MIN_EXECUTION_DATE],
+                disp.disputeUintVars[_NUM_OF_VOTES],
+                disp.disputeUintVars[_BLOCK_NUMBER],
+                disp.disputeUintVars[_MINER_SLOT],
                 disp.disputeUintVars[keccak256("quorum")],
-                disp.disputeUintVars[keccak256("fee")]
+                disp.disputeUintVars[_FEE]
             ],
             disp.tally
         );
@@ -150,15 +146,11 @@ contract TellorGetters is TellorStorage, TellorVariables, Utilities {
      * @return value for timestamp of last proof of work submitted
      * @return true if the is a timestamp for the lastNewValue
      */
-    function getLastNewValue() 
-        external 
-        view 
-        returns (uint256, bool) 
-    {
+    function getLastNewValue() external view returns (uint256, bool) {
         return (
             retrieveData(
-                requestIdByTimestamp[uints[keccak256("timeOfLastNewValue")]],
-                uints[timeOfLastNewValue]
+                requestIdByTimestamp[uints[_TIME_OF_LAST_NEW_VALUE]],
+                uints[_TIME_OF_LAST_NEW_VALUE]
             ),
             true
         );
@@ -210,11 +202,10 @@ contract TellorGetters is TellorStorage, TellorVariables, Utilities {
      * @param _timestamp is the timestamp to look up miners for
      * @return the 5 miners' addresses
      */
-    function getMinersByRequestIdAndTimestamp(uint256 _requestId, uint256 _timestamp) 
-        external 
-        view 
-        returns (address[5] memory) 
-    {
+    function getMinersByRequestIdAndTimestamp(
+        uint256 _requestId,
+        uint256 _timestamp
+    ) external view returns (address[5] memory) {
         return requestDetails[_requestId].minersByValue[_timestamp];
     }
 
@@ -264,11 +255,7 @@ contract TellorGetters is TellorStorage, TellorVariables, Utilities {
      * @dev Getter function for the requestQ array
      * @return the requestQ array
      */
-    function getRequestQ() 
-        public 
-        view 
-        returns (uint256[51] memory) 
-    {
+    function getRequestQ() public view returns (uint256[51] memory) {
         return requestQ;
     }
 
@@ -302,8 +289,8 @@ contract TellorGetters is TellorStorage, TellorVariables, Utilities {
     {
         Request storage _request = requestDetails[_requestId];
         return (
-            _request.apiUintVars[keccak256("requestQPosition")],
-            _request.apiUintVars[totalTip]
+            _request.apiUintVars[_REQUEST_Q_POSITION],
+            _request.apiUintVars[_TOTAL_TIP]
         );
     }
 
@@ -355,7 +342,7 @@ contract TellorGetters is TellorStorage, TellorVariables, Utilities {
     /**
      * @dev Getter for the variables saved under the TellorStorageStruct uints variable
      * @param _data the variable to pull from the mapping. _data = keccak256("variable_name")
-     * where variable_name is the variables/strings used to save the data in the mapping. 
+     * where variable_name is the variables/strings used to save the data in the mapping.
      * The variables names in the TellorVariables contract
      * @return uint of specified variable
      */
@@ -395,44 +382,28 @@ contract TellorGetters is TellorStorage, TellorVariables, Utilities {
      * @dev Getter for the total_supply of oracle tokens
      * @return uint total supply
      */
-    function totalSupply() 
-        external 
-        view 
-        returns (uint256) 
-    {
-        return uints[total_supply];
+    function totalSupply() external view returns (uint256) {
+        return uints[_TOTAL_SUPPLY];
     }
 
     /**
      * @dev Allows users to access the token's name
      */
-    function name() 
-        external 
-        pure 
-        returns (string memory) 
-    {
+    function name() external pure returns (string memory) {
         return "Tellor Tributes";
     }
 
     /**
      * @dev Allows users to access the token's symbol
      */
-    function symbol() 
-        external 
-        pure 
-        returns (string memory) 
-    {
+    function symbol() external pure returns (string memory) {
         return "TRB";
     }
 
     /**
      * @dev Allows users to access the number of decimals
      */
-    function decimals() 
-        external 
-        pure 
-        returns (uint8) 
-    {
+    function decimals() external pure returns (uint8) {
         return 18;
     }
 
@@ -446,7 +417,7 @@ contract TellorGetters is TellorStorage, TellorVariables, Utilities {
         returns (
             bytes32 _challenge,
             uint256[5] memory _requestIds,
-            uint256 _difficulty,
+            uint256 _diff,
             uint256 _tip
         )
     {
@@ -454,10 +425,10 @@ contract TellorGetters is TellorStorage, TellorVariables, Utilities {
             _requestIds[i] = currentMiners[i].value;
         }
         return (
-            bytesVars[currentChallenge],
+            bytesVars[_CURRENT_CHALLENGE],
             _requestIds,
-            uints[difficulty],
-            uints[currentTotalTips]
+            uints[_DIFFICULTY],
+            uints[_CURRENT_TOTAL_TIPS]
         );
     }
 
@@ -471,7 +442,9 @@ contract TellorGetters is TellorStorage, TellorVariables, Utilities {
     {
         idsOnDeck = getTopRequestIDs();
         for (uint256 i = 0; i < 5; i++) {
-            tipsOnDeck[i] = requestDetails[idsOnDeck[i]].apiUintVars[totalTip];
+            tipsOnDeck[i] = requestDetails[idsOnDeck[i]].apiUintVars[
+                _TOTAL_TIP
+            ];
         }
     }
 
@@ -483,14 +456,62 @@ contract TellorGetters is TellorStorage, TellorVariables, Utilities {
         view
         returns (uint256[5] memory _requestIds)
     {
+        return _getTopRequestIDs();
+    }
+
+    /**
+     * @dev Getter function for the top 5 requests with highest payouts.
+     * This function is used within the newBlock function
+     * @return _requestIds the top 5 requests ids based on tips or the last 5 requests ids mined
+     */
+    function _getTopRequestIDs()
+        internal
+        view
+        returns (uint256[5] memory _requestIds)
+    {
         uint256[5] memory _max;
         uint256[5] memory _index;
-        (_max, _index) = getMax5(requestQ);
+        (_max, _index) = _getMax5(requestQ);
         for (uint256 i = 0; i < 5; i++) {
             if (_max[i] != 0) {
                 _requestIds[i] = requestIdByRequestQIndex[_index[i]];
             } else {
                 _requestIds[i] = currentMiners[4 - i].value;
+            }
+        }
+    }
+
+    /**
+     * @dev This is an internal function called by updateOnDeck that gets the top 5 values
+     * @param data is an array [51] to determine the top 5 values from
+     * @return max the top 5 values and their index values in the data array
+     */
+    function _getMax5(uint256[51] memory data)
+        internal
+        pure
+        returns (uint256[5] memory max, uint256[5] memory maxIndex)
+    {
+        uint256 min5 = data[1];
+        uint256 minI = 0;
+        for (uint256 j = 0; j < 5; j++) {
+            max[j] = data[j + 1]; //max[0]=data[1]
+            maxIndex[j] = j + 1; //maxIndex[0]= 1
+            if (max[j] < min5) {
+                min5 = max[j];
+                minI = j;
+            }
+        }
+        for (uint256 i = 6; i < data.length; i++) {
+            if (data[i] > min5) {
+                max[minI] = data[i];
+                maxIndex[minI] = i;
+                min5 = data[i];
+                for (uint256 j = 0; j < 5; j++) {
+                    if (max[j] < min5) {
+                        min5 = max[j];
+                        minI = j;
+                    }
+                }
             }
         }
     }

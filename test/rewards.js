@@ -19,8 +19,8 @@ contract("Reward Tests", function(accounts) {
     tellor = await Tellor.new()
     oldTellor = await Tellor.new()
     tellorMaster = await Master.new(tellor.address, oldTellor.address)
-    let getter = await Getters.new()
-    await tellorMaster.changeTellorGetters(getter.address)
+    // let getter = await Getters.new()
+    // await tellorMaster.changeTellorGetters(getter.address)
     master = await ITellor.at(tellorMaster.address)
 
     for (var i = 0; i < accounts.length; i++) {
@@ -43,7 +43,7 @@ contract("Reward Tests", function(accounts) {
   it("Inflation is fixed", async function() {
     await helper.advanceTime(60 * 60 * 16);
     await TestLib.mineBlock(env);
-    let rew = await master.getUintVar(web3.utils.keccak256("currentReward"));
+    let rew = await master.getUintVar(web3.utils.keccak256("_CURRENT_REWARD"));
     assert.equal(rew.toString(), "1000000000000000000");
   });
 
@@ -88,13 +88,13 @@ contract("Reward Tests", function(accounts) {
   });
 
   it("Test zeroing out of currentTips", async function() {
-    let tip = await master.getUintVar(hash("currentTotalTips"));
+    let tip = await master.getUintVar(hash("_CURRENT_TOTAL_TIPS"));
     await master.addTip(1, 100000000000);
     await helper.takeFifteen();
     await TestLib.mineBlock(env);
     await helper.takeFifteen();
     await TestLib.mineBlock(env);
-    let tip1 = await master.getRequestUintVars(1, hash("totalTip"));
+    let tip1 = await master.getRequestUintVars(1, hash("_TOTAL_TIP"));
     assert(tip1.toString() == "0", "tip for request one should be zeroed");
   });
 
@@ -107,7 +107,7 @@ contract("Reward Tests", function(accounts) {
     }
     vars = await master.getRequestVars(vars["1"][0]);
     assert(vars["1"].toString() == "0", "api payout should be zero");
-    vars = await master.getUintVar(web3.utils.keccak256("currentTotalTips"));
+    vars = await master.getUintVar(web3.utils.keccak256("_CURRENT_TOTAL_TIPS"));
     assert(vars == 0, "api payout should be zero");
   });
 });
