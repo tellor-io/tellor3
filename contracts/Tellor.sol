@@ -7,7 +7,6 @@ import "./Utilities.sol";
 import "./ITellor.sol";
 import "./SafeMath.sol";
 
-// TODO review all functions visibility
 /**
  * @title Tellor Oracle System
  * @dev Oracle contract where miners can submit the proof of work along with the value.
@@ -136,8 +135,6 @@ contract Tellor is TellorStake {
 
         bytes32 _currChallenge = bytesVars[currentChallenge];
         uint256 _slotProgress = uints[slotProgress];
-        //Saving the challenge information as unique by using the msg.sender
-
         //Checking and updating Miner Status
         require(
             minersByChallenge[_currChallenge][msg.sender] == false,
@@ -147,7 +144,6 @@ contract Tellor is TellorStake {
         minersByChallenge[_currChallenge][msg.sender] = true;
         //Updating Request
         Request storage _tblock = requestDetails[uints[_tBlock]];
-
         //Assigning directly is cheaper than using a for loop
         _tblock.valuesByTimestamp[0][_slotProgress] = _values[0];
         _tblock.valuesByTimestamp[1][_slotProgress] = _values[1];
@@ -242,10 +238,9 @@ contract Tellor is TellorStake {
     function _payReward(address[5] memory miners, uint256 _previousTime)
         internal
     {
-        //_timeDiff is how many minutes passed since last block
+        //_timeDiff is how many seconds passed since last block
         uint256 _timeDiff = block.timestamp - _previousTime;
-        uint256 _currReward = 1e18;
-        uint256 reward = (_timeDiff * _currReward) / 300;
+        uint256 reward = (_timeDiff * uints[currentReward]) / 300;
         uint256 _tip = uints[currentTotalTips] / 10;
         uint256 _devShare = reward / 2;
 
@@ -273,12 +268,11 @@ contract Tellor is TellorStake {
         internal
     {
         Request storage _tblock = requestDetails[uints[_tBlock]];
-
-        //Sets time of value submission rounded to 1 minute
         bytes32 _currChallenge = bytesVars[currentChallenge];
         uint256 _previousTime = uints[timeOfLastNewValue];
         uint256 _timeOfLastNewValue = block.timestamp;
         uints[timeOfLastNewValue] = _timeOfLastNewValue;
+        //this loop sorts the values and stores the median as the official value
         uint256[5] memory a;
         uint256[5] memory b;
         for (uint256 k = 0; k < 5; k++) {
@@ -323,16 +317,12 @@ contract Tellor is TellorStake {
             uints[currentTotalTips],
             _currChallenge
         );
-        //map the timeOfLastValue to the requestId that was just mined
-        //might as well remove:  requestIdByTimestamp[_timeOfLastNewValue] = _requestIds[0];
         //add timeOfLastValue to the newValueTimestamps array
         newValueTimestamps.push(_timeOfLastNewValue);
-
         address[5] memory miners =
-            requestDetails[_requestIds[0]].minersByValue[_timeOfLastNewValue];
-        //payMinersRewards
+        requestDetails[_requestIds[0]].minersByValue[_timeOfLastNewValue];
+        //pay Miners Rewards
         _payReward(miners, _previousTime);
-
         uints[_tBlock]++;
         uint256[5] memory _topId = _getTopRequestIDs();
         for (uint256 i = 0; i < 5; i++) {
@@ -345,11 +335,9 @@ contract Tellor is TellorStake {
             ];
         }
         //Issue the the next challenge
-
         _currChallenge = keccak256(
             abi.encode(_nonce, _currChallenge, blockhash(block.number - 1))
         );
-
         bytesVars[currentChallenge] = _currChallenge; // Save hash for next proof
         emit NewChallenge(
             _currChallenge,
@@ -506,7 +494,7 @@ contract Tellor is TellorStake {
 
     /**
      * @dev This is an internal function called within the fallback function to help delegate calls.
-     * This functions helps delegate calls to the TellorStake
+     * This functions helps delegate calls to the TellorGetters
      * contract.
      */
     function _delegate(address implementation)
@@ -519,7 +507,7 @@ contract Tellor is TellorStake {
 
     /**
      * @dev The tellor logic does not fit in one contract so it has been split into two:
-     * Tellor and TellorStake. This functions helps delegate calls to the TellorStake
+     * Tellor and TellorGetters This functions helps delegate calls to the TellorGetters
      * contract.
      */
     fallback() external payable {

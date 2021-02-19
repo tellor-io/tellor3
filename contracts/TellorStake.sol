@@ -150,8 +150,6 @@ contract TellorStake is TellorTransfer{
         uint256 disputeId = uints[keccak256("disputeCount")] + 1;
         uints[keccak256("disputeCount")] = disputeId;
 
-        //Sets the new disputeCount as the disputeId
-
         //Ensures that a dispute is not already open for the that miner, requestId and timestamp
         uint256 hashId = disputeIdByDisputeHash[_hash];
         if (hashId != 0) {

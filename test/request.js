@@ -28,18 +28,6 @@ contract("Request and tip tests", function(accounts) {
       await master.addTip(index, 1);
     }
   });
-
-  it("test utilities", async function() {
-    var myArr = [];
-    for (var i = 50; i >= 0; i--) {
-      myArr.push(i);
-    }
-    utilities = await UtilitiesTests.new(master.address);
-    let minT = await utilities.testgetMins(myArr);
-    assert(minT[0] == 0);
-    assert(minT[1] == 50, "index should be correct");
-  });
-
   it("Add Tip", async function() {
 
     let vars = await master.getRequestVars(11);

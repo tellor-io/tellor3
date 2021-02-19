@@ -118,7 +118,7 @@ contract TellorGetters is TellorStorage, TellorVariables, Utilities {
 
     /**
      * @dev Checks if a given hash of miner,requestId has been disputed
-     * @param _hash is the sha256(abi.encodePacked(_miners[2],_requestId));
+     * @param _hash is the sha256(abi.encodePacked(_miners[2],_requestId,_timestamp));
      * @return uint disputeId
      */
     function getDisputeIdByDisputeHash(bytes32 _hash)
@@ -438,9 +438,10 @@ contract TellorGetters is TellorStorage, TellorVariables, Utilities {
 
     /**
      * @dev Getter function for the requestId being mined
+     * returns the currentChallenge, array of requestIDs, difficulty, and the current Tip of the 5 IDs
      */
     function getNewCurrentVariables()
-        public
+        external
         view
         returns (
             bytes32 _challenge,
@@ -461,10 +462,10 @@ contract TellorGetters is TellorStorage, TellorVariables, Utilities {
     }
 
     /**
-     * @dev Getter function for next requestId on queue/request with highest payout at time the function is called
+     * @dev Getter function for next requestIds on queue/request with highest payouts at time the function is called
      */
     function getNewVariablesOnDeck()
-        public
+        external
         view
         returns (uint256[5] memory idsOnDeck, uint256[5] memory tipsOnDeck)
     {
