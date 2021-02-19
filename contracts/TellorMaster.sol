@@ -79,15 +79,6 @@ contract TellorMaster is TellorStorage, TellorVariables {
     }
 
     /**
-     * @dev  allows for the deity to update the TellorStake contract address
-     * @param _tGetters the address of the new Tellor Contract
-     */
-    function changeTellorGetters(address _tGetters) external {
-        require(msg.sender == addresses[_DEITY]);
-        addresses[_TELLOR_GETTERS] = _tGetters;
-    }
-
-    /**
      * @dev This is the internal function that allows for delegate calls to the Tellor logic
      * contract address
      */

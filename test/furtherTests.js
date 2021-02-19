@@ -17,8 +17,9 @@ contract("Further tests", function(accounts) {
     oldTellor = await Tellor.new()
     tellorMaster = await Master.new(tellor.address, oldTellor.address)
     let getter = await Getters.new()
-    await tellorMaster.changeTellorGetters(getter.address)
-    master = await ITellor.at(tellorMaster.address)
+master = await ITellor.at(tellorMaster.address)
+    await master.changeTellorGetters(getter.address)
+    
 
     for (var i = 0; i < 5; i++) {
       //print tokens
@@ -57,7 +58,7 @@ contract("Further tests", function(accounts) {
   it("Test token fee burning", async function() {
     await master.theLazyCoon(accounts[10], web3.utils.toWei("10000", "ether"));
     initTotalSupply = await master.totalSupply();
-    await master.addTip(1, web3.utils.toWei("100", "ether"), {from: accounts[10]});
+    await master.addTip(1, web3.utils.toWei("1000", "ether"), {from: accounts[10]});
     vars = await master.getNewCurrentVariables();
     // assert(vars[3] >= web3.utils.toWei("1000", "ether"), "tip should be big");
     balances = [];
@@ -76,16 +77,16 @@ contract("Further tests", function(accounts) {
     }
     newTotalSupply = await master.totalSupply();
 
-    // assert(changes[0] <= web3.utils.toWei("113.86", "ether"));
-    // assert(changes[1] <= web3.utils.toWei("109.24", "ether"));
-    // assert(changes[2] <= web3.utils.toWei("109.24", "ether"));
-    // assert(changes[3] <= web3.utils.toWei("109.24", "ether"));
-    // assert(changes[4] <= web3.utils.toWei("109.24", "ether"));
+    assert(changes[0] <= web3.utils.toWei("113.86", "ether"));
+    assert(changes[1] <= web3.utils.toWei("109.24", "ether"));
+    assert(changes[2] <= web3.utils.toWei("109.24", "ether"));
+    assert(changes[3] <= web3.utils.toWei("109.24", "ether"));
+    assert(changes[4] <= web3.utils.toWei("109.24", "ether"));
 
     let diff = initTotalSupply.sub(newTotalSupply);
     // console.log(diff.toString());
     assert(
-      newTotalSupply.gt(initTotalSupply),
+      newTotalSupply.lt(initTotalSupply),
       "total supply should have dropped"
     );
   });

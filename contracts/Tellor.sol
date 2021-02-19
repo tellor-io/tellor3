@@ -67,6 +67,15 @@ contract Tellor is TellorStake {
     }
 
     /**
+     * @dev  allows for the deity to update the TellorStake contract address
+     * @param _tGetters the address of the new Tellor Contract
+     */
+    function changeTellorGetters(address _tGetters) external {
+        require(msg.sender == addresses[_DEITY]);
+        addresses[_TELLOR_GETTERS] = _tGetters;
+    }
+
+    /**
      * @dev This function allows miners to submit their mining solution and data requested
      * @param _nonce is the mining solution
      * @param _requestIds iare the 5 request ids being mined
@@ -243,9 +252,6 @@ contract Tellor is TellorStake {
         uint256 _tip = uints[_CURRENT_TOTAL_TIPS] / 10;
         uint256 _devShare = reward / 2;
 
-        // Burn half of tips
-        _doBurn(address(this), uints[_CURRENT_TOTAL_TIPS] / 2);
-
         _doMint(miners[0], reward + _tip);
         _doMint(miners[1], reward + _tip);
         _doMint(miners[2], reward + _tip);
@@ -362,7 +368,7 @@ contract Tellor is TellorStake {
         } else {
             require(_requestId < _count, "RequestId is not less than count");
         }
-        _doTransfer(msg.sender, address(this), _tip);
+        _doBurn(msg.sender, _tip);
         //Update the information for the request that should be mined next based on the tip submitted
         updateOnDeck(_requestId, _tip);
         emit TipAdded(
