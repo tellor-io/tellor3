@@ -12,6 +12,7 @@
   "dependencies": {
     "@nomiclabs/hardhat-etherscan": "^2.1.1",
     "dotenv": "^8.2.0",
+    "hardhat-contract-sizer": "^2.0.2",
     "hardhat-gas-reporter": "^1.0.4",
     "load-json-file": "^6.2.0",
     "node-fetch-polyfill": "^2.0.6"
