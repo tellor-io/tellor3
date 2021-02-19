@@ -29,10 +29,11 @@ contract("Difficulty tests", function(accounts) {
 
     await tellorMaster.changeTellorContract(tellor.address)
 
+
     let getter = await Getters.new()
 master = await ITellor.at(tellorMaster.address)
     await master.changeTellorGetters(getter.address)
-    
+
 
     env = {
       master: master,

@@ -18,7 +18,7 @@ contract("Token Migration and Deity Tests", function(accounts) {
     let getter = await Getters.new()
 master = await ITellor.at(tellorMaster.address)
     await master.changeTellorGetters(getter.address)
-    
+
     baseNum = new BN(web3.utils.toWei("1000", "ether"))
     for (var i = 0; i < 10; i++) {
       let pay = new BN(i+1);
@@ -63,6 +63,7 @@ master = await ITellor.at(tellorMaster.address)
       master = await ITellor.at(tellorMaster.address)
       await master.changeTellorGetters(newGetters.address)
       assert(await master.getAddressVars(hash("_TELLOR_GETTERS")) == newGetters.address)
+
       await tellorMaster.changeOwner(accounts[2])
       assert(await master.getAddressVars(hash("_OWNER")) == accounts[2])
       await tellorMaster.changeTellorContract(newTellor.address)

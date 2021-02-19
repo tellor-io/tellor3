@@ -17,7 +17,7 @@ contract("Token Tests", function(accounts) {
     let getter = await Getters.new()
 master = await ITellor.at(tellorMaster.address)
     await master.changeTellorGetters(getter.address)
-    
+
   });
 
   it("Get Symbol and decimals", async function() {

@@ -16,10 +16,12 @@ contract("Further tests", function(accounts) {
     tellor = await Tellor.new()
     oldTellor = await Tellor.new()
     tellorMaster = await Master.new(tellor.address, oldTellor.address)
+
     let getter = await Getters.new()
 master = await ITellor.at(tellorMaster.address)
     await master.changeTellorGetters(getter.address)
     
+
 
     for (var i = 0; i < 5; i++) {
       //print tokens
