@@ -24,7 +24,7 @@ contract TellorVariables {
     bytes32 constant _DISPUTE_ROUNDS =
         0x6ab2b18aafe78fd59c6a4092015bddd9fcacb8170f72b299074f74d76a91a923; //keccak256("_DISPUTE_ROUNDS");
     bytes32 constant _FEE =
-        0x607744c37698f0ad2c7e8b300d57eaef2f987ccbb958ce7cd316a2c3e663f9ec; //keccak256("FEE");
+        0x1da95f11543c9b03927178e07951795dfc95c7501a9d1cf00e13414ca33bc409; //keccak256("FEE");
     bytes32 constant _MIN_EXECUTION_DATE =
         0x46f7d53798d31923f6952572c6a19ad2d1a8238d26649c2f3493a6d69e425d28; //keccak256("_MIN_EXECUTION_DATE");
     bytes32 constant _MINER_SLOT =

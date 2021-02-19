@@ -15,9 +15,11 @@ contract("Request and tip tests", function(accounts) {
     tellor = await Tellor.new()
     oldTellor = await Tellor.new()
     tellorMaster = await Master.new(tellor.address, oldTellor.address)
-    // let getter = await Getters.new()
-    // await tellorMaster.changeTellorGetters(getter.address)
-    master = await ITellor.at(tellorMaster.address)
+
+    let getter = await Getters.new()
+master = await ITellor.at(tellorMaster.address)
+    await master.changeTellorGetters(getter.address)
+
 
     for (var i = 0; i < accounts.length; i++) {
       //print tokens

@@ -15,9 +15,10 @@ contract("Token Migration and Deity Tests", function(accounts) {
     tellor = await Tellor.new()
     oldTellor = await Tellor.new()
     tellorMaster = await Master.new(tellor.address, oldTellor.address)
-    // let getter = await Getters.new()
-    // await tellorMaster.changeTellorGetters(getter.address)
-    master = await ITellor.at(tellorMaster.address)
+    let getter = await Getters.new()
+master = await ITellor.at(tellorMaster.address)
+    await master.changeTellorGetters(getter.address)
+
     baseNum = new BN(web3.utils.toWei("1000", "ether"))
     for (var i = 0; i < 10; i++) {
       let pay = new BN(i+1);
@@ -58,9 +59,11 @@ contract("Token Migration and Deity Tests", function(accounts) {
   });
   it("Diety tests", async function() {
       newTellor = await Tellor.new()
-      // newGetters = await Getters.new()
-      // await tellorMaster.changeTellorGetters(newGetters.address)
-      // assert(await master.getAddressVars(hash("_TELLOR_GETTERS")) == newGetters.address)
+      newGetters = await Getters.new()
+      master = await ITellor.at(tellorMaster.address)
+      await master.changeTellorGetters(newGetters.address)
+      assert(await master.getAddressVars(hash("_TELLOR_GETTERS")) == newGetters.address)
+
       await tellorMaster.changeOwner(accounts[2])
       assert(await master.getAddressVars(hash("_OWNER")) == accounts[2])
       await tellorMaster.changeTellorContract(newTellor.address)

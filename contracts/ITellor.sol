@@ -340,8 +340,8 @@ abstract contract ITellor {
 
     function manuallySetDifficulty(uint256 _diff) external virtual {}
 
-    function migrate() external{}
-    
+    function migrate() external {}
+
     function getMax(uint256[51] memory data)
         public
         view
@@ -359,4 +359,6 @@ abstract contract ITellor {
         view
         virtual
         returns (uint256[5] memory max, uint256[5] memory maxIndex);
+
+    function changeTellorGetters(address _tGetters) external virtual;
 }
