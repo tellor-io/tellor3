@@ -7,8 +7,6 @@ import "./Utilities.sol";
 import "./ITellor.sol";
 import "./SafeMath.sol";
 
-import "hardhat/console.sol";
-
 /**
  * @title Tellor Oracle System
  * @dev Oracle contract where miners can submit the proof of work along with the value.
