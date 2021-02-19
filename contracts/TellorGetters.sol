@@ -19,7 +19,7 @@ contract TellorGetters is TellorStorage, TellorVariables {
      * @return true if the _miner address provided solved the
      */
     function didMine(bytes32 _challenge, address _miner)
-        public
+        external
         view
         returns (bool)
     {
@@ -74,7 +74,7 @@ contract TellorGetters is TellorStorage, TellorVariables {
      * int count of the current tally
      */
     function getAllDisputeVars(uint256 _disputeId)
-        public
+        external
         view
         returns (
             bytes32,
@@ -139,21 +139,6 @@ contract TellorGetters is TellorStorage, TellorVariables {
         returns (uint256)
     {
         return disputesById[_disputeId].disputeUintVars[_data];
-    }
-
-    /**
-     * @dev Gets the a value for the latest timestamp available
-     * @return value for timestamp of last proof of work submitted
-     * @return true if the is a timestamp for the lastNewValue
-     */
-    function getLastNewValue() external view returns (uint256, bool) {
-        return (
-            retrieveData(
-                requestIdByTimestamp[uints[_TIME_OF_LAST_NEW_VALUE]],
-                uints[_TIME_OF_LAST_NEW_VALUE]
-            ),
-            true
-        );
     }
 
     /**
@@ -255,7 +240,7 @@ contract TellorGetters is TellorStorage, TellorVariables {
      * @dev Getter function for the requestQ array
      * @return the requestQ array
      */
-    function getRequestQ() public view returns (uint256[51] memory) {
+    function getRequestQ() external view returns (uint256[51] memory) {
         return requestQ;
     }
 
@@ -346,7 +331,7 @@ contract TellorGetters is TellorStorage, TellorVariables {
      * The variables names in the TellorVariables contract
      * @return uint of specified variable
      */
-    function getUintVar(bytes32 _data) public view returns (uint256) {
+    function getUintVar(bytes32 _data) external view returns (uint256) {
         return uints[_data];
     }
 
