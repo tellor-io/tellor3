@@ -9,7 +9,7 @@ import "./Utilities.sol";
  * @title Tellor Getters
  * @dev Oracle contract with all tellor getter functions
  */
-contract TellorGetters is TellorStorage, TellorVariables {
+contract TellorGetters is TellorStorage, TellorVariables, Utilities {
     using SafeMath for uint256;
 
     /**

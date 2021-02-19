@@ -11,7 +11,7 @@ import "./SafeMath.sol";
  * @title Tellor Oracle System
  * @dev Oracle contract where miners can submit the proof of work along with the value.
  */
-contract Tellor is TellorStake, TellorGetters {
+contract Tellor is TellorStake {
     using SafeMath for uint256;
 
     event TipAdded(
@@ -436,6 +436,41 @@ contract Tellor is TellorStake, TellorGetters {
                 min = data[i];
                 minIndex = i;
             }
+        }
+    }
+
+    /**
+     * @dev This is an internal function called within the fallback function to help delegate calls.
+     * This functions helps delegate calls to the TellorGetters
+     * contract.
+     */
+    function _delegate(address implementation)
+        internal
+        virtual
+        returns (bool succ, bytes memory ret)
+    {
+        (succ, ret) = implementation.delegatecall(msg.data);
+    }
+
+    /**
+     * @dev The tellor logic does not fit in one contract so it has been split into two:
+     * Tellor and TellorGetters This functions helps delegate calls to the TellorGetters
+     * contract.
+     */
+    fallback() external payable {
+        address addr = addresses[_TELLOR_GETTERS];
+        (bool result, ) = _delegate(addr);
+        assembly {
+            returndatacopy(0, 0, returndatasize())
+
+            switch result
+                // delegatecall returns 0 on error.
+                case 0 {
+                    revert(0, returndatasize())
+                }
+                default {
+                    return(0, returndatasize())
+                }
         }
     }
 }
