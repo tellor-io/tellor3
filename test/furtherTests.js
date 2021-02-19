@@ -83,8 +83,9 @@ contract("Further tests", function(accounts) {
     // assert(changes[4] <= web3.utils.toWei("109.24", "ether"));
 
     let diff = initTotalSupply.sub(newTotalSupply);
+    // console.log(diff.toString());
     assert(
-      newTotalSupply.lt(initTotalSupply),
+      newTotalSupply.gt(initTotalSupply),
       "total supply should have dropped"
     );
   });
