@@ -140,33 +140,7 @@ contract TellorGetters is TellorStorage, TellorVariables {
     {
         return disputesById[_disputeId].disputeUintVars[_data];
     }
-
-    /**
-     * @dev Gets the a value for the latest timestamp available
-     * @param _requestId being requested
-     * @return value for timestamp of last proof of work submitted and if true if it exist or 0 and false if it doesn't
-     */
-    function getLastNewValueById(uint256 _requestId)
-        external
-        view
-        returns (uint256, bool)
-    {
-        Request storage _request = requestDetails[_requestId];
-        if (_request.requestTimestamps.length != 0) {
-            return (
-                retrieveData(
-                    _requestId,
-                    _request.requestTimestamps[
-                        _request.requestTimestamps.length - 1
-                    ]
-                ),
-                true
-            );
-        } else {
-            return (0, false);
-        }
-    }
-
+    
     /**
      * @dev Gets blocknumber for mined timestamp
      * @param _requestId to look up
