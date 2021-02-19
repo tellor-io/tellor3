@@ -1,3 +1,4 @@
+//npx hardhat run --network rinkeby scripts/02_add58Tips.js
 /*******************************************************************/
 
 /**********TEST MIGRATIONS ***************************************/
@@ -23,7 +24,7 @@ var gas_limit = 400000
 console.log(_UTCtime)
 console.log('https://www.etherchain.org/api/gasPriceOracle')
 
-async function addtips(masterAdd, net ) {
+async function add58tips(masterAdd, net ) {
     try {
         if (net == "mainnet") {
             var network = "mainnet"
@@ -35,10 +36,10 @@ async function addtips(masterAdd, net ) {
            console.log( "network not defined")
         }
 
-        var infuraKey = process.env.INFURA_TOKEN
+        var infuraKey = process.env.WEB3_INFURA_PROJECT_ID
         var tellorMasterAddress = masterAdd
-        var pubAddr = process.env.PUBLIC_KEY
-        var privKey = process.env.PRIVATE_KEY
+        var pubAddr = process.env.MIGRATE_PUB
+        var privKey = process.env.MIGRATE_PK
         console.log("infuraKey", infuraKey)
         console.log("Tellor Address: ", tellorMasterAddress)
         console.log("nework", network)
@@ -95,9 +96,9 @@ async function addtips(masterAdd, net ) {
         process.exit()
         }
     }
-
+}
  
-addTips58(tellorMaster)
+add58tips(tellorMaster, rinkeby)
     .then(() => process.exit(0))
     .catch(error => {
         console.error(error);

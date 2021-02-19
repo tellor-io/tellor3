@@ -12,26 +12,32 @@
 
 
 ## Overview <a name="overview"> </a>  
-Ethereum smart contracts cannot access off-chain data. If your smart contract relies on off-chain (e.g. internet) data to evaluate or execute a function, you either have to manually feed the data to your contract, incentivize users to do it, or rely on a centralized party to provide the data.
 
-<b>The Tellor oracle</b> is a decentralized oracle. It provides an option for contracts to securely interact with and obtain data from off-chain.
+<b>The Tellor oracle</b> is a decentralized oracle. It is a crypto-economic system that allows allows smart contracts to securely interact with and obtain data from off-chain.
 
-For more indepth information about Tellor checkout our [documenation](https://github.com/tellor-io/TellorMiner), [whitepaper](https://tellor.io/whitepaper/) and [FAQ](https://tellor.io/faq/) page. 
+For more indepth information about Tellor checkout our [documenation](https://docs.tellor.io/tellor/), [whitepaper](https://docs.tellor.io/tellor/whitepaper/introduction) and [website](https://tellor.io/). 
 
 Quick references are included below: 
 
-* <b>Implement Tellor into your project</b>
+* <b> [Miner Documentation](https://docs.tellor.io/tellor/telliot/telliot)</b>
 
-1. Use npm to install the [usingTellor](https://github.com/tellor-io/usingtellor) repo.
+* <b> [Integration Documentation](https://docs.tellor.io/tellor/integration/introduction)</b>
 
-```bash
-npm install usingtellor
+## Setting up and testing
+
+Install Dependencies
+```
+npm i
+```
+Compile Smart Contracts
+```
+npx hardhat compile
 ```
 
-
-* <b>Miner [Documentation](https://github.com/tellor-io/TellorMiner/)</b>
-
-* <b>General Tellor Developer's [Documentation](https://app.gitbook.com/@tellor-2/s/tellor-docs/dev-documentation/)</b>
+Test Locally
+```
+npx hardhat test
+```
 
 ## Maintainers <a name="maintainers"> </a> 
 This repository is maintained by the [Tellor team](https://github.com/orgs/tellor-io/people)
