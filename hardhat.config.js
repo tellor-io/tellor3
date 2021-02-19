@@ -6,6 +6,7 @@ require("@nomiclabs/hardhat-ethers");
 require("@nomiclabs/hardhat-etherscan");
 require("dotenv").config();
 
+
 //Run this commands to deploy tellor:
 //npx hardhat deploy --oldtelloraddress 0xFe41Cb708CD98C5B20423433309E55b53F79134a --net rinkeby --network rinkeby
 //npx hardhat deploy --oldtelloraddress 0x0Ba45A8b5d5575935B8158a88C631E9F9C95a2e5 --net  --network mainnet
@@ -14,6 +15,8 @@ task("deploy", "Deploy and verify the contracts")
   .addParam("oldtelloraddress", "The old master contract address")
   .addParam("net", "rinkeby or empty for mainnet")
   .setAction(async taskArgs => {
+
+
     console.log("deploy tellor")
     var oldtelloraddress = taskArgs.oldtelloraddress
     var network = taskArgs.net
@@ -78,8 +81,10 @@ task("deploy", "Deploy and verify the contracts")
     },
     )
 
-    await master.changeTellorGetters(getters.address)
-    console.log("tellorGetters address updated to", getters.address)
+    ///instatiate Master with tellor sol before this
+    //await master.changeTellorGetters(getters.address)
+    //console.log("tellorGetters address updated to", getters.address)
+
   });
 
 
@@ -92,7 +97,7 @@ module.exports = {
     settings: {
       optimizer: {
         enabled: true,
-        runs: 5000000
+        runs: 999999
       }
     }
   },
