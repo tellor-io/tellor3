@@ -5,50 +5,12 @@ pragma solidity 0.7.4;
 //Taken partly from: https://github.com/modular-network/ethereum-libraries-array-utils/blob/master/contracts/Array256Lib.sol
 
 contract Utilities {
-    /**
-     * @dev Returns the max value in an array.
-     * The zero position here is ignored. It's because
-     * there's no null in solidity and we map each address
-     * to an index in this array. So when we get 51 parties,
-     * and one person is kicked out of the top 50, we
-     * assign them a 0, and when you get mined and pulled
-     * out of the top 50, also a 0. So then lot's of parties
-     * will have zero as the index so we made the array run
-     * from 1-51 with zero as nothing.
-     * @param data is the array to calculate max from
-     * @return max amount and its index within the array
-     //TODO this function isn't used anywhere
+
+     /**
+        * @dev This is an internal function called by updateOnDeck that gets the top 5 values
+        * @param data is an array [51] to determine the top 5 values from
+        * @return max the top 5 values and their index values in the data array
      */
-    function getMax(uint256[51] memory data)
-        public
-        pure
-        returns (uint256 max, uint256 maxIndex)
-    {
-        maxIndex = 1;
-        max = data[maxIndex];
-        for (uint256 i = 2; i < data.length; i++) {
-            if (data[i] > max) {
-                max = data[i];
-                maxIndex = i;
-            }
-        }
-    }
-
-    function getMin(uint256[51] memory data)
-        public
-        pure
-        returns (uint256 min, uint256 minIndex)
-    {
-        minIndex = data.length - 1;
-        min = data[minIndex];
-        for (uint256 i = data.length - 2; i > 0; i--) {
-            if (data[i] < min) {
-                min = data[i];
-                minIndex = i;
-            }
-        }
-    }
-
     function getMax5(uint256[51] memory data)
         public
         view

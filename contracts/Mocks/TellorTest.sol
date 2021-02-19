@@ -10,6 +10,7 @@ contract TellorTest is Tellor {
         TellorTransfer.updateBalanceAtNow(_address, _amount);
     }
 
+    /*This function uses all the functionality of submitMiningSolution, but bypasses verifyNonce*/
     function testSubmitMiningSolution(
         string calldata _nonce,
         uint256[5] calldata _requestId,
@@ -24,6 +25,7 @@ contract TellorTest is Tellor {
         _submitMiningSolution(_nonce, _requestId, _value);
     }
 
+    /*allows manually setting the difficulty in tests*/
     function manuallySetDifficulty(uint256 _diff) public{
         uints[difficulty] = _diff;
     }

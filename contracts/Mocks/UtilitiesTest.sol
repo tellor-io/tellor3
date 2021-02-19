@@ -25,23 +25,6 @@ contract UtilitiesTest {
         tellorMasterAddress = _TellorMasterAddress;
         tellorMaster = ITellor(tellorMasterAddress);
     }
-
-    /**
-     * @dev Gets the max of the requestQ array
-     */
-    function testgetMax() public view returns (uint256 _max, uint256 _index) {
-        uint256[51] memory requests = tellorMaster.getRequestQ();
-        (_max, _index) = tellorMaster.getMax(requests);
-    }
-
-    /**
-     * @dev Gets the min of the requestQ array
-     */
-    function testgetMin() public view returns (uint256 _min, uint256 _index) {
-        uint256[51] memory requests = tellorMaster.getRequestQ();
-        (_min, _index) = tellorMaster.getMin(requests);
-    }
-
     /**
      * @dev Gets the top 5 of the array provided
      * @param requests is an array of length 51
@@ -53,13 +36,5 @@ contract UtilitiesTest {
         returns (uint256[5] memory _max, uint256[5] memory _index)
     {
         (_max, _index) = tellorMaster.getMax5(requests);
-    }
-
-    function testgetMins(uint256[51] memory requests)
-        public
-        view
-        returns (uint256 _min, uint256 _index)
-    {
-        (_min, _index) = tellorMaster.getMin(requests);
     }
 }

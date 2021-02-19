@@ -18,7 +18,7 @@ contract TellorMaster is TellorStorage, TellorVariables {
         addresses[keccak256("_deity")] = msg.sender;
         addresses[keccak256("tellorContract")] = _tellorContract;
         addresses[keccak256("_oldTellor")] = _oldTellor;
-
+        bytesVars[currentChallenge] = bytes32("1");
         uints[difficulty] = 100;
         uints[timeTarget] = 240;
         uints[targetMiners] = 200;

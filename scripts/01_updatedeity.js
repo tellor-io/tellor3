@@ -1,7 +1,7 @@
-//npx hardhat run --network rinkeby scripts/02_add58Tips.js
+//npx hardhat run --network rinkeby scripts/01_updatedeity.js
 /*******************************************************************/
 
-/**********MIGRATE and tip 58 requests***************************************/
+/**********UPDATE DEITY***************************************/
 
 /******************************************************************/
 require('dotenv').config()
@@ -10,15 +10,17 @@ const ethers = require('ethers');
 const fetch = require('node-fetch-polyfill')
 const path = require("path")
 const loadJsonFile = require('load-json-file')
-const Tellor = artifacts.require("./Tellor.sol");
-var tellorAbi = Tellor.abi;
+const TellorMaster = artifacts.require("./TellorMaster.sol");
+var tellorMAbi = TellorMaster.abi;
 
 //Rinkeby
 tellorMaster = '0x4756942F9B7c3824bBAb8F61ea536033FfD9BcD4'
 netw = "rinkeby"
+newDeity = process.env.PUBLIC_KEY
 
 //mainnet
 //tellorMaster = ''
+// newDeity = '0x39E419bA25196794B595B2a595Ea8E527ddC9856'
 
 
 var _UTCtime = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
@@ -42,7 +44,7 @@ async function fetchGasPrice() {
 
 }
 
-async function add58tips(masterAdd, net ) {
+async function updateDeity(masterAdd,deity, net ) {
     try {
         if (net == "mainnet") {
             var network = "mainnet"
@@ -56,8 +58,8 @@ async function add58tips(masterAdd, net ) {
 
         var infuraKey = process.env.WEB3_INFURA_PROJECT_ID
         var tellorMasterAddress = masterAdd
-        var pubAddr = process.env.MIGRATE_PUB
-        var privKey = process.env.MIGRATE_PK
+        var pubAddr = process.env.PUBLIC_KEY
+        var privKey = process.env.PRIVATE_PK
         console.log("infuraKey", infuraKey)
         console.log("Tellor Address: ", tellorMasterAddress)
         console.log("nework", network)
@@ -71,7 +73,7 @@ async function add58tips(masterAdd, net ) {
     //fetch current gas price
     try {
         var gasP = await fetchGasPrice()
-        console.log("gasP1", gasP)
+        console.log("gasP", gasP)
     } catch (error) {
         console.error(error)
         console.log("no gas price fetched")
@@ -82,7 +84,7 @@ async function add58tips(masterAdd, net ) {
     try {
         var provider = ethers.getDefaultProvider(network, infuraKey);
         let wallet = new ethers.Wallet(privKey, provider);
-      let contract = new ethers.Contract(tellorMasterAddress, tellorAbi, provider);
+      let contract = new ethers.Contract(tellorMasterAddress, tellorMAbi, provider);
       var contractWithSigner = contract.connect(wallet);
 
     } catch (error) {
@@ -95,54 +97,20 @@ async function add58tips(masterAdd, net ) {
         var balNow = ethers.utils.formatEther(await provider.getBalance(pubAddr))
         console.log("Requests Address", pubAddr)
         console.log("Requester ETH Balance", balNow)
-        //before migrate
-        var ttbalancestart = ethers.utils.formatEther(await contractWithSigner.balanceOf(pubAddr))
-        console.log('before migration Tellor Tributes balance', ttbalancestart)
-        if (ttbalancestart ==0){
-
-        let tx1 = await contractWithSigner.migrate({ from: pubAddr, gasLimit: gas_limit, gasPrice: gasP1 });
+        //Change deity
+        let tx1 = await contractWithSigner.changeDeity(deity, { from: pubAddr, gasLimit: gas_limit, gasPrice: gasP });
         var link1 = "".concat(etherscanUrl, '/tx/', tx1.hash)
         await tx1.wait()
-
-        var ttbalanceend = ethers.utils.formatEther(await contractWithSigner.balanceOf(pubAddr))
-        console.log('after migration Tellor Tributes balance', ttbalanceend)
-        } else{
-            
-            console.log("already migrated")
-        }
+        console.log("deity has been changed to: ", deity)
        
     } catch (error) {
         console.error(error)
         process.exit(1)
     }
-
-    //add tip if gas is retrieved correctly
-    if (gasP != 0 ) {
-        console.log("Send request")
-        for (var i = 1; i < 58; i++) {
-            try {
-              var gasP1 = await fetchGasPrice()
-              let tx = await contractWithSigner.addTip(i, 1, { from: pubAddr, gasLimit: gas_limit, gasPrice: gasP1 });
-              var link = "".concat(etherscanUrl, '/tx/', tx.hash)
-              var ownerlink = "".concat(etherscanUrl, '/address/', tellorMasterAddress)
-              console.log('Yes, a tip was sent for request id ', i)
-              console.log("Hash link: ", link)
-              console.log("Contract link: ", ownerlink)
-              console.log('Waiting for the transaction to be mined');
-              await tx.wait() // If there's an out of gas error the second parameter is the receipt.
-        } catch (error) {
-            console.error(error)
-            process.exit(1)
-        }
-        
-        
-        }
-
-    }
     process.exit()
 }
  
-add58tips(tellorMaster, netw)
+updateDeity(tellorMaster, newDeity, netw)
     .then(() => process.exit(0))
     .catch(error => {
         console.error(error);
