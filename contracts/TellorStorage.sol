@@ -64,7 +64,7 @@ contract TellorStorage {
         mapping(uint256 => uint256[5]) valuesByTimestamp;
     }
 
-    uint256[51] public requestQ; //uint50 array of the top50 requests by payment amount
+    uint256[51] requestQ; //uint50 array of the top50 requests by payment amount
     uint256[] public newValueTimestamps; //array of all timestamps requested
     //Address fields in the Tellor contract are saved the addressVars mapping
     //e.g. addressVars[keccak256("tellorContract")] = address
@@ -97,14 +97,14 @@ contract TellorStorage {
     // keccak256("currentTotalTips"); //
 
     //This is a boolean that tells you if a given challenge has been completed by a given miner
-    mapping(uint256 => uint256) public requestIdByTimestamp; //minedTimestamp to apiId
-    mapping(uint256 => uint256) public requestIdByRequestQIndex; //link from payoutPoolIndex (position in payout pool array) to apiId
+    mapping(uint256 => uint256) requestIdByTimestamp; //minedTimestamp to apiId
+    mapping(uint256 => uint256) requestIdByRequestQIndex; //link from payoutPoolIndex (position in payout pool array) to apiId
     mapping(uint256 => Dispute) public disputesById; //disputeId=> Dispute details
     mapping(bytes32 => uint256) public requestIdByQueryHash; // api bytes32 gets an id = to count of requests array
     mapping(bytes32 => uint256) public disputeIdByDisputeHash; //maps a hash to an ID for each dispute
     mapping(bytes32 => mapping(address => bool)) public minersByChallenge;
     Details[5] public currentMiners; //This struct is for organizing the five mined values to find the median
-    mapping(address => StakeInfo) public stakerDetails; //mapping from a persons address to their staking info
+    mapping(address => StakeInfo) stakerDetails; //mapping from a persons address to their staking info
     mapping(uint256 => Request) requestDetails;
 
     mapping(bytes32 => uint256) public uints;
