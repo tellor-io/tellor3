@@ -1,7 +1,7 @@
-//npx hardhat run --network rinkeby scripts/03_trymigrate.js
+//npx hardhat run --network rinkeby scripts/01_SetGettersinTellor.js
 /*******************************************************************/
 
-/**********MIGRATE and tip 58 requests***************************************/
+/**********UPDATE DEITY***************************************/
 
 /******************************************************************/
 require('dotenv').config()
@@ -10,26 +10,17 @@ const ethers = require('ethers');
 const fetch = require('node-fetch-polyfill')
 const path = require("path")
 const loadJsonFile = require('load-json-file')
-const Tellor = artifacts.require("./Tellor.sol");
-var tellorAbi = Tellor.abi;
+const TellorMaster = artifacts.require("./Tellor.sol");
+var tellorMAbi = TellorMaster.abi;
 
 netw = "rinkeby"
 //Rinkeby
-tellorMaster = '0x4756942F9B7c3824bBAb8F61ea536033FfD9BcD4'
-oldTellor = '0xFe41Cb708CD98C5B20423433309E55b53F79134a'
-
+tellorMaster = '0x88dF592F8eb5D7Bd38bFeF7dEb0fBc02cf3778a0'
+gettersAdd = "0x73e34daC4e76BDA81724D333a02d850CA7fBB038"
 
 //mainnet
-//tellorMaster = ''
-//oldTellor = '0x0Ba45A8b5d5575935B8158a88C631E9F9C95a2e5'
-
-//Address to migrate with old tellor balance--SHOULD GO THROUGH
-var pubAddr = process.env.MIGRATE_PUB
-var privKey = process.env.MIGRATE_PK
-
-//Address to migrate without old tellor balance- SHOULD FAIL
-// var pubAddr = process.env.PUBLIC_KEY
-// var privKey = process.env.PRIVATE_KEY
+//tellorMaster = '??'
+// gettersAdd = "??"
 
 
 var _UTCtime = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
@@ -53,7 +44,7 @@ async function fetchGasPrice() {
 
 }
 
-async function add58tips(masterAdd, oldMasterAdd, net ) {
+async function updateDeity(masterAdd,gettersAdd, net ) {
     try {
         if (net == "mainnet") {
             var network = "mainnet"
@@ -67,8 +58,8 @@ async function add58tips(masterAdd, oldMasterAdd, net ) {
 
         var infuraKey = process.env.WEB3_INFURA_PROJECT_ID
         var tellorMasterAddress = masterAdd
-        var oldTellorMaster = oldMasterAdd
-
+        var pubAddr = process.env.PUBLIC_KEY
+        var privKey = process.env.PRIVATE_PK
         console.log("infuraKey", infuraKey)
         console.log("Tellor Address: ", tellorMasterAddress)
         console.log("nework", network)
@@ -82,7 +73,7 @@ async function add58tips(masterAdd, oldMasterAdd, net ) {
     //fetch current gas price
     try {
         var gasP = await fetchGasPrice()
-        console.log("gasP1", gasP)
+        console.log("gasP", gasP)
     } catch (error) {
         console.error(error)
         console.log("no gas price fetched")
@@ -93,11 +84,8 @@ async function add58tips(masterAdd, oldMasterAdd, net ) {
     try {
         var provider = ethers.getDefaultProvider(network, infuraKey);
         let wallet = new ethers.Wallet(privKey, provider);
-      let contract = new ethers.Contract(tellorMasterAddress, tellorAbi, provider);
+      let contract = new ethers.Contract(tellorMasterAddress, tellorMAbi, provider);
       var contractWithSigner = contract.connect(wallet);
-
-      let oldcontract = new ethers.Contract(oldTellorMaster, tellorAbi, provider);
-      var oldcontractWithSigner = oldcontract.connect(wallet);
 
     } catch (error) {
         console.error(error)
@@ -109,36 +97,20 @@ async function add58tips(masterAdd, oldMasterAdd, net ) {
         var balNow = ethers.utils.formatEther(await provider.getBalance(pubAddr))
         console.log("Requests Address", pubAddr)
         console.log("Requester ETH Balance", balNow)
-        //before migrate
-        //balance on old contract
-        var oldttbalancestart = ethers.utils.formatEther(await oldcontractWithSigner.balanceOf(pubAddr))
-        console.log('old Tellor Tributes balance', oldttbalancestart)
-        //balance on new contract
-        var ttbalancestart = ethers.utils.formatEther(await contractWithSigner.balanceOf(pubAddr))
-        console.log('before migration Tellor Tributes balance', ttbalancestart)
-        if (ttbalancestart ==0){
-
-        let tx1 = await contractWithSigner.migrate({ from: pubAddr, gasLimit: gas_limit, gasPrice: gasP1 });
+        //Change deity
+        let tx1 = await contractWithSigner.changeTellorGetters(gettersAdd, { from: pubAddr, gasLimit: gas_limit, gasPrice: gasP });
         var link1 = "".concat(etherscanUrl, '/tx/', tx1.hash)
         await tx1.wait()
-
-        var ttbalanceend = ethers.utils.formatEther(await contractWithSigner.balanceOf(pubAddr))
-        console.log('after migration Tellor Tributes balance', ttbalanceend)
-        } else{
-            
-            console.log("already migrated")
-        }
+        console.log("gettersAddhas been updated to: ", gettersAdd)
        
     } catch (error) {
         console.error(error)
         process.exit(1)
     }
-
- 
     process.exit()
 }
  
-add58tips(tellorMaster,oldTellor, netw)
+updateDeity(tellorMaster, gettersAdd, netw)
     .then(() => process.exit(0))
     .catch(error => {
         console.error(error);

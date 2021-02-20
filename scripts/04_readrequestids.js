@@ -1,7 +1,7 @@
-//npx hardhat run --network rinkeby scripts/01_updatedeity.js
+//npx hardhat run --network rinkeby scripts/04_readrequestids.js
 /*******************************************************************/
 
-/**********UPDATE DEITY***************************************/
+/**********Read request id values**************************************/
 
 /******************************************************************/
 require('dotenv').config()
@@ -10,11 +10,11 @@ const ethers = require('ethers');
 const fetch = require('node-fetch-polyfill')
 const path = require("path")
 const loadJsonFile = require('load-json-file')
-const TellorMaster = artifacts.require("./TellorMaster.sol");
+const TellorMaster = artifacts.require("./TellorGetters.sol");
 var tellorMAbi = TellorMaster.abi;
 
 //Rinkeby
-tellorMaster = '0x4756942F9B7c3824bBAb8F61ea536033FfD9BcD4'
+tellorMaster = '0x88dF592F8eb5D7Bd38bFeF7dEb0fBc02cf3778a0'
 netw = "rinkeby"
 newDeity = process.env.PUBLIC_KEY
 
@@ -22,29 +22,14 @@ newDeity = process.env.PUBLIC_KEY
 //tellorMaster = ''
 // newDeity = '0x39E419bA25196794B595B2a595Ea8E527ddC9856'
 
-
 var _UTCtime = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
-var gas_limit = 400000
+var gas_limit = 100000
 
 console.log(_UTCtime)
 console.log('https://www.etherchain.org/api/gasPriceOracle')
 
-async function fetchGasPrice() {
-    const URL = `https://www.etherchain.org/api/gasPriceOracle`;
-    try {
-        const fetchResult = fetch(URL);
-        const response = await fetchResult;
-        const jsonData = await response.json();
-        const gasPriceNow = await jsonData.fast * 1;
-        const gasPriceNow2 = await (gasPriceNow) * 1000000000;
-        return (gasPriceNow2);
-    } catch (e) {
-        throw Error(e);
-    }
 
-}
-
-async function updateDeity(masterAdd,deity, net ) {
+async function readreqids(masterAdd,net ) {
     try {
         if (net == "mainnet") {
             var network = "mainnet"
@@ -58,8 +43,8 @@ async function updateDeity(masterAdd,deity, net ) {
 
         var infuraKey = process.env.WEB3_INFURA_PROJECT_ID
         var tellorMasterAddress = masterAdd
-        var pubAddr = process.env.PUBLIC_KEY
-        var privKey = process.env.PRIVATE_PK
+        var pubAddr = process.env.MIGRATE_PUB
+        var privKey = process.env.MIGRATE_PK
         console.log("infuraKey", infuraKey)
         console.log("Tellor Address: ", tellorMasterAddress)
         console.log("nework", network)
@@ -70,16 +55,7 @@ async function updateDeity(masterAdd,deity, net ) {
         process.exit(1)
     }
 
-    //fetch current gas price
-    try {
-        var gasP = await fetchGasPrice()
-        console.log("gasP", gasP)
-    } catch (error) {
-        console.error(error)
-        console.log("no gas price fetched")
-        process.exit(1)
-    }
-  
+
     //Get wallet and network ready
     try {
         var provider = ethers.getDefaultProvider(network, infuraKey);
@@ -94,14 +70,13 @@ async function updateDeity(masterAdd,deity, net ) {
     }
 
     try {
-        var balNow = ethers.utils.formatEther(await provider.getBalance(pubAddr))
-        console.log("Requests Address", pubAddr)
-        console.log("Requester ETH Balance", balNow)
-        //Change deity
-        let tx1 = await contractWithSigner.changeDeity(deity, { from: pubAddr, gasLimit: gas_limit, gasPrice: gasP });
-        var link1 = "".concat(etherscanUrl, '/tx/', tx1.hash)
-        await tx1.wait()
-        console.log("deity has been changed to: ", deity)
+        //Read data
+        for(i=1;i<59;i++){
+            let vars1 = await contractWithSigner.getLastNewValueById(i);
+            //var link1 = "".concat(etherscanUrl, '/tx/', vars1.hash)
+            //await vars1.wait()
+            console.log('Request ID:',i, vars1[0]*1, vars1[1])
+        }
        
     } catch (error) {
         console.error(error)
@@ -110,7 +85,7 @@ async function updateDeity(masterAdd,deity, net ) {
     process.exit()
 }
  
-updateDeity(tellorMaster, newDeity, netw)
+readreqids(tellorMaster, netw)
     .then(() => process.exit(0))
     .catch(error => {
         console.error(error);
