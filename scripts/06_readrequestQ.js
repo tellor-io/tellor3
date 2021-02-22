@@ -1,7 +1,7 @@
-//npx hardhat run --network rinkeby scripts/01_SetGettersInTellor.js
+//npx hardhat run --network rinkeby scripts/06_readrequestQ.js
 /*******************************************************************/
 
-/**********UPDATE DEITY***************************************/
+/**********Read requestQ**************************************/
 
 /******************************************************************/
 require('dotenv').config()
@@ -10,41 +10,22 @@ const ethers = require('ethers');
 const fetch = require('node-fetch-polyfill')
 const path = require("path")
 const loadJsonFile = require('load-json-file')
-const TellorMaster = artifacts.require("./Tellor.sol");
+const TellorMaster = artifacts.require("./TellorGetters.sol");
 var tellorMAbi = TellorMaster.abi;
 
-netw = "mainnet"
 //Rinkeby
 tellorMaster = '0x88dF592F8eb5D7Bd38bFeF7dEb0fBc02cf3778a0'
-gettersAdd = '0x73e34daC4e76BDA81724D333a02d850CA7fBB038'
-
-//mainnet
-//tellorMaster = '??'
-// gettersAdd = "??"
+netw = "mainnet"
 
 
 var _UTCtime = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
-var gas_limit = 400000
+var gas_limit = 100000
 
 console.log(_UTCtime)
 console.log('https://www.etherchain.org/api/gasPriceOracle')
 
-async function fetchGasPrice() {
-    const URL = `https://www.etherchain.org/api/gasPriceOracle`;
-    try {
-        const fetchResult = fetch(URL);
-        const response = await fetchResult;
-        const jsonData = await response.json();
-        const gasPriceNow = await jsonData.fast * 1;
-        const gasPriceNow2 = await (gasPriceNow) * 1000000000;
-        return (gasPriceNow2);
-    } catch (e) {
-        throw Error(e);
-    }
 
-}
-
-async function updateDeity(masterAdd,gettersAdd, net ) {
+async function readreqids(masterAdd,net ) {
     try {
         if (net == "mainnet") {
             var network = "mainnet"
@@ -58,11 +39,11 @@ async function updateDeity(masterAdd,gettersAdd, net ) {
 
         var infuraKey = process.env.WEB3_INFURA_PROJECT_ID
         var tellorMasterAddress = masterAdd
-        var pubAddr = process.env.PUBLIC_KEY
-        var privKey = process.env.PRIVATE_KEY
+        var pubAddr = process.env.MIGRATE_PUB
+        var privKey = process.env.MIGRATE_PK
         console.log("infuraKey", infuraKey)
         console.log("Tellor Address: ", tellorMasterAddress)
-        console.log("network", network)
+        console.log("nework", network)
 
     } catch (error) {
         console.error(error)
@@ -70,26 +51,12 @@ async function updateDeity(masterAdd,gettersAdd, net ) {
         process.exit(1)
     }
 
-    //fetch current gas price
-    try {
-        var gasP = await fetchGasPrice()
-        console.log("gasP", gasP)
-    } catch (error) {
-        console.error(error)
-        console.log("no gas price fetched")
-        process.exit(1)
-    }
-  
+
     //Get wallet and network ready
     try {
-        console.log(1)
         var provider = ethers.getDefaultProvider(network, infuraKey);
-        //console.log(2, privKey, provider)
-
         let wallet = new ethers.Wallet(privKey, provider);
-        console.log(3)
       let contract = new ethers.Contract(tellorMasterAddress, tellorMAbi, provider);
-      console.log(4)
       var contractWithSigner = contract.connect(wallet);
 
     } catch (error) {
@@ -99,14 +66,17 @@ async function updateDeity(masterAdd,gettersAdd, net ) {
     }
 
     try {
-        var balNow = ethers.utils.formatEther(await provider.getBalance(pubAddr))
-        console.log("Requests Address", pubAddr)
-        console.log("Requester ETH Balance", balNow)
-        //Change deity
-        let tx1 = await contractWithSigner.changeTellorGetters(gettersAdd, { from: pubAddr, gasLimit: gas_limit, gasPrice: gasP });
-        var link1 = "".concat(etherscanUrl, '/tx/', tx1.hash)
-        await tx1.wait()
-        console.log("gettersAddhas been updated to: ", gettersAdd)
+        //Read data
+
+            var vars1 = await contractWithSigner.getRequestQ();
+            //console.log("requestq", vars1)
+            for(i=1;i<59;i++){
+            console.log('Request ', i, ': ', vars1[i]*1 )
+            }
+
+
+            
+        
        
     } catch (error) {
         console.error(error)
@@ -115,7 +85,7 @@ async function updateDeity(masterAdd,gettersAdd, net ) {
     process.exit()
 }
  
-updateDeity(tellorMaster, gettersAdd, netw)
+readreqids(tellorMaster, netw)
     .then(() => process.exit(0))
     .catch(error => {
         console.error(error);

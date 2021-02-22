@@ -15,12 +15,8 @@ var tellorMAbi = TellorMaster.abi;
 
 //Rinkeby
 tellorMaster = '0x88dF592F8eb5D7Bd38bFeF7dEb0fBc02cf3778a0'
-netw = "rinkeby"
-newDeity = process.env.PUBLIC_KEY
+netw = "mainnet"
 
-//mainnet
-//tellorMaster = ''
-// newDeity = '0x39E419bA25196794B595B2a595Ea8E527ddC9856'
 
 var _UTCtime = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
 var gas_limit = 100000

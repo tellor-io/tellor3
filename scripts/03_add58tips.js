@@ -15,7 +15,7 @@ var tellorAbi = Tellor.abi;
 
 //Rinkeby
 tellorMaster = '0x88dF592F8eb5D7Bd38bFeF7dEb0fBc02cf3778a0'
-netw = "rinkeby"
+netw = "mainnet"
 
 //mainnet
 //tellorMaster = ''
@@ -119,7 +119,7 @@ async function add58tips(masterAdd, net ) {
     //add tip if gas is retrieved correctly
     if (gasP != 0 ) {
         console.log("Send request")
-        for (var i = 1; i < 58; i++) {
+        for (var i = 1; i < 59; i++) {
             try {
               var gasP1 = await fetchGasPrice()
               let tx = await contractWithSigner.addTip(i, 1, { from: pubAddr, gasLimit: gas_limit, gasPrice: gasP1 });
