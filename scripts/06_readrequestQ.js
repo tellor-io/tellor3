@@ -15,7 +15,7 @@ var tellorMAbi = TellorMaster.abi;
 
 //Rinkeby
 tellorMaster = '0x88dF592F8eb5D7Bd38bFeF7dEb0fBc02cf3778a0'
-netw = "rinkeby"
+netw = "mainnet"
 
 
 var _UTCtime = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
@@ -69,11 +69,11 @@ async function readreqids(masterAdd,net ) {
         //Read data
 
             var vars1 = await contractWithSigner.getRequestQ();
-            //console.log("requestq", vars1)
+            console.log("requestq", vars1)
             for(i=0;i<51;i++){
             console.log('Request ', i, ': ', vars1[i]*1 )
             var vars2 = await contractWithSigner.getRequestIdByRequestQIndex(i);
-            console.log('Request ID by index ', i, ': ', vars2[i]*1 )
+            console.log('Request ID by index ', i, ': ', vars2*1 )
             }
 
 

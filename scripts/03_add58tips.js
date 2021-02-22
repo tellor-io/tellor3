@@ -13,12 +13,11 @@ const loadJsonFile = require('load-json-file')
 const Tellor = artifacts.require("./Tellor.sol");
 var tellorAbi = Tellor.abi;
 
-//Rinkeby
+//Rinkeby & mainnet
 tellorMaster = '0x88dF592F8eb5D7Bd38bFeF7dEb0fBc02cf3778a0'
 netw = "mainnet"
 
-//mainnet
-//tellorMaster = ''
+
 
 
 var _UTCtime = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
