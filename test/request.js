@@ -3,7 +3,7 @@ const Master = artifacts.require("./TellorMaster.sol")
 const Tellor = artifacts.require("./TellorTest.sol")
 const ITellor = artifacts.require("./ITellor.sol")
 const UtilitiesTests = artifacts.require("./UtilitiesTest")
-const Getters = artifacts.require("./TellorGetters.sol")
+const Getters = artifacts.require("./Extension.sol")
 const helper = require("./helpers/test_helpers");
 const BN = web3.utils.BN;
 

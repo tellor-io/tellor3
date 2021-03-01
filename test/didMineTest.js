@@ -2,7 +2,7 @@ const TestLib = require("./helpers/testLib");
 const helper = require("./helpers/test_helpers");
 const Master = artifacts.require("TellorMaster")
 const Tellor = artifacts.require("TellorTest")
-const Getters = artifacts.require("TellorGetters")
+const Getters = artifacts.require("Extension")
 const ITellor = artifacts.require("ITellor")
 
 contract("DidMine test", function(accounts) {

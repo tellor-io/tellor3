@@ -4,7 +4,7 @@ const TestLib = require("./helpers/testLib");
 const helper = require("./helpers/test_helpers");
 const Master = artifacts.require("./TellorMaster.sol")
 const Tellor = artifacts.require("./TellorTest.sol")
-const Getters = artifacts.require("./TellorGetters.sol")
+const Getters = artifacts.require("./Extension.sol")
 const ITellor = artifacts.require("./ITellor")
 const hash = web3.utils.keccak256;
 

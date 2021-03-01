@@ -88,7 +88,7 @@ contract Tellor is TellorStake {
      */
     function changeTellorGetters(address _tGetters) external {
         require(msg.sender == addresses[_DEITY]);
-        addresses[_TELLOR_GETTERS] = _tGetters;
+        addresses[_EXTENSION] = _tGetters;
     }
 
     /**
@@ -533,7 +533,7 @@ contract Tellor is TellorStake {
      * contract.
      */
     fallback() external payable {
-        address addr = addresses[_TELLOR_GETTERS];
+        address addr = addresses[_EXTENSION];
         (bool result, ) = _delegate(addr);
         assembly {
             returndatacopy(0, 0, returndatasize())

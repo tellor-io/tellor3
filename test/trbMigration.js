@@ -1,6 +1,6 @@
 const { artifacts } = require("hardhat");
 const Master = artifacts.require("./contracts/TellorMaster.sol")
-const Getters = artifacts.require("./TellorGetters.sol")
+const Getters = artifacts.require("./Extension.sol")
 const Tellor = artifacts.require("./TellorTest.sol")
 const ITellor = artifacts.require("./ITellor.sol")
 const hash = web3.utils.keccak256;
@@ -62,7 +62,7 @@ master = await ITellor.at(tellorMaster.address)
       newGetters = await Getters.new()
       master = await ITellor.at(tellorMaster.address)
       await master.changeTellorGetters(newGetters.address)
-      assert(await master.getAddressVars(hash("_TELLOR_GETTERS")) == newGetters.address)
+      assert(await master.getAddressVars(hash("_EXTENSION")) == newGetters.address)
 
       await tellorMaster.changeOwner(accounts[2])
       assert(await master.getAddressVars(hash("_OWNER")) == accounts[2])

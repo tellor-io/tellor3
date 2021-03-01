@@ -2,7 +2,7 @@ const { artifacts } = require("hardhat");
 const helper = require("./helpers/test_helpers");
 const TestLib = require("./helpers/testLib");const Master = artifacts.require("./TellorMaster.sol")
 const Tellor = artifacts.require("./TellorTest.sol")
-const Getters = artifacts.require("./TellorGetters.sol")
+const Getters = artifacts.require("./Extension.sol")
 const ITellor = artifacts.require("./ITellor")
 const { stakeAmount } = require("./helpers/constants");
 const hash = web3.utils.keccak256;

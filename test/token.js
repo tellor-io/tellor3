@@ -1,6 +1,6 @@
 const { artifacts } = require("hardhat");
 const Master = artifacts.require("./TellorMaster.sol")
-const Getters = artifacts.require("./TellorGetters.sol")
+const Getters = artifacts.require("./Extension.sol")
 const Tellor = artifacts.require("./TellorTest.sol")
 const ITellor = artifacts.require("./ITellor")
 
@@ -15,7 +15,7 @@ contract("Token Tests", function(accounts) {
     tellorMaster = await Master.new(tellor.address, oldTellor.address)
     
     let getter = await Getters.new()
-master = await ITellor.at(tellorMaster.address)
+    master = await ITellor.at(tellorMaster.address)
     await master.changeTellorGetters(getter.address)
 
   });
