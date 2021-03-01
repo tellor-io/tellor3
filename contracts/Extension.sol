@@ -9,6 +9,24 @@ import "./Utilities.sol";
 contract Extension is TellorGetters {
     using SafeMath for uint256;
 
+    /**
+     * @dev  allows for the deity to update the TellorStake contract address
+     * @param _tGetters the address of the new Tellor Contract
+     */
+    function changeTellorGetters(address _tGetters) external {
+        require(msg.sender == addresses[_DEITY]);
+        addresses[_EXTENSION] = _tGetters;
+    }
+
+    /**
+     * @dev  allows for the deity to update the TellorStake contract address
+     * @param _migrator the address of the new Tellor Contract
+     */
+    function changeMigrator(address _migrator) external {
+        require(msg.sender == addresses[_DEITY]);
+        addresses[_MIGRATOR] = _migrator;
+    }
+
     //emitted upon dispute tally
     event DisputeVoteTallied(
         uint256 indexed _disputeID,

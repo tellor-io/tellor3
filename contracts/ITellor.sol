@@ -322,4 +322,11 @@ interface ITellor {
         returns (uint256[5] memory max, uint256[5] memory maxIndex);
 
     function changeTellorGetters(address _tGetters) external;
+
+    function changeMigrator(address _migrator) external;
+
+    function getAddressVarByString(string calldata _data)
+        external
+        view
+        returns (address);
 }
