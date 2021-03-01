@@ -329,4 +329,12 @@ interface ITellor {
         external
         view
         returns (address);
+
+    function migrateContract(
+        address _origin,
+        address _destination,
+        uint256 _amount
+    ) external;
+
+    function migrateAddress(address _destination, uint256 _amount) external;
 }

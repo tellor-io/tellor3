@@ -46,6 +46,24 @@ contract Tellor is TellorStake {
     );
 
     /**
+     * @dev  allows for the deity to update the TellorStake contract address
+     * @param _tGetters the address of the new Tellor Contract
+     */
+    function changeTellorGetters(address _tGetters) external {
+        require(msg.sender == addresses[_DEITY]);
+        addresses[_EXTENSION] = _tGetters;
+    }
+
+    /**
+     * @dev  allows for the deity to update the TellorStake contract address
+     * @param _migrator the address of the new Tellor Contract
+     */
+    function changeMigrator(address _migrator) external {
+        require(msg.sender == addresses[_DEITY]);
+        addresses[_MIGRATOR] = _migrator;
+    }
+
+    /**
      * @dev This is an internal function used by the function migrate  that helps to
      *  swap old trb tokens for new ones based on the user's old Tellor balance
      * @param _user is the msg.sender address of the user to migrate the balance from

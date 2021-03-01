@@ -4,6 +4,7 @@ const Getters = artifacts.require("./Extension.sol")
 const Tellor = artifacts.require("./TellorTest.sol")
 const ITellor = artifacts.require("./ITellor")
 const hash = web3.utils.keccak256;
+const helpers = require("./helpers/test_helpers")
 
 
 
@@ -30,71 +31,64 @@ contract("Migrator Test", function(accounts) {
     assert(data3 - 0 == 18);
   });
 
+  it("Migrator should mint tokens for contract", async() => {
+    await master.changeMigrator(accounts[5]);
+    let amount = new web3.utils.BN("10000")
+    let dummyContract = await Tellor.new()
+    await master.migrateContract(dummyContract.address, accounts[2], amount, {from: accounts[5]});
+    let balCon = await master.balanceOf(dummyContract.address)
+    let balUser = await master.balanceOf(accounts[2])
 
-//   it("Get name", async function() {
-//     let name = await master.name();
-//     assert.equal(name, "Tellor Tributes", "the Name should be Tellor Tributes");
-//   });
+    assert.isTrue(balCon.toString() == "0", "contract should not have balance")
+    assert.isTrue(balUser.eq(amount), "user should have balance")
+  })
 
-//   it("Total Supply", async function() {
-//     supply = await master.totalSupply();
-//     assert(
-//       web3.utils.fromWei(supply) < 500000,
-//       "Supply should be less than 100k"
-//     ); //added miner
-//   });
+  it("Shouldn't allow contract to migrate twice", async() => {
+    await master.changeMigrator(accounts[5]);
+    let amount = new web3.utils.BN("10000")
+    let dummyContract = await Tellor.new()
+    await master.migrateContract(dummyContract.address, accounts[2], amount, {from: accounts[5]});
+    let balCon = await master.balanceOf(dummyContract.address)
+    let balUser = await master.balanceOf(accounts[2])
 
-//   it("Token transfer", async function() {
-//     await master.theLazyCoon(accounts[2], web3.utils.toWei("5000", "ether"));
-//     balance2 = await master.balanceOf(accounts[2]);
-//     t = web3.utils.toWei("5", "ether");
-//     balance5 = await master.balanceOf(accounts[5]);
-//     await master.transfer(accounts[5], t, { from: accounts[2] });
-//     balance2a = await master.balanceOf(accounts[2]);
-//     balance5a = await master.balanceOf(accounts[5]);
-//     assert(
-//       web3.utils.fromWei(balance2a, "ether") == 4995,
-//       web3.utils.fromWei(balance2a, "ether") + "should be 995"
-//     );
-//     assert(
-//       web3.utils.fromWei(balance5a) - web3.utils.fromWei(balance5) == 5,
-//       "balance should change by 5"
-//     );
-//   });
-//   it("Approve and transferFrom", async function() {
-//     await master.theLazyCoon(accounts[2], web3.utils.toWei("5000", "ether"));
-//     t = web3.utils.toWei("7", "ether");
-//     await master.approve(accounts[1], t, { from: accounts[2] });
-//     balance5 = await master.balanceOf(accounts[5]);
-//     balance0a = await master.balanceOf(accounts[2]);
-//     await master.transferFrom(accounts[2], accounts[5], t, {
-//       from: accounts[1],
-//     });
-//     balance5a = await master.balanceOf(accounts[5]);
-//     assert(
-//       web3.utils.fromWei(balance5a) - web3.utils.fromWei(balance5) == 7,
-//       "balance should change by 7"
-//     );
-//   });
-//   it("Allowance after approve and transferFrom", async function() {
-//     await master.theLazyCoon(accounts[2], web3.utils.toWei("5000", "ether"));
-//     t = web3.utils.toWei("7", "ether");
-//     t2 = web3.utils.toWei("6", "ether");
-//     await master.approve(accounts[1], t, { from: accounts[2] });
-//     balance0a = await master.balanceOf(accounts[2]);
-//     await master.transferFrom(accounts[2], accounts[5], t2, {
-//       from: accounts[1],
-//     });
-//     balance5a = await master.balanceOf(accounts[5]);
-//     assert(
-//       web3.utils.fromWei(balance5a) - web3.utils.fromWei(balance5) == 6,
-//       "balance for acct 5 should get 6"
-//     );
-//     allow = await master.allowance(accounts[2], accounts[1]);
-//     assert.equal(
-//       web3.utils.fromWei(allow, "ether"),
-//       1,
-//       "Allowance shoudl be 1 eth"
-//     );
-//   });
+    assert.isTrue(balCon.toString() == "0", "contract should not have balance")
+    assert.isTrue(balUser.eq(amount), "user should have balance")
+
+    helpers.expectThrow(master.migrateContract(dummyContract.address, accounts[2], amount, {from: accounts[5]}))
+  })
+
+  it("Should allow contract owner to migrate twice", async() => {
+    await master.changeMigrator(accounts[5]);
+    let amount = new web3.utils.BN("10000")
+    let dummyContract = await Tellor.new()
+    await master.migrateContract(dummyContract.address, accounts[2], amount, {from: accounts[5]});
+    let balCon = await master.balanceOf(dummyContract.address)
+    let balUser = await master.balanceOf(accounts[2])
+
+    assert.isTrue(balCon.toString() == "0", "contract should not have balance")
+    assert.isTrue(balUser.eq(amount), "user should have balance")
+
+    await master.migrateAddress(accounts[2], amount, {from: accounts[5]})
+
+    let balUser2 = await master.balanceOf(accounts[2])
+    assert.isTrue(balUser2.eq(amount.add(amount)), "user should have balance")
+  })
+
+  it("Migrator should mint tokens for adddress", async() => {
+    await master.changeMigrator(accounts[5]);
+    let amount = new web3.utils.BN("10000")
+    await master.migrateAddress(accounts[2], amount, {from: accounts[5]});
+    let balUser = await master.balanceOf(accounts[2])
+    assert.isTrue(balUser.eq(amount), "user should have balance")
+  })
+
+   it("Migrator should not mint tokens for adddress twice", async() => {
+    await master.changeMigrator(accounts[5]);
+    let amount = new web3.utils.BN("10000")
+    await master.migrateAddress(accounts[2], amount, {from: accounts[5]});
+    let balUser = await master.balanceOf(accounts[2])
+    assert.isTrue(balUser.eq(amount), "user should have balance")
+
+    helpers.expectThrow(master.migrateAddress(accounts[2], amount, {from: accounts[5]}))
+  })
 });
