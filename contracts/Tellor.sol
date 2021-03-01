@@ -57,6 +57,24 @@ contract Tellor is TellorStake {
     }
 
     /**
+     * @dev This is an internal function used by the function migrate  that helps to
+     *  swap old trb tokens for new ones based on the user's old Tellor balance
+     * @param _origin is the address of the user to migrate the balance from
+     * @param _destination is the address that will receive tokens
+     * @param _amount iis the amount to mint to the user
+     */
+    function migrateContract(
+        address _origin,
+        address _destination,
+        uint256 _amount
+    ) external {
+        require(msg.sender == addresses[_MIGRATOR], "not allowed");
+        require(!migrated[_origin], "alredy migrated");
+        _doMint(_destination, _amount);
+        migrated[_origin] = true;
+    }
+
+    /**
      * @dev This function allows users to swap old trb tokens for new ones based
      * on the user's old Tellor balance
      */
@@ -166,13 +184,6 @@ contract Tellor is TellorStake {
             _adjustDifficulty();
         }
 
-        if (_slotP + 1 == 5) {
-            //slotProgress has been incremented, but we're using the variable on stack to save gas
-            _newBlock(_nonce, _requestIds);
-            uints[_SLOT_PROGRESS] = 0;
-        } else {
-            uints[_SLOT_PROGRESS]++;
-        }
         emit NonceSubmitted(
             msg.sender,
             _nonce,
@@ -181,6 +192,13 @@ contract Tellor is TellorStake {
             _currChallenge,
             _slotP
         );
+        if (_slotP + 1 == 5) {
+            //slotProgress has been incremented, but we're using the variable on stack to save gas
+            _newBlock(_nonce, _requestIds);
+            uints[_SLOT_PROGRESS] = 0;
+        } else {
+            uints[_SLOT_PROGRESS]++;
+        }
     }
 
     /**
