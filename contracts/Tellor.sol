@@ -47,11 +47,11 @@ contract Tellor is TellorStake {
 
     /**
      * @dev  allows for the deity to update the TellorStake contract address
-     * @param _tGetters the address of the new Tellor Contract
+     * @param _ext the address of the new Tellor Contract
      */
-    function changeTellorGetters(address _tGetters) external {
-        require(msg.sender == addresses[_DEITY]);
-        addresses[_EXTENSION] = _tGetters;
+    function changeExtension(address _ext) external {
+        require(msg.sender == addresses[_DEITY], "only deity can call this fn");
+        addresses[_EXTENSION] = _ext;
     }
 
     /**
@@ -59,7 +59,7 @@ contract Tellor is TellorStake {
      * @param _migrator the address of the new Tellor Contract
      */
     function changeMigrator(address _migrator) external {
-        require(msg.sender == addresses[_DEITY]);
+        require(msg.sender == addresses[_DEITY], "only deity can call this fn");
         addresses[_MIGRATOR] = _migrator;
     }
 
@@ -87,7 +87,7 @@ contract Tellor is TellorStake {
         uint256 _amount
     ) external {
         require(msg.sender == addresses[_MIGRATOR], "not allowed");
-        require(!migrated[_origin], "alredy migrated");
+        require(!migrated[_origin], "already migrated");
         _doMint(_destination, _amount);
         migrated[_origin] = true;
     }

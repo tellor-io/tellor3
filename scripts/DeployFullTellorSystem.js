@@ -30,7 +30,7 @@ async function main(_oldTellor) {
     const Getters = await ethers.getContractFactory("TellorGetters");
     const getters = await Getters.deploy( );
     console.log("tellorStake", getters.address)
-    await tellorMaster.changeTellorGetters(getters.address)
+    await tellorMaster.changeExtension(getters.address)
     console.log('TellorStake has been set on tellorMaster')
   }
 

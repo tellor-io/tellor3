@@ -4,7 +4,7 @@ const helper = require("./helpers/test_helpers");
 const TestLib = require("./helpers/testLib");
 const Master = artifacts.require("./TellorMaster.sol")
 const Tellor = artifacts.require("./TellorTest.sol")
-const Getters = artifacts.require("./Extension.sol")
+const Extension = artifacts.require("./Extension.sol")
 const ITellor = artifacts.require("./ITellor")
 const BN = web3.utils.BN;
 
@@ -30,9 +30,9 @@ contract("Difficulty tests", function(accounts) {
     await tellorMaster.changeTellorContract(tellor.address)
 
 
-    let getter = await Getters.new()
+    let extension = await Extension.new()
 master = await ITellor.at(tellorMaster.address)
-    await master.changeTellorGetters(getter.address)
+    await master.changeExtension(extension.address)
 
 
     env = {

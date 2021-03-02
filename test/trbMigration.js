@@ -1,6 +1,6 @@
 const { artifacts } = require("hardhat");
 const Master = artifacts.require("./contracts/TellorMaster.sol")
-const Getters = artifacts.require("./Extension.sol")
+const Extension = artifacts.require("./Extension.sol")
 const Tellor = artifacts.require("./TellorTest.sol")
 const ITellor = artifacts.require("./ITellor.sol")
 const hash = web3.utils.keccak256;
@@ -15,9 +15,9 @@ contract("Token Migration and Deity Tests", function(accounts) {
     tellor = await Tellor.new()
     oldTellor = await Tellor.new()
     tellorMaster = await Master.new(tellor.address, oldTellor.address)
-    let getter = await Getters.new()
+    let extension = await Extension.new()
 master = await ITellor.at(tellorMaster.address)
-    await master.changeTellorGetters(getter.address)
+    await master.changeExtension(extension.address)
 
     baseNum = new BN(web3.utils.toWei("1000", "ether"))
     for (var i = 0; i < 10; i++) {
@@ -59,10 +59,10 @@ master = await ITellor.at(tellorMaster.address)
   });
   it("Diety tests", async function() {
       newTellor = await Tellor.new()
-      newGetters = await Getters.new()
+      extension = await Extension.new()
       master = await ITellor.at(tellorMaster.address)
-      await master.changeTellorGetters(newGetters.address)
-      assert(await master.getAddressVars(hash("_EXTENSION")) == newGetters.address)
+      await master.changeExtension(extension.address)
+      assert(await master.getAddressVars(hash("_EXTENSION")) == extension.address)
 
       await tellorMaster.changeOwner(accounts[2])
       assert(await master.getAddressVars(hash("_OWNER")) == accounts[2])
