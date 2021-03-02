@@ -46,6 +46,24 @@ contract Tellor is TellorStake {
     );
 
     /**
+     * @dev  allows for the deity to update the TellorStake contract address
+     * @param _ext the address of the new Tellor Contract
+     */
+    function changeExtension(address _ext) external {
+        require(msg.sender == addresses[_DEITY], "only deity can call this fn");
+        addresses[_EXTENSION] = _ext;
+    }
+
+    /**
+     * @dev  allows for the deity to update the TellorStake contract address
+     * @param _migrator the address of the new Tellor Contract
+     */
+    function changeMigrator(address _migrator) external {
+        require(msg.sender == addresses[_DEITY], "only deity can call this fn");
+        addresses[_MIGRATOR] = _migrator;
+    }
+
+    /**
      * @dev This is an internal function used by the function migrate  that helps to
      *  swap old trb tokens for new ones based on the user's old Tellor balance
      * @param _user is the msg.sender address of the user to migrate the balance from
@@ -69,9 +87,22 @@ contract Tellor is TellorStake {
         uint256 _amount
     ) external {
         require(msg.sender == addresses[_MIGRATOR], "not allowed");
-        require(!migrated[_origin], "alredy migrated");
+        require(!migrated[_origin], "already migrated");
         _doMint(_destination, _amount);
         migrated[_origin] = true;
+    }
+
+    /**
+     * @dev This is an internal function used by the function migrate  that helps to
+     *  swap old trb tokens for new ones based on the user's old Tellor balance
+     * @param _destination is the address that will receive tokens
+     * @param _amount iis the amount to mint to the user
+     */
+    function migrateAddress(address _destination, uint256 _amount) external {
+        require(msg.sender == addresses[_MIGRATOR], "not allowed");
+        require(!migrated[_destination], "alredy migrated");
+        _doMint(_destination, _amount);
+        migrated[_destination] = true;
     }
 
     /**
@@ -80,15 +111,6 @@ contract Tellor is TellorStake {
      */
     function migrate() external {
         _migrate(msg.sender);
-    }
-
-    /**
-     * @dev  allows for the deity to update the TellorStake contract address
-     * @param _tGetters the address of the new Tellor Contract
-     */
-    function changeTellorGetters(address _tGetters) external {
-        require(msg.sender == addresses[_DEITY]);
-        addresses[_TELLOR_GETTERS] = _tGetters;
     }
 
     /**
@@ -533,7 +555,7 @@ contract Tellor is TellorStake {
      * contract.
      */
     fallback() external payable {
-        address addr = addresses[_TELLOR_GETTERS];
+        address addr = addresses[_EXTENSION];
         (bool result, ) = _delegate(addr);
         assembly {
             returndatacopy(0, 0, returndatasize())

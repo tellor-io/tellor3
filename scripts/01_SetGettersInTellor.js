@@ -98,7 +98,7 @@ async function updateDeity(masterAdd,gettersAdd, net ) {
         console.log("Requests Address", pubAddr)
         console.log("Requester ETH Balance", balNow)
         //Change deity
-        let tx1 = await contractWithSigner.changeTellorGetters(gettersAdd, { from: pubAddr, gasLimit: gas_limit, gasPrice: gasP });
+        let tx1 = await contractWithSigner.changeExtension(gettersAdd, { from: pubAddr, gasLimit: gas_limit, gasPrice: gasP });
         var link1 = "".concat(etherscanUrl, '/tx/', tx1.hash)
         await tx1.wait()
         console.log("gettersAddhas been updated to: ", gettersAdd)

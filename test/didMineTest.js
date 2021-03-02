@@ -1,8 +1,8 @@
 const TestLib = require("./helpers/testLib");
 const helper = require("./helpers/test_helpers");
-const Master = artifacts.require("TellorMaster")
-const Tellor = artifacts.require("TellorTest")
-const Getters = artifacts.require("TellorGetters")
+const Master = artifacts.require("./TellorMaster")
+const Tellor = artifacts.require("./TellorTest")
+const Extension = artifacts.require("./Extension")
 const ITellor = artifacts.require("ITellor")
 
 contract("DidMine test", function(accounts) {
@@ -18,9 +18,9 @@ contract("DidMine test", function(accounts) {
     tellor = await Tellor.new()
     oldTellor = await Tellor.new()
     tellorMaster = await Master.new(tellor.address, oldTellor.address)
-    let getter = await Getters.new()
+    let extension = await Extension.new()
 master = await ITellor.at(tellorMaster.address)
-    await master.changeTellorGetters(getter.address)
+    await master.changeExtension(extension.address)
     
 
     env = {

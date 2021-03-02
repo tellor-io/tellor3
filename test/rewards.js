@@ -4,7 +4,7 @@ const TestLib = require("./helpers/testLib");
 const helper = require("./helpers/test_helpers");
 const Master = artifacts.require("./TellorMaster.sol")
 const Tellor = artifacts.require("./TellorTest.sol")
-const Getters = artifacts.require("./TellorGetters.sol")
+const Extension = artifacts.require("./Extension.sol")
 const ITellor = artifacts.require("./ITellor")
 const hash = web3.utils.keccak256;
 
@@ -20,9 +20,9 @@ contract("Reward Tests", function(accounts) {
     oldTellor = await Tellor.new()
     tellorMaster = await Master.new(tellor.address, oldTellor.address)
 
-    let getter = await Getters.new()
+    let extension = await Extension.new()
 master = await ITellor.at(tellorMaster.address)
-    await master.changeTellorGetters(getter.address)
+    await master.changeExtension(extension.address)
     
 
     for (var i = 0; i < accounts.length; i++) {

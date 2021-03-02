@@ -82,7 +82,7 @@ task("deploy", "Deploy and verify the contracts")
     )
 
     ///instatiate Master with tellor sol before this
-    //await master.changeTellorGetters(getters.address)
+    //await master.changeExtension(getters.address)
     //console.log("tellorGetters address updated to", getters.address)
 
   });
@@ -97,7 +97,7 @@ module.exports = {
     settings: {
       optimizer: {
         enabled: true,
-        runs: 999999
+        runs: 300
       }
     }
   },
