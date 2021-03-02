@@ -51,7 +51,7 @@ contract Tellor is TellorStake {
      * @param _user is the msg.sender address of the user to migrate the balance from
      */
     function _migrate(address _user) internal {
-        require(!migrated[_user], "alredy migrated");
+        require(!migrated[_user], "Already migrated");
         _doMint(_user, ITellor(addresses[_OLD_TELLOR]).balanceOf(_user));
         migrated[_user] = true;
     }
@@ -94,8 +94,8 @@ contract Tellor is TellorStake {
     /**
      * @dev This function allows miners to submit their mining solution and data requested
      * @param _nonce is the mining solution
-     * @param _requestIds iare the 5 request ids being mined
-     * @param _values are the 5 values correspoding to the 5 request ids
+     * @param _requestIds are the 5 request ids being mined
+     * @param _values are the 5 values corresponding to the 5 request ids
      */
     function submitMiningSolution(
         string calldata _nonce,
@@ -116,12 +116,12 @@ contract Tellor is TellorStake {
     }
 
     /**
-     * @dev This is an internal function used by submitMiningSolution to  allows miners to submit
+     * @dev This is an internal function used by submitMiningSolution to  allow miners to submit
      * their mining solution and data requested. It checks the miner is staked, has not
-     * won in the las 15 min, and checks they are submitting all the correct requestids
+     * won in the last 15 min, and checks they are submitting all the correct requestids
      * @param _nonce is the mining solution
-     * @param _requestIds iare the 5 request ids being mined
-     * @param _values are the 5 values correspoding to the 5 request ids
+     * @param _requestIds are the 5 request ids being mined
+     * @param _values are the 5 values corresponding to the 5 request ids
      */
     function _submitMiningSolution(
         string memory _nonce,
@@ -236,13 +236,13 @@ contract Tellor is TellorStake {
 
     /**
      * @dev This is an internal function used by submitMiningSolution and adjusts the difficulty
-     * based on the the difference between the target time and how long it took to solve
+     * based on the difference between the target time and how long it took to solve
      * the previous challenge otherwise it sets it to 1
      */
     function _adjustDifficulty() internal {
         // If the difference between the timeTarget and how long it takes to solve the challenge this updates the challenge
-        //difficulty up or down by the difference between the target time and how long it took to solve the previous challenge
-        //otherwise it sets it to 1
+        // difficulty up or down by the difference between the target time and how long it took to solve the previous challenge
+        // otherwise it sets it to 1
         uint256 timeDiff = block.timestamp - uints[_TIME_OF_LAST_NEW_VALUE];
         int256 _change = int256(SafeMath.min(1200, timeDiff));
         int256 _diff = int256(uints[_DIFFICULTY]);
@@ -356,7 +356,7 @@ contract Tellor is TellorStake {
                 _TOTAL_TIP
             ];
         }
-        //Issue the the next challenge
+        // Issue the next challenge
         _currChallenge = keccak256(
             abi.encode(_nonce, _currChallenge, blockhash(block.number - 1))
         );
@@ -414,8 +414,8 @@ contract Tellor is TellorStake {
         ) {
             uints[_CURRENT_TOTAL_TIPS] += _tip;
         } else {
-            //if the request is not part of the requestQ[51] array
-            //then add to the requestQ[51] only if the _payout/tip is greater than the minimum(tip) in the requestQ[51] array
+            // if the request is not part of the requestQ[51] array
+            // then add to the requestQ[51] only if the _payout/tip is greater than the minimum(tip) in the requestQ[51] array
             if (_request.apiUintVars[_REQUEST_Q_POSITION] == 0) {
                 uint256 _min;
                 uint256 _index;
@@ -440,7 +440,7 @@ contract Tellor is TellorStake {
     /**
      * @dev This is an internal function called by updateOnDeck that gets the min value
      * @param data is an array [51] to determine the min from
-     * @return min the min value and it's index  in the data array
+     * @return min the min value and it's index in the data array
      */
     function _getMin(uint256[51] memory data)
         internal
