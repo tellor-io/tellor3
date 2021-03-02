@@ -4,7 +4,8 @@ help: ## Displays help.
 
 .PHONY: slither
 slither: ## Run slither security checks.
-	slither . --filter-paths "node_modules/*" --exclude naming-convention,solc-version,pragma,external-function
+	slither . --filter-paths "node_modules/*" --exclude naming-convention,solc-version,pragma,external-function,weak-prng,controlled-delegatecall,uninitialized-state-variables,dangerous-strict-equalities,
+
 .PHONY: solhint
 solhint: ## Run solhint linter.
 	solhint 'contracts/**/*.sol'
