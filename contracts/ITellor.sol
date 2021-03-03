@@ -330,11 +330,22 @@ interface ITellor {
         view
         returns (address);
 
-    function migrateContract(
+    function migrateFrom(
         address _origin,
         address _destination,
         uint256 _amount
     ) external;
 
-    function migrateAddress(address _destination, uint256 _amount) external;
+    function migrateFor(address _destination, uint256 _amount) external;
+
+    function migrateForBatch(
+        address[] calldata _destination,
+        uint256[] calldata _amount
+    ) external;
+
+    function migrateFromBatch(
+        address[] calldata _origin,
+        address[] calldata _destination,
+        uint256[] calldata _amount
+    ) external;
 }
