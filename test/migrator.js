@@ -1,4 +1,4 @@
-const { artifacts } = require("hardhat");
+const { artifacts, assert } = require("hardhat");
 const Master = artifacts.require("./TellorMaster.sol")
 const Extension = artifacts.require("./Extension.sol")
 const Tellor = artifacts.require("./TellorTest.sol")
@@ -42,7 +42,15 @@ contract("Migrator Test", function(accounts) {
     assert.isTrue(balCon.toString() == "0", "contract should not have balance")
     assert.isTrue(balUser.eq(amount), "user should have balance")
   })
-
+  it("Total Supply Should change Properly", async() => {
+    await master.changeMigrator(accounts[5]);
+    let amount = new web3.utils.BN("10000")
+    let dummyContract = await Tellor.new()
+    let initalSupply = await master.totalSupply.call()
+    await master.migrateFrom(dummyContract.address, accounts[2], amount, {from: accounts[5]});
+    let finalSupply = await master.totalSupply.call()
+    assert(finalSupply - amount == initalSupply, "total supply should change correctly")
+  })
   it("Migrator should batch mint tokens for contract", async() => {
     await master.changeMigrator(accounts[5]);
     let amount = new web3.utils.BN("10000")
