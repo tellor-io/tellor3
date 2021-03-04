@@ -57,6 +57,16 @@ master = await ITellor.at(tellorMaster.address)
       master.migrate({from:accounts[1]})
     )
   });
+    it("Migration works if bypass flags", async function() {
+    for (var i = 0; i < 10; i++) {
+      await master.migrate({from:accounts[i]});
+      let pay = new BN(i+1);
+      assert(await master.balanceOf(accounts[i]) - pay.mul(baseNum) == 0)
+    }
+    await helper.expectThrow(
+      master.migrate({from:accounts[1]})
+    )
+  });
   it("Diety tests", async function() {
       newTellor = await Tellor.new()
       extension = await Extension.new()
