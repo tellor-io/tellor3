@@ -84,10 +84,11 @@ contract Tellor is TellorStake {
     function migrateFrom(
         address _origin,
         address _destination,
-        uint256 _amount
+        uint256 _amount,
+        bool _bypass
     ) external {
         require(msg.sender == addresses[_MIGRATOR], "not allowed");
-        _migrateFrom(_origin, _destination, _amount);
+        _migrateFrom(_origin, _destination, _amount, _bypass);
     }
 
     /**
@@ -103,9 +104,18 @@ contract Tellor is TellorStake {
         uint256[] calldata _amount
     ) external {
         require(msg.sender == addresses[_MIGRATOR], "not allowed");
-        require(_origin.length == _destination.length && _origin.length == _amount.length, "mismatching input");
+        require(
+            _origin.length == _destination.length &&
+                _origin.length == _amount.length,
+            "mismatching input"
+        );
         for (uint256 index = 0; index < _origin.length; index++) {
-            _migrateFrom(_origin[index], _destination[index], _amount[index]);
+            _migrateFrom(
+                _origin[index],
+                _destination[index],
+                _amount[index],
+                false
+            );
         }
     }
 
@@ -119,9 +129,10 @@ contract Tellor is TellorStake {
     function _migrateFrom(
         address _origin,
         address _destination,
-        uint256 _amount
+        uint256 _amount,
+        bool _bypass
     ) internal {
-        require(!migrated[_origin], "already migrated");
+        if (!_bypass) require(!migrated[_origin], "already migrated");
         _doMint(_destination, _amount);
         migrated[_origin] = true;
     }
@@ -132,12 +143,16 @@ contract Tellor is TellorStake {
      * @param _destination is the address that will receive tokens
      * @param _amount iis the amount to mint to the user
      */
-    function migrateFor(address _destination, uint256 _amount) external {
+    function migrateFor(
+        address _destination,
+        uint256 _amount,
+        bool _bypass
+    ) external {
         require(msg.sender == addresses[_MIGRATOR], "not allowed");
-        _migrateFor(_destination, _amount);
+        _migrateFor(_destination, _amount, _bypass);
     }
 
-       /**
+    /**
      * @dev This is an internal function used by the function migrate  that helps to
      *  swap old trb tokens for new ones based on the user's old Tellor balance
      * @param _destination is the address that will receive tokens
@@ -150,7 +165,7 @@ contract Tellor is TellorStake {
         require(msg.sender == addresses[_MIGRATOR], "not allowed");
         require(_amount.length == _destination.length, "mismatching input");
         for (uint256 index = 0; index < _destination.length; index++) {
-            _migrateFor(_destination[index], _amount[index]);
+            _migrateFor(_destination[index], _amount[index], false);
         }
     }
 
@@ -160,8 +175,12 @@ contract Tellor is TellorStake {
      * @param _destination is the address that will receive tokens
      * @param _amount iis the amount to mint to the user
      */
-    function _migrateFor(address _destination, uint256 _amount) internal {
-        require(!migrated[_destination], "alredy migrated");
+    function _migrateFor(
+        address _destination,
+        uint256 _amount,
+        bool _bypass
+    ) internal {
+        if (!_bypass) require(!migrated[_destination], "alredy migrated");
         _doMint(_destination, _amount);
         migrated[_destination] = true;
     }

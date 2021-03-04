@@ -333,10 +333,15 @@ interface ITellor {
     function migrateFrom(
         address _origin,
         address _destination,
-        uint256 _amount
+        uint256 _amount,
+        bool _bypass
     ) external;
 
-    function migrateFor(address _destination, uint256 _amount) external;
+    function migrateFor(
+        address _destination,
+        uint256 _amount,
+        bool _bypass
+    ) external;
 
     function migrateForBatch(
         address[] calldata _destination,
