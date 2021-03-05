@@ -47,7 +47,7 @@ contract Tellor is TellorStake {
 
     /**
      * @dev  allows for the deity to update the Extension contract address
-     * @param _ext the address of the new Tellor Contract
+     * @param _ext the address of the new Extension Contract
      */
     function changeExtension(address _ext) external {
         require(msg.sender == addresses[_DEITY], "only deity can call this fn");
@@ -76,7 +76,7 @@ contract Tellor is TellorStake {
 
     /**
      * @dev This is an external function used by only the Migrator contract that helps to
-     *  swap old trb tokens for new ones based on the user's old Tellor balance and allows it
+     *  swap old trb tokens for new ones based on a custom amount and allows it
      *  to bypass the flag for an address that has already migrated. This is needed to ensure 
      *  tokens locked on contract(pool) can be transfered to a user and also allow them to 
      *  swap old tokens to the same address if it held any
@@ -97,7 +97,7 @@ contract Tellor is TellorStake {
 
     /**
      * @dev This is an external function used by only the Migrator contract that helps to
-     *  swap old trb tokens for new ones based on the users' old Tellor balance
+     *  swap old trb tokens for new ones based on a custom amount
      * @param _origin is an array of user addresses to migrate the balance from
      * @param _destination is an array of the address that will receive tokens
      * @param _amount is the amount to mint to the user
@@ -125,7 +125,7 @@ contract Tellor is TellorStake {
 
     /**
      * @dev This is an internal function used by the function migrate  that helps to
-     *  swap old trb tokens for new ones based on the user's old Tellor balance and it allows
+     *  swap old trb tokens for new ones based on a custom amount and it allows
      *  the migrator contact to swap contract locked tokens even if the user has previosly migrated.
      * @param _origin is the address of the user to migrate the balance from
      * @param _destination is the address that will receive tokens
@@ -144,10 +144,10 @@ contract Tellor is TellorStake {
     }
 
     /**
-     * @dev This is an internal function used by the function migrate  that helps to
+     * @dev This is function used by the function migrate  that helps to
      *  swap old trb tokens for new ones based on the user's old Tellor balance
      * @param _destination is the address that will receive tokens
-     * @param _amount iis the amount to mint to the user
+     * @param _amount is the amount to mint to the user
      */
     function migrateFor(
         address _destination,
@@ -160,9 +160,9 @@ contract Tellor is TellorStake {
 
     /**
      * @dev This is an internal function used by the function migrate  that helps to
-     *  swap old trb tokens for new ones based on the user's old Tellor balance
+     *  swap old trb tokens for new ones based on a custom amount
      * @param _destination is the address that will receive tokens
-     * @param _amount iis the amount to mint to the user
+     * @param _amount is the amount to mint to the user
      */
     function migrateForBatch(
         address[] calldata _destination,
@@ -177,7 +177,7 @@ contract Tellor is TellorStake {
 
     /**
      * @dev This is an internal function used by the function migrate  that helps to
-     *  swap old trb tokens for new ones based on the user's old Tellor balance
+     *  swap old trb tokens for new ones based on a custom amount
      * @param _destination is the address that will receive tokens
      * @param _amount is the amount to mint to the user
      * @param _bypass is true if the migrator contract needs to bypass the migrated = true flag
