@@ -9,9 +9,9 @@ import "./Utilities.sol";
 
 /**
  * title Tellor Stake
- * @dev Contains the methods related to miners staking, unstaking, initiating disputes,
- * voting on them. Tellor.sol
- * references this library for function's logic.
+ * @dev Contains the methods related to initiating disputes and
+ * voting on them.
+ * Because of space limitations some functions are currently on the Extensions contract
  */
 
 contract TellorStake is TellorTransfer {
@@ -32,7 +32,6 @@ contract TellorStake is TellorTransfer {
         address indexed _voter,
         uint256 indexed _voteWeight
     );
-    event StakeWithdrawRequested(address indexed _sender); //Emits when a staker begins the 7 day withdraw period
 
     /**
      * @dev Helps initialize a dispute by assigning it a disputeId
