@@ -40,46 +40,69 @@ task("deploy", "Deploy and verify the contracts")
     },
     )
 
-    console.log("deploy tellorMaster")
-    const Master = await ethers.getContractFactory("TellorMaster");
-    const master= await Master.deploy(tellor.address,oldtelloraddress);
-    console.log("Tellor Master deployed to:", master.address);
-    await master.deployed();
-    console.log("TellorMaster deployed to:", "https://" + network + ".etherscan.io/address/" + master.address);
-    console.log("    transaction hash:", "https://" + network + ".etherscan.io/tx/" + master.deployTransaction.hash);
+    console.log("deploy extension")
+    var oldtelloraddress = taskArgs.oldtelloraddress
+    var network = taskArgs.net
+    await run("compile");
+    const Ext = await ethers.getContractFactory("Extension");
+    const extension = await Ext.deploy();
+    console.log("extension  deployed to:", extension.address);
+    await extension.deployed();
+    console.log("Tellor contract deployed to:", "https://" + network + ".etherscan.io/address/" + extension.address);
+    console.log("    transaction hash:", "https://" + network + ".etherscan.io/tx/" + extension.deployTransaction.hash);
 
     // Wait for few confirmed transactions.
     // Otherwise the etherscan api doesn't find the deployed contract.
     console.log('waiting for tx confirmation...');
-    await master.deployTransaction.wait(3)
+    await extension.deployTransaction.wait(3)
 
-    console.log('submitting master for etherscan verification...');
+    console.log('submitting extension for etherscan verification...');
 
     await run("verify:verify", {
-      address: master.address,
-      constructorArguments: [tellor.address, oldtelloraddress],
+      address: extension.address,
     },
     )
 
-    console.log("deploy tellorGetters")
-    const Getters = await ethers.getContractFactory("TellorGetters");
-    const getters = await Getters.deploy();
-    console.log("Getters deployed to:", getters.address);
-    await getters.deployed();
-    console.log("TellorGetters deployed to:", "https://" + network + ".etherscan.io/address/" + getters.address);
-    console.log("    transaction hash:", "https://" + network + ".etherscan.io/tx/" + getters.deployTransaction.hash);
+    // console.log("deploy tellorMaster")
+    // const Master = await ethers.getContractFactory("TellorMaster");
+    // const master= await Master.deploy(tellor.address,oldtelloraddress);
+    // console.log("Tellor Master deployed to:", master.address);
+    // await master.deployed();
+    // console.log("TellorMaster deployed to:", "https://" + network + ".etherscan.io/address/" + master.address);
+    // console.log("    transaction hash:", "https://" + network + ".etherscan.io/tx/" + master.deployTransaction.hash);
 
-    // Wait for few confirmed transactions.
-    // Otherwise the etherscan api doesn't find the deployed contract.
-    console.log('waiting for tx confirmation...');
-    await getters.deployTransaction.wait(3)
+    // // Wait for few confirmed transactions.
+    // // Otherwise the etherscan api doesn't find the deployed contract.
+    // console.log('waiting for tx confirmation...');
+    // await master.deployTransaction.wait(3)
 
-    console.log('submitting for etherscan verification...');
+    // console.log('submitting master for etherscan verification...');
 
-    await run("verify:verify", {
-      address: getters.address,
-    },
-    )
+    // await run("verify:verify", {
+    //   address: master.address,
+    //   constructorArguments: [tellor.address, oldtelloraddress],
+    // },
+    // )
+
+    // console.log("deploy tellorGetters")
+    // const Getters = await ethers.getContractFactory("TellorGetters");
+    // const getters = await Getters.deploy();
+    // console.log("Getters deployed to:", getters.address);
+    // await getters.deployed();
+    // console.log("TellorGetters deployed to:", "https://" + network + ".etherscan.io/address/" + getters.address);
+    // console.log("    transaction hash:", "https://" + network + ".etherscan.io/tx/" + getters.deployTransaction.hash);
+
+    // // Wait for few confirmed transactions.
+    // // Otherwise the etherscan api doesn't find the deployed contract.
+    // console.log('waiting for tx confirmation...');
+    // await getters.deployTransaction.wait(3)
+
+    // console.log('submitting for etherscan verification...');
+
+    // await run("verify:verify", {
+    //   address: getters.address,
+    // },
+    // )
 
     ///instatiate Master with tellor sol before this
     //await master.changeExtension(getters.address)
