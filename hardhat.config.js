@@ -8,11 +8,10 @@ require("dotenv").config();
 
 
 //Run this commands to deploy tellor:
-//npx hardhat deploy --oldtelloraddress 0xFe41Cb708CD98C5B20423433309E55b53F79134a --net rinkeby --network rinkeby
-//npx hardhat deploy --oldtelloraddress 0x0Ba45A8b5d5575935B8158a88C631E9F9C95a2e5 --net  --network mainnet
+//npx hardhat deploy --net rinkeby --network rinkeby
+//npx hardhat deploy --net  --network mainnet
 
 task("deploy", "Deploy and verify the contracts")
-  .addParam("oldtelloraddress", "The old master contract address")
   .addParam("net", "rinkeby or empty for mainnet")
   .setAction(async taskArgs => {
 
@@ -134,25 +133,25 @@ module.exports = {
       },
       allowUnlimitedContractSize: true,
     },
-      // rinkeby: {
-      //   url: `${process.env.NODE_URL_RINKEBY}`,
-      //   accounts: [process.env.PRIVATE_KEY],
-      //   gas: 10000000 ,
-      //   gasPrice: 20000000000
-      // },
-      // mainnet: {
-      //   url: `${process.env.NODE_URL_MAINNET}`,
-      //   accounts: [process.env.PRIVATE_KEY],
-      //   gas: 10000000 ,
-      //   gasPrice: 8000000000
-      // }  
+      rinkeby: {
+        url: `${process.env.NODE_URL_RINKEBY}`,
+        accounts: [process.env.PRIVATE_KEY],
+        gas: 10000000 ,
+        gasPrice: 20000000000
+      },
+      mainnet: {
+        url: `${process.env.NODE_URL_MAINNET}`,
+        accounts: [process.env.PRIVATE_KEY],
+        gas: 10000000 ,
+        gasPrice: 8000000000
+      }  
   },
-  // etherscan: {
-  //     // Your API key for Etherscan
-  //     // Obtain one at https://etherscan.io/
-  //     apiKey: process.env.ETHERSCAN
-  //   },
-
+  etherscan: {
+      // Your API key for Etherscan
+      // Obtain one at https://etherscan.io/
+      apiKey: process.env.ETHERSCAN
+    },
+ 
     contractSizer: {
       alphaSort: true,
       runOnCompile: true,
