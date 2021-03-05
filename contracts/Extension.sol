@@ -1,4 +1,8 @@
 // SPDX-License-Identifier: MIT
+/**
+* This contract holds staking functions, tallyVotes and updateDisputeFee
+* Because of space limitations and will be consolidated in future iterations
+*/
 
 pragma solidity 0.7.4;
 import "./SafeMath.sol";

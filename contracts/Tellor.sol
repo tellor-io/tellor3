@@ -46,7 +46,7 @@ contract Tellor is TellorStake {
     );
 
     /**
-     * @dev  allows for the deity to update the TellorStake contract address
+     * @dev  allows for the deity to update the Extension contract address
      * @param _ext the address of the new Tellor Contract
      */
     function changeExtension(address _ext) external {
@@ -55,7 +55,7 @@ contract Tellor is TellorStake {
     }
 
     /**
-     * @dev  allows for the deity to update the TellorStake contract address
+     * @dev  allows for the deity to update the Migrator contract address
      * @param _migrator the address of the new Tellor Contract
      */
     function changeMigrator(address _migrator) external {
@@ -75,11 +75,15 @@ contract Tellor is TellorStake {
     }
 
     /**
-     * @dev This is an internal function used by the function migrate  that helps to
-     *  swap old trb tokens for new ones based on the user's old Tellor balance
+     * @dev This is an external function used by only the Migrator contract that helps to
+     *  swap old trb tokens for new ones based on the user's old Tellor balance and allows it
+     *  to bypass the flag for an address that has already migrated. This is needed to ensure 
+     *  tokens locked on contract(pool) can be transfered to a user and also allow them to 
+     *  swap old tokens to the same address if it held any
      * @param _origin is the address of the user to migrate the balance from
      * @param _destination is the address that will receive tokens
-     * @param _amount iis the amount to mint to the user
+     * @param _amount is the amount to mint to the user
+     * @param _bypass is a flag used by the migrator to allow it to bypass the "migrated = true" flag
      */
     function migrateFrom(
         address _origin,
@@ -92,11 +96,11 @@ contract Tellor is TellorStake {
     }
 
     /**
-     * @dev This is an internal function used by the function migrate  that helps to
-     *  swap old trb tokens for new ones based on the user's old Tellor balance
-     * @param _origin is the address of the user to migrate the balance from
-     * @param _destination is the address that will receive tokens
-     * @param _amount iis the amount to mint to the user
+     * @dev This is an external function used by only the Migrator contract that helps to
+     *  swap old trb tokens for new ones based on the users' old Tellor balance
+     * @param _origin is an array of user addresses to migrate the balance from
+     * @param _destination is an array of the address that will receive tokens
+     * @param _amount is the amount to mint to the user
      */
     function migrateFromBatch(
         address[] calldata _origin,
@@ -121,10 +125,12 @@ contract Tellor is TellorStake {
 
     /**
      * @dev This is an internal function used by the function migrate  that helps to
-     *  swap old trb tokens for new ones based on the user's old Tellor balance
+     *  swap old trb tokens for new ones based on the user's old Tellor balance and it allows
+     *  the migrator contact to swap contract locked tokens even if the user has previosly migrated.
      * @param _origin is the address of the user to migrate the balance from
      * @param _destination is the address that will receive tokens
-     * @param _amount iis the amount to mint to the user
+     * @param _amount is the amount to mint to the user
+     * @param _bypass is a flag used by the migrator to allow it to bypass the "migrated = true" flag
      */
     function _migrateFrom(
         address _origin,
@@ -173,14 +179,16 @@ contract Tellor is TellorStake {
      * @dev This is an internal function used by the function migrate  that helps to
      *  swap old trb tokens for new ones based on the user's old Tellor balance
      * @param _destination is the address that will receive tokens
-     * @param _amount iis the amount to mint to the user
+     * @param _amount is the amount to mint to the user
+     * @param _bypass is true if the migrator contract needs to bypass the migrated = true flag
+     *  for users that have already  migrated 
      */
     function _migrateFor(
         address _destination,
         uint256 _amount,
         bool _bypass
     ) internal {
-        if (!_bypass) require(!migrated[_destination], "alredy migrated");
+        if (!_bypass) require(!migrated[_destination], "already migrated");
         _doMint(_destination, _amount);
         migrated[_destination] = true;
     }
