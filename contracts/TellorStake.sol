@@ -50,6 +50,7 @@ contract TellorStake is TellorTransfer {
         Request storage _request = requestDetails[_requestId];
         require(_request.minedBlockNum[_timestamp] != 0, "Mined block is 0");
         require(_minerIndex < 5, "Miner index is wrong");
+        require(block.timestamp <= _timestamp + 7 days, "value too old");
 
         //_miner is the miner being disputed. For every mined value 5 miners are saved in an array and the _minerIndex
         //provided by the party initiating the dispute
@@ -206,6 +207,7 @@ contract TellorStake is TellorTransfer {
      * @param _supportsDispute is the vote (true=the dispute has basis false = vote against dispute)
      */
     function vote(uint256 _disputeId, bool _supportsDispute) public {
+        require(_disputeId < uints[_DISPUTE_COUNT], "dispute does not exist");
         Dispute storage disp = disputesById[_disputeId];
 
         //Get the voteWeight or the balance of the user at the time/blockNumber the dispute began
@@ -247,6 +249,7 @@ contract TellorStake is TellorTransfer {
      * @param _disputeId to unlock fee from
      */
     function unlockDisputeFee(uint256 _disputeId) public {
+        require(_disputeId < uints[_DISPUTE_COUNT], "dispute does not exist");
         uint256 origID = disputeIdByDisputeHash[disputesById[_disputeId].hash];
         uint256 lastID =
             disputesById[origID].disputeUintVars[
