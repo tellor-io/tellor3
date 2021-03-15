@@ -144,6 +144,63 @@ contract TellorStake is TellorTransfer {
     }
 
     /**
+     * @dev Allows for a fork to be proposed
+     * @param _propNewTellorAddress address for new proposed Tellor
+     */
+    function proposeFork(address _propNewTellorAddress) public {
+        bytes32 _hash = keccak256(abi.encode(_propNewTellorAddress));
+        uints[_DISPUTE_COUNT]++;
+        uint256 disputeId = uints[_DISPUTE_COUNT];
+        if (disputeIdByDisputeHash[_hash] != 0) {
+            disputesById[disputeId].disputeUintVars[
+                _ORIGINAL_ID
+            ] = disputeIdByDisputeHash[_hash];
+        } else {
+            disputeIdByDisputeHash[_hash] = disputeId;
+        }
+        uint256 origID = disputeIdByDisputeHash[_hash];
+
+        disputesById[origID].disputeUintVars[_DISPUTE_ROUNDS]++;
+        uint256 dispRounds =
+            disputesById[origID].disputeUintVars[_DISPUTE_ROUNDS];
+        disputesById[origID].disputeUintVars[
+            keccak256(abi.encode(dispRounds))
+        ] = disputeId;
+        if (disputeId != origID) {
+            uint256 lastID =
+                disputesById[origID].disputeUintVars[
+                    keccak256(abi.encode(dispRounds - 1))
+                ];
+            require(
+                disputesById[lastID].disputeUintVars[_MIN_EXECUTION_DATE] <=
+                    block.timestamp,
+                "Dispute is already open"
+            );
+            if (disputesById[lastID].executed) {
+                require(
+                    block.timestamp -
+                        disputesById[lastID].disputeUintVars[_TALLY_DATE] <=
+                        1 days,
+                    "Time for voting haven't elapsed"
+                );
+            }
+        }
+        disputesById[disputeId].hash = _hash;
+        disputesById[disputeId].isPropFork = true;
+        // I don't think we need those
+        // disputesById[disputeId].reportedMiner = msg.sender;
+        // disputesById[disputeId].reportingParty = msg.sender;
+        disputesById[disputeId].proposedForkAddress = _propNewTellorAddress;
+        disputesById[disputeId].tally = 0;
+
+        _doTransfer(msg.sender, address(this), 100e18 * 2**(dispRounds - 1)); //This is the fork fee (just 100 tokens flat, no refunds.  Goes up quickly to dispute a bad vote)
+        disputesById[disputeId].disputeUintVars[_BLOCK_NUMBER] = block.number;
+        disputesById[disputeId].disputeUintVars[_MIN_EXECUTION_DATE] =
+            block.timestamp +
+            7 days;
+    }
+
+    /**
      * @dev Allows token holders to vote
      * @param _disputeId is the dispute id
      * @param _supportsDispute is the vote (true=the dispute has basis false = vote against dispute)

@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 /**
-* This contract holds staking functions, tallyVotes and updateDisputeFee
-* Because of space limitations and will be consolidated in future iterations
-*/
+ * This contract holds staking functions, tallyVotes and updateDisputeFee
+ * Because of space limitations and will be consolidated in future iterations
+ */
 
 pragma solidity 0.7.4;
 import "./SafeMath.sol";
@@ -146,6 +146,31 @@ contract Extension is TellorGetters {
             disp.reportingParty,
             disp.disputeVotePassed
         );
+    }
+
+    /**
+     * @dev Updates the Tellor address after a proposed fork has
+     * passed the vote and day has gone by without a dispute
+     * @param _disputeId the disputeId for the proposed fork
+     */
+    function updateTellor(uint256 _disputeId) public {
+        bytes32 _hash = disputesById[_disputeId].hash;
+        uint256 origID = disputeIdByDisputeHash[_hash];
+        uint256 lastID =
+            disputesById[origID].disputeUintVars[
+                keccak256(
+                    abi.encode(
+                        disputesById[origID].disputeUintVars[_DISPUTE_ROUNDS]
+                    )
+                )
+            ];
+        TellorStorage.Dispute storage disp = disputesById[lastID];
+        require(disp.disputeVotePassed == true, "vote needs to pass");
+        require(
+            block.timestamp - disp.disputeUintVars[_TALLY_DATE] > 1 days,
+            "Time for voting for further disputes has not passed"
+        );
+        addresses[_TELLOR_CONTRACT] = disp.proposedForkAddress;
     }
 
     /**

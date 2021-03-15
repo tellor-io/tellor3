@@ -235,7 +235,7 @@ contract TellorTransfer is TellorStorage, TellorVariables {
      * @dev Updates balance for from and to on the current block number via doTransfer
      * @param _value is the new balance
      */
-    function updateBalanceAtNow(address _user, uint256 _value) public {
+    function updateBalanceAtNow(address _user, uint256 _value) internal {
         Checkpoint[] storage checkpoints = balances[_user];
         if (
             checkpoints.length == 0 ||
