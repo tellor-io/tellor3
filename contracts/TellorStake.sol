@@ -189,8 +189,8 @@ contract TellorStake is TellorTransfer {
         disputesById[disputeId].hash = _hash;
         disputesById[disputeId].isPropFork = true;
         // I don't think we need those
-        // disputesById[disputeId].reportedMiner = msg.sender;
-        // disputesById[disputeId].reportingParty = msg.sender;
+        disputesById[disputeId].reportedMiner = msg.sender;
+        disputesById[disputeId].reportingParty = msg.sender;
         disputesById[disputeId].proposedForkAddress = _propNewTellorAddress;
         disputesById[disputeId].tally = 0;
 
@@ -207,7 +207,7 @@ contract TellorStake is TellorTransfer {
      * @param _supportsDispute is the vote (true=the dispute has basis false = vote against dispute)
      */
     function vote(uint256 _disputeId, bool _supportsDispute) public {
-        require(_disputeId < uints[_DISPUTE_COUNT], "dispute does not exist");
+        require(_disputeId <= uints[_DISPUTE_COUNT], "dispute does not exist");
         Dispute storage disp = disputesById[_disputeId];
 
         //Get the voteWeight or the balance of the user at the time/blockNumber the dispute began
@@ -249,7 +249,7 @@ contract TellorStake is TellorTransfer {
      * @param _disputeId to unlock fee from
      */
     function unlockDisputeFee(uint256 _disputeId) public {
-        require(_disputeId < uints[_DISPUTE_COUNT], "dispute does not exist");
+        require(_disputeId <= uints[_DISPUTE_COUNT], "dispute does not exist");
         uint256 origID = disputeIdByDisputeHash[disputesById[_disputeId].hash];
         uint256 lastID =
             disputesById[origID].disputeUintVars[
