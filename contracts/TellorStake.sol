@@ -50,7 +50,6 @@ contract TellorStake is TellorTransfer {
         Request storage _request = requestDetails[_requestId];
         require(_request.minedBlockNum[_timestamp] != 0, "Mined block is 0");
         require(_minerIndex < 5, "Miner index is wrong");
-        require(block.timestamp <= _timestamp + 7 days, "value too old");
 
         //_miner is the miner being disputed. For every mined value 5 miners are saved in an array and the _minerIndex
         //provided by the party initiating the dispute
