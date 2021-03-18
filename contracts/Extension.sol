@@ -138,6 +138,12 @@ contract Extension is TellorGetters {
                 stakes.currentStatus = 4;
             }
         }
+        else if (
+            uint256(_tally) >=
+            ((self.uintVars[keccak256("total_supply")] * 5) / 100)
+        ) {
+            emit NewTellorAddress(disp.proposedForkAddress);
+        }
         disp.disputeUintVars[_TALLY_DATE] = block.timestamp;
         disp.executed = true;
         emit DisputeVoteTallied(
@@ -166,12 +172,27 @@ contract Extension is TellorGetters {
                 )
             ];
         TellorStorage.Dispute storage disp = disputesById[lastID];
+        require(msg.sender == disp.proposedForkAddress, "function needs to be run by the new contract");
+        require (disp.disputeUintVars[_FORK_EXECUTED] == 0, "update Tellor has already been run");
         require(disp.disputeVotePassed == true, "vote needs to pass");
         require(
             block.timestamp - disp.disputeUintVars[_TALLY_DATE] > 1 days,
             "Time for voting for further disputes has not passed"
         );
+        (bool success, bytes memory data) = Extension(_oldTellor).delegatecall(
+            abi.encodeWithSignature("balanceOf(address)", addresses(_OWNER))
+        );
+        uint value;
+        assembly {
+            value := mload(add(data, 0x20))
+        }
+        require(balanceOf(addresses(_OWNER) == value, "balances should be the same");
+        disp.disputeUintVars[_FORK_EXECUTED] = 1;
         addresses[_TELLOR_CONTRACT] = disp.proposedForkAddress;
+    }
+
+    function callUpdateTellor(address _oldTellor, uint256 _disputeID) public{
+        Extension(_oldTellor).updateTellor(_disputeID);
     }
 
     /**

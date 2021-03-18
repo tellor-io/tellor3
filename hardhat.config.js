@@ -11,56 +11,56 @@ require("dotenv").config();
 //npx hardhat deploy --net rinkeby --network rinkeby
 //npx hardhat deploy --net  --network mainnet
 
-task("deploy", "Deploy and verify the contracts")
-  .addParam("net", "rinkeby or empty for mainnet")
-  .setAction(async taskArgs => {
+// task("deploy", "Deploy and verify the contracts")
+//   .addParam("net", "rinkeby or empty for mainnet")
+//   .setAction(async taskArgs => {
 
 
-    console.log("deploy tellor")
-    var oldtelloraddress = taskArgs.oldtelloraddress
-    var network = taskArgs.net
-    await run("compile");
-    const Tellor = await ethers.getContractFactory("Tellor");
-    const tellor= await Tellor.deploy();
-    console.log("Tellor deployed to:", tellor.address);
-    await tellor.deployed();
-    console.log("Tellor contract deployed to:", "https://" + network + ".etherscan.io/address/" + tellor.address);
-    console.log("    transaction hash:", "https://" + network + ".etherscan.io/tx/" + tellor.deployTransaction.hash);
+//     console.log("deploy tellor")
+//     var oldtelloraddress = taskArgs.oldtelloraddress
+//     var network = taskArgs.net
+//     await run("compile");
+//     const Tellor = await ethers.getContractFactory("Tellor");
+//     const tellor= await Tellor.deploy();
+//     console.log("Tellor deployed to:", tellor.address);
+//     await tellor.deployed();
+//     console.log("Tellor contract deployed to:", "https://" + network + ".etherscan.io/address/" + tellor.address);
+//     console.log("    transaction hash:", "https://" + network + ".etherscan.io/tx/" + tellor.deployTransaction.hash);
 
-    // Wait for few confirmed transactions.
-    // Otherwise the etherscan api doesn't find the deployed contract.
-    console.log('waiting for tx confirmation...');
-    await tellor.deployTransaction.wait(3)
+//     // Wait for few confirmed transactions.
+//     // Otherwise the etherscan api doesn't find the deployed contract.
+//     console.log('waiting for tx confirmation...');
+//     await tellor.deployTransaction.wait(3)
 
-    console.log('submitting for etherscan verification...');
+//     console.log('submitting for etherscan verification...');
 
-    await run("verify:verify", {
-      address: tellor.address,
-    },
-    )
+//     await run("verify:verify", {
+//       address: tellor.address,
+//     },
+//     )
 
-    console.log("deploy extension")
-    var oldtelloraddress = taskArgs.oldtelloraddress
-    var network = taskArgs.net
-    await run("compile");
-    const Ext = await ethers.getContractFactory("Extension");
-    const extension = await Ext.deploy();
-    console.log("extension  deployed to:", extension.address);
-    await extension.deployed();
-    console.log("Tellor contract deployed to:", "https://" + network + ".etherscan.io/address/" + extension.address);
-    console.log("    transaction hash:", "https://" + network + ".etherscan.io/tx/" + extension.deployTransaction.hash);
+//     console.log("deploy extension")
+//     var oldtelloraddress = taskArgs.oldtelloraddress
+//     var network = taskArgs.net
+//     await run("compile");
+//     const Ext = await ethers.getContractFactory("Extension");
+//     const extension = await Ext.deploy();
+//     console.log("extension  deployed to:", extension.address);
+//     await extension.deployed();
+//     console.log("Tellor contract deployed to:", "https://" + network + ".etherscan.io/address/" + extension.address);
+//     console.log("    transaction hash:", "https://" + network + ".etherscan.io/tx/" + extension.deployTransaction.hash);
 
-    // Wait for few confirmed transactions.
-    // Otherwise the etherscan api doesn't find the deployed contract.
-    console.log('waiting for tx confirmation...');
-    await extension.deployTransaction.wait(3)
+//     // Wait for few confirmed transactions.
+//     // Otherwise the etherscan api doesn't find the deployed contract.
+//     console.log('waiting for tx confirmation...');
+//     await extension.deployTransaction.wait(3)
 
-    console.log('submitting extension for etherscan verification...');
+//     console.log('submitting extension for etherscan verification...');
 
-    await run("verify:verify", {
-      address: extension.address,
-    },
-    )
+//     await run("verify:verify", {
+//       address: extension.address,
+//     },
+//     )
 
     // console.log("deploy tellorMaster")
     // const Master = await ethers.getContractFactory("TellorMaster");
@@ -107,7 +107,7 @@ task("deploy", "Deploy and verify the contracts")
     //await master.changeExtension(getters.address)
     //console.log("tellorGetters address updated to", getters.address)
 
-  });
+  // });
 
 
 /**
@@ -133,18 +133,18 @@ module.exports = {
       },
       allowUnlimitedContractSize: true,
     },
-      rinkeby: {
-        url: `${process.env.NODE_URL_RINKEBY}`,
-        accounts: [process.env.PRIVATE_KEY],
-        gas: 10000000 ,
-        gasPrice: 20000000000
-      },
-      mainnet: {
-        url: `${process.env.NODE_URL_MAINNET}`,
-        accounts: [process.env.PRIVATE_KEY],
-        gas: 10000000 ,
-        gasPrice: 8000000000
-      }  
+      // rinkeby: {
+      //   url: `${process.env.NODE_URL_RINKEBY}`,
+      //   accounts: [process.env.PRIVATE_KEY],
+      //   gas: 10000000 ,
+      //   gasPrice: 20000000000
+      // },
+      // mainnet: {
+      //   url: `${process.env.NODE_URL_MAINNET}`,
+      //   accounts: [process.env.PRIVATE_KEY],
+      //   gas: 10000000 ,
+      //   gasPrice: 8000000000
+      // }  
   },
   etherscan: {
       // Your API key for Etherscan

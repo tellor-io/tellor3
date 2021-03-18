@@ -34,6 +34,7 @@ contract TellorStorage {
         // uint keccak256("blockNumber");// the blocknumber for which votes will be calculated from
         // uint keccak256("minerSlot"); //index in dispute array
         // uint keccak256("fee"); //fee paid corresponding to dispute
+        //uint keccak256("forkExecuted"); if a fork was executed
         mapping(address => bool) voted; //mapping of address to whether or not they voted
     }
 
