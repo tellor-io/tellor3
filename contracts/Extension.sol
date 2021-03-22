@@ -25,6 +25,7 @@ contract Extension is TellorGetters {
     event StakeWithdrawn(address indexed _sender); //Emits when a staker is block.timestamp no longer staked
     event StakeWithdrawRequested(address indexed _sender); //Emits when a staker begins the 7 day withdraw period
     event NewStake(address indexed _sender); //Emits upon new staker
+    event NewTellorAddress(address newAddress);
 
     /**
      * @dev This function allows miners to deposit their stake.
@@ -138,8 +139,7 @@ contract Extension is TellorGetters {
                 stakes.currentStatus = 4;
             }
         } else if (
-            uint256(_tally) >=
-            ((self.uintVars[keccak256("total_supply")] * 5) / 100)
+            uint256(_tally) >= ((uints[keccak256("total_supply")] * 5) / 100)
         ) {
             emit NewTellorAddress(disp.proposedForkAddress);
         }

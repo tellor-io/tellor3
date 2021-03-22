@@ -57,11 +57,12 @@ contract("Voting Tests", function(accounts) {
     );
   });
   it("Test Failed Vote - New Tellor Storage Contract", async function() {
+    let tel = await Tellor.new()
     await helper.takeFifteen();
     await TestLib.mineBlock(env);
     let oracleBase = await master.getAddressVars(hash("_TELLOR_CONTRACT"));
     await master.theLazyCoon(accounts[6], web3.utils.toWei("1000000", "ether"))
-    await  master.proposeFork(add,{from:accounts[2]})
+    await  master.proposeFork(tel.address,{from:accounts[2]})
     for (var i = 1; i < 5; i++) {
       await master.vote(1, false,{from:accounts[i]})
     }
@@ -73,11 +74,12 @@ contract("Voting Tests", function(accounts) {
     assert(newAddy == oracleBase,"vote should have failed");
   });
   it("Test Failed Vote - New Tellor Storage Contract--vote fail to fail because 10% diff in quorum is not reached", async function() {
+    let tel = await Tellor.new()
     await helper.takeFifteen();
     await TestLib.mineBlock(env);
     let oracleBase = await master.getAddressVars(hash("_TELLOR_CONTRACT"));
     await master.theLazyCoon(accounts[1], web3.utils.toWei("100000", "ether"))
-    await master.proposeFork(add,{from:accounts[4]})
+    await master.proposeFork(tel.address,{from:accounts[4]})
     vars = await master.getAllDisputeVars(1);
     await master.vote(1, false)
     vars = await master.getAllDisputeVars(1);
