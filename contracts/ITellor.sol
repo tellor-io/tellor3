@@ -353,4 +353,6 @@ interface ITellor {
         address[] calldata _destination,
         uint256[] calldata _amount
     ) external;
+
+    function bumpVersion() external;
 }

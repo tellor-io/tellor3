@@ -4,6 +4,7 @@ import "./SafeMath.sol";
 import "./TellorStorage.sol";
 import "./TellorVariables.sol";
 import "./Utilities.sol";
+import "hardhat/console.sol";
 
 /**
  * @title Tellor Getters

@@ -68,14 +68,14 @@ master = await ITellor.at(tellorMaster.address)
     }
   });
 
-  it("Test no time limit on disputes", async function() {
-    await takeFifteen();
-    await TestLib.mineBlock(env);
-    await helper.advanceTime(86400 * 22);
-    await startADispute(accounts[1]);
-    let count = await master.getUintVar(hash("_DISPUTE_COUNT"));
-    assert(count == 1);
-  });
+  // it("Test no time limit on disputes", async function() {
+  //   await takeFifteen();
+  //   await TestLib.mineBlock(env);
+  //   await helper.advanceTime(86400 * 22);
+  //   await startADispute(accounts[1]);
+  //   let count = await master.getUintVar(hash("_DISPUTE_COUNT"));
+  //   assert(count == 1);
+  // });
 
   describe("testing disputes", async () => {
     let disputeId;

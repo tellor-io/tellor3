@@ -1,13 +1,14 @@
 // SPDX-License-Identifier: MIT
 /**
-* This contract holds staking functions, tallyVotes and updateDisputeFee
-* Because of space limitations and will be consolidated in future iterations
-*/
+ * This contract holds staking functions, tallyVotes and updateDisputeFee
+ * Because of space limitations and will be consolidated in future iterations
+ */
 
 pragma solidity 0.7.4;
 import "./SafeMath.sol";
 import "./TellorGetters.sol";
 import "./TellorVariables.sol";
+import "hardhat/console.sol";
 import "./Utilities.sol";
 
 contract Extension is TellorGetters {
@@ -24,6 +25,7 @@ contract Extension is TellorGetters {
     event StakeWithdrawn(address indexed _sender); //Emits when a staker is block.timestamp no longer staked
     event StakeWithdrawRequested(address indexed _sender); //Emits when a staker begins the 7 day withdraw period
     event NewStake(address indexed _sender); //Emits upon new staker
+    event NewTellorAddress(address newAddress);
 
     /**
      * @dev This function allows miners to deposit their stake.
@@ -136,6 +138,10 @@ contract Extension is TellorGetters {
             if (stakes.currentStatus == 3) {
                 stakes.currentStatus = 4;
             }
+        } else if (
+            uint256(_tally) >= ((uints[keccak256("total_supply")] * 5) / 100)
+        ) {
+            emit NewTellorAddress(disp.proposedForkAddress);
         }
         disp.disputeUintVars[_TALLY_DATE] = block.timestamp;
         disp.executed = true;
@@ -146,6 +152,42 @@ contract Extension is TellorGetters {
             disp.reportingParty,
             disp.disputeVotePassed
         );
+    }
+
+    /**
+     * @dev Updates the Tellor address after a proposed fork has
+     * passed the vote and day has gone by without a dispute
+     * @param _disputeId the disputeId for the proposed fork
+     */
+    function updateTellor(uint256 _disputeId) public {
+        bytes32 _hash = disputesById[_disputeId].hash;
+        uint256 origID = disputeIdByDisputeHash[_hash];
+        uint256 lastID =
+            disputesById[origID].disputeUintVars[
+                keccak256(
+                    abi.encode(
+                        disputesById[origID].disputeUintVars[_DISPUTE_ROUNDS]
+                    )
+                )
+            ];
+        TellorStorage.Dispute storage disp = disputesById[lastID];
+        // require(msg.sender == disp.proposedForkAddress, "function needs to be run by the new contract");
+        require(
+            disp.disputeUintVars[_FORK_EXECUTED] == 0,
+            "update Tellor has already been run"
+        );
+        require(disp.disputeVotePassed == true, "vote needs to pass");
+        require(
+            block.timestamp - disp.disputeUintVars[_TALLY_DATE] > 1 days,
+            "Time for voting for further disputes has not passed"
+        );
+
+        disp.disputeUintVars[_FORK_EXECUTED] = 1;
+        addresses[_TELLOR_CONTRACT] = disp.proposedForkAddress;
+    }
+
+    function callUpdateTellor(address _oldTellor, uint256 _disputeID) public {
+        Extension(_oldTellor).updateTellor(_disputeID);
     }
 
     /**
