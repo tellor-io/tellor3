@@ -18,6 +18,9 @@ contract TellorStake is TellorTransfer {
     using SafeMath for uint256;
     using SafeMath for int256;
 
+    //this belongs to Tellor, not to master
+    uint256 private constant CURRENT_VERSION = 2999;
+
     //emitted when a new dispute is initialized
     event NewDispute(
         uint256 indexed _disputeId,
@@ -148,6 +151,7 @@ contract TellorStake is TellorTransfer {
      * @param _propNewTellorAddress address for new proposed Tellor
      */
     function proposeFork(address _propNewTellorAddress) public {
+        _verify(_propNewTellorAddress);
         bytes32 _hash = keccak256(abi.encode(_propNewTellorAddress));
         uints[_DISPUTE_COUNT]++;
         uint256 disputeId = uints[_DISPUTE_COUNT];
@@ -198,6 +202,19 @@ contract TellorStake is TellorTransfer {
         disputesById[disputeId].disputeUintVars[_MIN_EXECUTION_DATE] =
             block.timestamp +
             7 days;
+    }
+
+    function _verify(address _newTellor) internal {
+        (bool success, bytes memory data) =
+            address(_newTellor).call(abi.encodeWithSignature("verify", ""));
+        require(
+            success && uint256(data) > CURRENT_VERSION,
+            "new tellor is invalid"
+        );
+    }
+
+    function verify() external pure returns (uint256) {
+        return CURRENT_VERSION;
     }
 
     /**
