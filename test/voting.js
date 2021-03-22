@@ -41,6 +41,7 @@ contract("Voting Tests", function(accounts) {
 
   it("Test New Tellor Storage Contract", async function() {
     let tel = await Tellor.new()
+    await tel.bumpVersion();
     await master.theLazyCoon(accounts[2], web3.utils.toWei("5000", "ether"))
     await master.proposeFork(tel.address,{from:accounts[2]})
     for (var i = 1; i < 5; i++) {
@@ -58,6 +59,7 @@ contract("Voting Tests", function(accounts) {
   });
   it("Test Failed Vote - New Tellor Storage Contract", async function() {
     let tel = await Tellor.new()
+    await tel.bumpVersion();
     await helper.takeFifteen();
     await TestLib.mineBlock(env);
     let oracleBase = await master.getAddressVars(hash("_TELLOR_CONTRACT"));
@@ -75,6 +77,7 @@ contract("Voting Tests", function(accounts) {
   });
   it("Test Failed Vote - New Tellor Storage Contract--vote fail to fail because 10% diff in quorum is not reached", async function() {
     let tel = await Tellor.new()
+    await tel.bumpVersion();
     await helper.takeFifteen();
     await TestLib.mineBlock(env);
     let oracleBase = await master.getAddressVars(hash("_TELLOR_CONTRACT"));
@@ -94,6 +97,7 @@ contract("Voting Tests", function(accounts) {
   it("Test Vote - New Tellor Storage Contract--vote passed by 10% quorum", async function() {
     //print some TRB tokens
     let tel = await Tellor.new()
+    await tel.bumpVersion();
     await master.theLazyCoon(accounts[4], web3.utils.toWei("4000", "ether"))
     await master.proposeFork(tel.address,{from:accounts[4]})
     //get the initial dispute variables--should be zeros

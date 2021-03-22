@@ -210,12 +210,12 @@ contract TellorStake is TellorTransfer {
                 abi.encodeWithSelector(0xfc735e99, "") //verify() signature
             );
         require(
-            success && abi.decode(data, (uint256)) > 0, //we could enforce versioning through this return value, but we're almost in the size limit.
+            success && abi.decode(data, (uint256)) > CURRENT_VERSION, //we could enforce versioning through this return value, but we're almost in the size limit.
             "new tellor is invalid"
         );
     }
 
-    function verify() external pure returns (uint256) {
+    function verify() external virtual returns (uint256) {
         return CURRENT_VERSION;
     }
 
