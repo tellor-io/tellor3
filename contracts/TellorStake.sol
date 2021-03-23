@@ -53,6 +53,7 @@ contract TellorStake is TellorTransfer {
         Request storage _request = requestDetails[_requestId];
         require(_request.minedBlockNum[_timestamp] != 0, "Mined block is 0");
         require(_minerIndex < 5, "Miner index is wrong");
+        require(block.timestamp - _timestamp < 7 days, "Dispute must be started within a week of bad value");
 
         //_miner is the miner being disputed. For every mined value 5 miners are saved in an array and the _minerIndex
         //provided by the party initiating the dispute
@@ -227,7 +228,7 @@ contract TellorStake is TellorTransfer {
     function vote(uint256 _disputeId, bool _supportsDispute) public {
         require(_disputeId <= uints[_DISPUTE_COUNT], "dispute does not exist");
         Dispute storage disp = disputesById[_disputeId];
-
+        require(!disp.executed, "the dispute has already been executed");
         //Get the voteWeight or the balance of the user at the time/blockNumber the dispute began
         uint256 voteWeight =
             balanceOfAt(msg.sender, disp.disputeUintVars[_BLOCK_NUMBER]);
@@ -308,12 +309,16 @@ contract TellorStake is TellorTransfer {
                 abi.encodeWithSignature("updateMinDisputeFee")
             );
             //Decreases the stakerCount since the miner's stake is being slashed
+            uint256 _transferAmount = uints[_STAKE_AMOUNT];
+            if(balanceOf(disp.reportedMiner)  < uints[_STAKE_AMOUNT]){
+                _transferAmount = balanceOf(disp.reportedMiner);
+            }
             if (stakes.currentStatus == 4) {
                 stakes.currentStatus = 5;
                 _doTransfer(
                     disp.reportedMiner,
                     disp.reportingParty,
-                    uints[_STAKE_AMOUNT]
+                    _transferAmount
                 );
                 stakes.currentStatus = 0;
             }

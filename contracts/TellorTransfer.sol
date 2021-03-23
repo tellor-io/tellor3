@@ -106,14 +106,15 @@ contract TellorTransfer is TellorStorage, TellorVariables {
             allowedToTrade(_from, _amount),
             "Should have sufficient balance to trade"
         );
-        uint256 previousBalance = balanceOf(_from);
-        updateBalanceAtNow(_from, previousBalance - _amount);
-        previousBalance = balanceOf(_to);
+        uint128 previousBalance = uint128(balanceOf(_from));
+        uint128 _sizedAmount  = uint128(_amount);
+        updateBalanceAtNow(_from, previousBalance - _sizedAmount);
+        previousBalance = uint128(balanceOf(_to));
         require(
-            previousBalance + _amount >= previousBalance,
+            previousBalance + _sizedAmount >= previousBalance,
             "Overflow happened"
         ); // Check for overflow
-        updateBalanceAtNow(_to, previousBalance + _amount);
+        updateBalanceAtNow(_to, previousBalance + _sizedAmount);
         emit Transfer(_from, _to, _amount);
     }
 
@@ -125,9 +126,10 @@ contract TellorTransfer is TellorStorage, TellorVariables {
     function _doMint(address _to, uint256 _amount) internal {
         require(_amount != 0, "Tried to mint non-positive amount");
         require(_to != address(0), "Receiver is 0 address");
-        uint256 previousBalance = balanceOf(_to);
+        uint128 previousBalance = uint128(balanceOf(_to));
+        uint128 _sizedAmount  = uint128(_amount);
         require(
-            previousBalance + _amount >= previousBalance,
+            previousBalance + _sizedAmount >= previousBalance,
             "Overflow happened"
         ); // Check for overflow
         uint256 previousSupply = uints[_TOTAL_SUPPLY];
@@ -136,7 +138,7 @@ contract TellorTransfer is TellorStorage, TellorVariables {
             "Overflow happened"
         );
         uints[_TOTAL_SUPPLY] += _amount;
-        updateBalanceAtNow(_to, previousBalance + _amount);
+        updateBalanceAtNow(_to, previousBalance + _sizedAmount);
         emit Transfer(address(0), _to, _amount);
     }
 
@@ -147,9 +149,10 @@ contract TellorTransfer is TellorStorage, TellorVariables {
      */
     function _doBurn(address _from, uint256 _amount) internal {
         if (_amount == 0) return;
-        uint256 previousBalance = balanceOf(_from);
+        uint128 previousBalance = uint128(balanceOf(_from));
+        uint128 _sizedAmount  = uint128(_amount);
         require(
-            previousBalance - _amount <= previousBalance,
+            previousBalance - _sizedAmount <= previousBalance,
             "Overflow happened"
         ); // Check for overflow
         uint256 previousSupply = uints[_TOTAL_SUPPLY];
@@ -157,7 +160,7 @@ contract TellorTransfer is TellorStorage, TellorVariables {
             previousSupply - _amount <= previousSupply,
             "Overflow happened"
         );
-        updateBalanceAtNow(_from, previousBalance - _amount);
+        updateBalanceAtNow(_from, previousBalance - _sizedAmount);
         uints[_TOTAL_SUPPLY] -= _amount;
     }
 
@@ -235,7 +238,7 @@ contract TellorTransfer is TellorStorage, TellorVariables {
      * @dev Updates balance for from and to on the current block number via doTransfer
      * @param _value is the new balance
      */
-    function updateBalanceAtNow(address _user, uint256 _value) internal {
+    function updateBalanceAtNow(address _user, uint128 _value) internal {
         Checkpoint[] storage checkpoints = balances[_user];
         if (
             checkpoints.length == 0 ||
@@ -244,13 +247,13 @@ contract TellorTransfer is TellorStorage, TellorVariables {
             checkpoints.push(
                 TellorStorage.Checkpoint({
                     fromBlock: uint128(block.number),
-                    value: uint128(_value)
+                    value: _value
                 })
             );
         } else {
             TellorStorage.Checkpoint storage oldCheckPoint =
                 checkpoints[checkpoints.length - 1];
-            oldCheckPoint.value = uint128(_value);
+            oldCheckPoint.value = _value;
         }
     }
 }
