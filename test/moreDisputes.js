@@ -9,7 +9,7 @@ const { stakeAmount } = require("./helpers/constants");
 const hash = web3.utils.keccak256;
 const BN = web3.utils.BN;
 
-contract("Dispute Tests", function(accounts) {
+contract("More Dispute Tests", function(accounts) {
   let master;
   let env;
   let disputeFee;
@@ -60,6 +60,9 @@ contract("Dispute Tests", function(accounts) {
       await helper.advanceTime(60 * 60 * 16);
       await TestLib.mineBlock(env);      
     }
+    await master.addTip(1,55);
+    await takeFifteen();
+    res = await TestLib.mineBlock(env);
     await takeFifteen();
     res = await TestLib.mineBlock(env);
     let disp = await startADispute(accounts[1]);
@@ -67,7 +70,7 @@ contract("Dispute Tests", function(accounts) {
     diputer = disp.disputer;
     disputed = disp.disputed;
     disputeFee = await master.getUintVar(hash("_DISPUTE_FEE"));
-    await master.addTip(1,55);
+
   })
     it("Test basic dispute", async function() {
       // console.log("basic disp 1")
