@@ -125,23 +125,20 @@ contract Extension is TellorGetters {
             "reporting Party is address 0"
         );
         int256 _tally = disp.tally;
+        if (_tally > 0) {
         //If the vote is not a proposed fork
-        if (disp.isPropFork == false) {
-            if (_tally > 0) {
+            if (disp.isPropFork == false) {
                 //Set the dispute state to passed/true
                 disp.disputeVotePassed = true;
                 //Ensure the time for voting has elapsed
                 StakeInfo storage stakes = stakerDetails[disp.reportedMiner];
                 //If the vote for disputing a value is successful(disp.tally >0) then unstake the reported
-                // miner and transfer the stakeAmount and dispute fee to the reporting party
                 if (stakes.currentStatus == 3) {
                     stakes.currentStatus = 4;
                 }
+            } else if (uint256(_tally) >= ((uints[keccak256("total_supply")] * 5) / 100)) {
+                disp.disputeVotePassed = true;
             }
-        } else if (
-            uint256(_tally) >= ((uints[keccak256("total_supply")] * 5) / 100)
-        ) {
-            disp.disputeVotePassed = true;
         }
         disp.disputeUintVars[_TALLY_DATE] = block.timestamp;
         disp.executed = true;

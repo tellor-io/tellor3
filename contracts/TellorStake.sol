@@ -3,7 +3,7 @@ pragma solidity 0.7.4;
 
 import "./TellorTransfer.sol";
 import "./TellorGetters.sol";
-
+import "hardhat/console.sol";
 import "./Extension.sol";
 import "./Utilities.sol";
 
@@ -53,7 +53,6 @@ contract TellorStake is TellorTransfer {
         Request storage _request = requestDetails[_requestId];
         require(_request.minedBlockNum[_timestamp] != 0, "Mined block is 0");
         require(_minerIndex < 5, "Miner index is wrong");
-        require(block.timestamp - _timestamp < 7 days, "Dispute must be started within a week of bad value");
 
         //_miner is the miner being disputed. For every mined value 5 miners are saved in an array and the _minerIndex
         //provided by the party initiating the dispute
@@ -70,6 +69,8 @@ contract TellorStake is TellorTransfer {
         if (hashId != 0) {
             disputesById[disputeId].disputeUintVars[_ORIGINAL_ID] = hashId;
         } else {
+            console.log(block.timestamp - _timestamp , 7 days);
+            require(block.timestamp - _timestamp < 7 days, "Dispute must be started within a week of bad value");
             disputeIdByDisputeHash[_hash] = disputeId;
             hashId = disputeId;
         }

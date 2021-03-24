@@ -75,7 +75,7 @@ contract("Voting Tests", function(accounts) {
     var newAddy = await master.getAddressVars(hash("_TELLOR_CONTRACT"))
     assert(newAddy == oracleBase,"vote should have failed");
   });
-  it("Test Failed Vote - New Tellor Storage Contract--vote fail to fail because 10% diff in quorum is not reached", async function() {
+  it("Test Failed Vote - New Tellor Storage Contract--vote fail to fail because 5% diff in quorum is not reached", async function() {
     let tel = await Tellor.new()
     await tel.bumpVersion();
     await helper.takeFifteen();
@@ -94,7 +94,7 @@ contract("Voting Tests", function(accounts) {
     assert(newAddy == oracleBase,"vote should have failed");
   });
 
-  it("Test Vote - New Tellor Storage Contract--vote passed by 10% quorum", async function() {
+  it("Test Vote - New Tellor Storage Contract--vote passed by 5% quorum", async function() {
     //print some TRB tokens
     let tel = await Tellor.new()
     await tel.bumpVersion();

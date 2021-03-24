@@ -144,6 +144,7 @@ master = await ITellor.at(tellorMaster.address)
   });
 
   it("Test miner, alternating api request on Q and auto select", async function() {
+    this.timeout(30000)
        //Mining 11 blocks to get the requestQ alright
     for (let index = 0; index < 12; index++) {
       await helper.advanceTime(60 * 60 * 16);
@@ -197,10 +198,6 @@ master = await ITellor.at(tellorMaster.address)
     vars = await master.getNewCurrentVariables();
     await TestLib.mineBlock(env);
     await helper.advanceTime(60 * 60 * 16);
-    // res = web3.eth.abi.decodeParameters(
-    //   ["uint256[5]", "uint256", "uint256[5]", "uint256"],
-    //   res.logs["0"].data
-    // );
     let count = await master.getNewValueCountbyRequestId(1);
     let timestamp = await master.getTimestampbyRequestIDandIndex(
       1,
