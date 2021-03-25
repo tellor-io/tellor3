@@ -8,7 +8,12 @@
 </p>
 
 [![Checks](https://github.com/tellor-io/tellor3/actions/workflows/checks.yml/badge.svg)](https://github.com/tellor-io/tellor3/actions/workflows/checks.yml)
-[![Tweet]('https://img.shields.io/twitter/url/http/shields.io.svg?style=social')](https://twitter.com/WeAreTellor)
+<p>
+  <a href='https://twitter.com/WeAreTellor'>
+    <img src= 'https://img.shields.io/twitter/url/http/shields.io.svg?style=social' alt='Twitter WeAreTellor' />
+  </a> 
+</p>
+
 
 ## Overview <a name="overview"> </a>  
 
