@@ -102,6 +102,7 @@ contract("Voting Tests", function(accounts) {
     await master.proposeFork(tel.address,{from:accounts[4]})
     //get the initial dispute variables--should be zeros
     await master.vote(1, false)
+    await master.vote(1, true,{from:accounts[4]})
     await master.vote(1, true,{from:accounts[1]})
     await master.vote(1, true,{from:accounts[3]})
     await master.vote(1, true,{from:accounts[9]})

@@ -136,7 +136,7 @@ contract Extension is TellorGetters {
                 if (stakes.currentStatus == 3) {
                     stakes.currentStatus = 4;
                 }
-            } else if (uint256(_tally) >= ((uints[keccak256("total_supply")] * 5) / 100)) {
+            } else if (uint256(_tally) >= ((uints[_TOTAL_SUPPLY] * 5) / 100)) {
                 disp.disputeVotePassed = true;
             }
         }
