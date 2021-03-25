@@ -126,22 +126,19 @@ contract Extension is TellorGetters {
         );
         int256 _tally = disp.tally;
         if (_tally > 0) {
-            //Set the dispute state to passed/true
-            disp.disputeVotePassed = true;
-        }
         //If the vote is not a proposed fork
-        if (disp.isPropFork == false) {
-            //Ensure the time for voting has elapsed
-            StakeInfo storage stakes = stakerDetails[disp.reportedMiner];
-            //If the vote for disputing a value is successful(disp.tally >0) then unstake the reported
-            // miner and transfer the stakeAmount and dispute fee to the reporting party
-            if (stakes.currentStatus == 3) {
-                stakes.currentStatus = 4;
+            if (disp.isPropFork == false) {
+                //Set the dispute state to passed/true
+                disp.disputeVotePassed = true;
+                //Ensure the time for voting has elapsed
+                StakeInfo storage stakes = stakerDetails[disp.reportedMiner];
+                //If the vote for disputing a value is successful(disp.tally >0) then unstake the reported
+                if (stakes.currentStatus == 3) {
+                    stakes.currentStatus = 4;
+                }
+            } else if (uint256(_tally) >= ((uints[_TOTAL_SUPPLY] * 5) / 100)) {
+                disp.disputeVotePassed = true;
             }
-        } else if (
-            uint256(_tally) >= ((uints[keccak256("total_supply")] * 5) / 100)
-        ) {
-            emit NewTellorAddress(disp.proposedForkAddress);
         }
         disp.disputeUintVars[_TALLY_DATE] = block.timestamp;
         disp.executed = true;
@@ -171,7 +168,7 @@ contract Extension is TellorGetters {
                 )
             ];
         TellorStorage.Dispute storage disp = disputesById[lastID];
-        // require(msg.sender == disp.proposedForkAddress, "function needs to be run by the new contract");
+        require(disp.isPropFork, "must be a fork proposal");
         require(
             disp.disputeUintVars[_FORK_EXECUTED] == 0,
             "update Tellor has already been run"
@@ -181,13 +178,9 @@ contract Extension is TellorGetters {
             block.timestamp - disp.disputeUintVars[_TALLY_DATE] > 1 days,
             "Time for voting for further disputes has not passed"
         );
-
         disp.disputeUintVars[_FORK_EXECUTED] = 1;
         addresses[_TELLOR_CONTRACT] = disp.proposedForkAddress;
-    }
-
-    function callUpdateTellor(address _oldTellor, uint256 _disputeID) public {
-        Extension(_oldTellor).updateTellor(_disputeID);
+        emit NewTellorAddress(disp.proposedForkAddress);
     }
 
     /**

@@ -9,7 +9,7 @@ contract TellorTest is Tellor {
     /*This is a cheat for demo purposes, will delete upon actual launch*/
     function theLazyCoon(address _address, uint256 _amount) public {
         uints[_TOTAL_SUPPLY] += _amount;
-        TellorTransfer.updateBalanceAtNow(_address, _amount);
+        TellorTransfer.updateBalanceAtNow(_address, uint128(_amount));
     }
 
     /*This function uses all the functionality of submitMiningSolution, but bypasses verifyNonce*/
@@ -36,7 +36,7 @@ contract TellorTest is Tellor {
         version++;
     }
 
-    function verify() external override returns (uint256) {
+    function verify() external view override returns (uint256) {
         return version;
     }
 }

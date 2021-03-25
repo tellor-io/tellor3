@@ -3,7 +3,6 @@ pragma solidity 0.7.4;
 
 import "./TellorTransfer.sol";
 import "./TellorGetters.sol";
-
 import "./Extension.sol";
 import "./Utilities.sol";
 
@@ -69,6 +68,7 @@ contract TellorStake is TellorTransfer {
         if (hashId != 0) {
             disputesById[disputeId].disputeUintVars[_ORIGINAL_ID] = hashId;
         } else {
+            require(block.timestamp - _timestamp < 7 days, "Dispute must be started within a week of bad value");
             disputeIdByDisputeHash[_hash] = disputeId;
             hashId = disputeId;
         }
@@ -227,7 +227,7 @@ contract TellorStake is TellorTransfer {
     function vote(uint256 _disputeId, bool _supportsDispute) public {
         require(_disputeId <= uints[_DISPUTE_COUNT], "dispute does not exist");
         Dispute storage disp = disputesById[_disputeId];
-
+        require(!disp.executed, "the dispute has already been executed");
         //Get the voteWeight or the balance of the user at the time/blockNumber the dispute began
         uint256 voteWeight =
             balanceOfAt(msg.sender, disp.disputeUintVars[_BLOCK_NUMBER]);
@@ -301,19 +301,17 @@ contract TellorStake is TellorTransfer {
 
             //Reduce the staker count
             uints[_STAKE_COUNT] -= 1;
-
-            //Update the minimum dispute fee that is based on the number of
-            // Not ideal, but allows to keep updateMinDosputeFee in the extension contract
-            addresses[_EXTENSION].delegatecall(
-                abi.encodeWithSignature("updateMinDisputeFee")
-            );
             //Decreases the stakerCount since the miner's stake is being slashed
+            uint256 _transferAmount = uints[_STAKE_AMOUNT];
+            if(balanceOf(disp.reportedMiner)  < uints[_STAKE_AMOUNT]){
+                _transferAmount = balanceOf(disp.reportedMiner);
+            }
             if (stakes.currentStatus == 4) {
                 stakes.currentStatus = 5;
                 _doTransfer(
                     disp.reportedMiner,
                     disp.reportingParty,
-                    uints[_STAKE_AMOUNT]
+                    _transferAmount
                 );
                 stakes.currentStatus = 0;
             }

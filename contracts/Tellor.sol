@@ -642,7 +642,7 @@ contract Tellor is TellorStake {
      * Tellor and TellorGetters This functions helps delegate calls to the TellorGetters
      * contract.
      */
-    fallback() external payable {
+    fallback() external {
         address addr = addresses[_EXTENSION];
         (bool result, ) = _delegate(addr);
         assembly {
