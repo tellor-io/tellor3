@@ -1,3 +1,6 @@
+
+
+
 <p align="center">
   <a href='https://www.tellor.io/'>
     <img src= 'https://raw.githubusercontent.com/tellor-io/TellorBrandMaterials/master/LightBkrnd_RGB.png' width="250" height="200" alt='tellor.io' />
@@ -8,7 +11,8 @@
   <a href='https://twitter.com/WeAreTellor'>
     <img src= 'https://img.shields.io/twitter/url/http/shields.io.svg?style=social' alt='Twitter WeAreTellor' />
   </a> 
-</p>
+  </p>
+[![Checks](https://github.com/tellor-io/tellor3/actions/workflows/checks.yml/badge.svg)](https://github.com/tellor-io/tellor3/actions/workflows/checks.yml)
 
 
 ## Overview <a name="overview"> </a>  
