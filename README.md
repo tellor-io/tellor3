@@ -12,6 +12,7 @@
     <img src= 'https://img.shields.io/twitter/url/http/shields.io.svg?style=social' alt='Twitter WeAreTellor' />
   </a> 
   </p>
+  
 [![Checks](https://github.com/tellor-io/tellor3/actions/workflows/checks.yml/badge.svg)](https://github.com/tellor-io/tellor3/actions/workflows/checks.yml)
 
 
