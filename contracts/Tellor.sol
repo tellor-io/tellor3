@@ -15,13 +15,15 @@ import "./SafeMath.sol";
 contract Tellor is TellorStake {
     using SafeMath for uint256;
 
+    /*Events*/
+    //Emits when a tip is added (asking for this ID to be mined                                         )
     event TipAdded(
         address indexed _sender,
         uint256 indexed _requestId,
         uint256 _tip,
         uint256 _totalTips
     );
-    //emits when a new challenge is created (either on mined block or when a new request is pushed forward on waiting system)
+    //Emits when a new challenge is created (either on mined block or when a new request is pushed forward on waiting system)
     event NewChallenge(
         bytes32 indexed _currentChallenge,
         uint256[5] _currentRequestId,
@@ -46,33 +48,90 @@ contract Tellor is TellorStake {
         uint256 _slot
     );
 
+    /*Functions*/
+    /**
+     * @dev Add tip to a request ID
+     * @param _requestId being requested to be mined
+     * @param _tip amount the requester is willing to pay to be get on queue. Miners
+     * mine the ID with the highest tip
+    */
+    function addTip(uint256 _requestId, uint256 _tip) external {
+        require(_requestId != 0, "RequestId is 0");
+        require(_tip != 0, "Tip should be greater than 0");
+        uint256 _count = uints[_REQUEST_COUNT] + 1;
+        if (_requestId == _count) {
+            uints[_REQUEST_COUNT] = _count;
+        } else {
+            require(_requestId < _count, "RequestId is not less than count");
+        }
+        _doBurn(msg.sender, _tip);
+        //Update the information for the request that should be mined next based on the tip submitted
+        updateOnDeck(_requestId, _tip);
+        emit TipAdded(
+            msg.sender,
+            _requestId,
+            _tip,
+            requestDetails[_requestId].apiUintVars[_TOTAL_TIP]
+        );
+    }
+
     /**
      * @dev  allows for the deity to update the Extension contract address
-     * @param _ext the address of the new Extension Contract
-     */
-    function changeExtension(address _ext) external {
-        require(msg.sender == addresses[_DEITY], "only deity can call this fn");
-        addresses[_EXTENSION] = _ext;
+     * @param _extension the address of the new Extension Contract
+    */
+    function changeExtension(address _extension) external {
+        require(msg.sender == addresses[_DEITY], "only deity can call this function");
+        addresses[_EXTENSION] = _extension;
     }
 
     /**
      * @dev  allows for the deity to update the Migrator contract address
      * @param _migrator the address of the new Tellor Contract
-     */
+    */
     function changeMigrator(address _migrator) external {
-        require(msg.sender == addresses[_DEITY], "only deity can call this fn");
+        require(msg.sender == addresses[_DEITY], "only deity can call this function");
         addresses[_MIGRATOR] = _migrator;
     }
 
     /**
-     * @dev This is an internal function used by the function migrate  that helps to
+     * @dev This function allows users to swap old trb tokens for new ones based
+     * on the user's old Tellor balance
+    */
+    function migrate() external {
+        _migrate(msg.sender);
+    }
+
+    /**
+     * @dev This is function used by the migrator to help
      *  swap old trb tokens for new ones based on the user's old Tellor balance
-     * @param _user is the msg.sender address of the user to migrate the balance from
-     */
-    function _migrate(address _user) internal {
-        require(!migrated[_user], "Already migrated");
-        _doMint(_user, ITellor(addresses[_OLD_TELLOR]).balanceOf(_user));
-        migrated[_user] = true;
+     * @param _destination is the address that will receive tokens
+     * @param _amount is the amount to mint to the user
+     * @param _bypass whether or not to bypass the check if they migrated already
+    */
+    function migrateFor(
+        address _destination,
+        uint256 _amount,
+        bool _bypass
+    ) external {
+        require(msg.sender == addresses[_MIGRATOR], "not allowed");
+        _migrateFor(_destination, _amount, _bypass);
+    }
+
+    /**
+     * @dev This is an internal function used by the function migrate  that helps to
+     *  swap old trb tokens for new ones based on a custom amount
+     * @param _destination are the addresses that will receive tokens
+     * @param _amount are the amounts to mint to the user
+    */
+    function migrateForBatch(
+        address[] calldata _destination,
+        uint256[] calldata _amount
+    ) external {
+        require(msg.sender == addresses[_MIGRATOR], "not allowed");
+        require(_amount.length == _destination.length, "mismatching input");
+        for (uint256 index = 0; index < _destination.length; index++) {
+            _migrateFor(_destination[index], _amount[index], false);
+        }
     }
 
     /**
@@ -85,7 +144,7 @@ contract Tellor is TellorStake {
      * @param _destination is the address that will receive tokens
      * @param _amount is the amount to mint to the user
      * @param _bypass is a flag used by the migrator to allow it to bypass the "migrated = true" flag
-     */
+    */
     function migrateFrom(
         address _origin,
         address _destination,
@@ -101,8 +160,8 @@ contract Tellor is TellorStake {
      *  swap old trb tokens for new ones based on a custom amount
      * @param _origin is an array of user addresses to migrate the balance from
      * @param _destination is an array of the address that will receive tokens
-     * @param _amount is the amount to mint to the user
-     */
+     * @param _amount are the amounts to mint to the users
+    */
     function migrateFromBatch(
         address[] calldata _origin,
         address[] calldata _destination,
@@ -125,89 +184,11 @@ contract Tellor is TellorStake {
     }
 
     /**
-     * @dev This is an internal function used by the function migrate  that helps to
-     *  swap old trb tokens for new ones based on a custom amount and it allows
-     *  the migrator contact to swap contract locked tokens even if the user has previosly migrated.
-     * @param _origin is the address of the user to migrate the balance from
-     * @param _destination is the address that will receive tokens
-     * @param _amount is the amount to mint to the user
-     * @param _bypass is a flag used by the migrator to allow it to bypass the "migrated = true" flag
-     */
-    function _migrateFrom(
-        address _origin,
-        address _destination,
-        uint256 _amount,
-        bool _bypass
-    ) internal {
-        if (!_bypass) require(!migrated[_origin], "already migrated");
-        _doMint(_destination, _amount);
-        migrated[_origin] = true;
-    }
-
-    /**
-     * @dev This is function used by the function migrate  that helps to
-     *  swap old trb tokens for new ones based on the user's old Tellor balance
-     * @param _destination is the address that will receive tokens
-     * @param _amount is the amount to mint to the user
-     */
-    function migrateFor(
-        address _destination,
-        uint256 _amount,
-        bool _bypass
-    ) external {
-        require(msg.sender == addresses[_MIGRATOR], "not allowed");
-        _migrateFor(_destination, _amount, _bypass);
-    }
-
-    /**
-     * @dev This is an internal function used by the function migrate  that helps to
-     *  swap old trb tokens for new ones based on a custom amount
-     * @param _destination is the address that will receive tokens
-     * @param _amount is the amount to mint to the user
-     */
-    function migrateForBatch(
-        address[] calldata _destination,
-        uint256[] calldata _amount
-    ) external {
-        require(msg.sender == addresses[_MIGRATOR], "not allowed");
-        require(_amount.length == _destination.length, "mismatching input");
-        for (uint256 index = 0; index < _destination.length; index++) {
-            _migrateFor(_destination[index], _amount[index], false);
-        }
-    }
-
-    /**
-     * @dev This is an internal function used by the function migrate  that helps to
-     *  swap old trb tokens for new ones based on a custom amount
-     * @param _destination is the address that will receive tokens
-     * @param _amount is the amount to mint to the user
-     * @param _bypass is true if the migrator contract needs to bypass the migrated = true flag
-     *  for users that have already  migrated 
-     */
-    function _migrateFor(
-        address _destination,
-        uint256 _amount,
-        bool _bypass
-    ) internal {
-        if (!_bypass) require(!migrated[_destination], "already migrated");
-        _doMint(_destination, _amount);
-        migrated[_destination] = true;
-    }
-
-    /**
-     * @dev This function allows users to swap old trb tokens for new ones based
-     * on the user's old Tellor balance
-     */
-    function migrate() external {
-        _migrate(msg.sender);
-    }
-
-    /**
      * @dev This function allows miners to submit their mining solution and data requested
      * @param _nonce is the mining solution
      * @param _requestIds are the 5 request ids being mined
      * @param _values are the 5 values corresponding to the 5 request ids
-     */
+    */
     function submitMiningSolution(
         string calldata _nonce,
         uint256[5] calldata _requestIds,
@@ -226,130 +207,12 @@ contract Tellor is TellorStake {
         _submitMiningSolution(_nonce, _requestIds, _values);
     }
 
-    /**
-     * @dev This is an internal function used by submitMiningSolution to  allow miners to submit
-     * their mining solution and data requested. It checks the miner is staked, has not
-     * won in the last 15 min, and checks they are submitting all the correct requestids
-     * @param _nonce is the mining solution
-     * @param _requestIds are the 5 request ids being mined
-     * @param _values are the 5 values corresponding to the 5 request ids
-     */
-    function _submitMiningSolution(
-        string memory _nonce,
-        uint256[5] memory _requestIds,
-        uint256[5] memory _values
-    ) internal {
-        //Verifying Miner Eligibility
-        bytes32 _hashMsgSender = keccak256(abi.encode(msg.sender));
-        require(
-            stakerDetails[msg.sender].currentStatus == 1,
-            "Miner status is not staker"
-        );
-
-        require(
-            _requestIds[0] == currentMiners[0].value,
-            "Request ID is wrong"
-        );
-        require(
-            _requestIds[1] == currentMiners[1].value,
-            "Request ID is wrong"
-        );
-        require(
-            _requestIds[2] == currentMiners[2].value,
-            "Request ID is wrong"
-        );
-        require(
-            _requestIds[3] == currentMiners[3].value,
-            "Request ID is wrong"
-        );
-        require(
-            _requestIds[4] == currentMiners[4].value,
-            "Request ID is wrong"
-        );
-        uints[_hashMsgSender] = block.timestamp;
-
-        bytes32 _currChallenge = bytesVars[_CURRENT_CHALLENGE];
-        uint256 _slotP = uints[_SLOT_PROGRESS];
-        //Checking and updating Miner Status
-        require(
-            minersByChallenge[_currChallenge][msg.sender] == false,
-            "Miner already submitted the value"
-        );
-        //Update the miner status to true once they submit a value so they don't submit more than once
-        minersByChallenge[_currChallenge][msg.sender] = true;
-        //Updating Request
-        Request storage _tblock = requestDetails[uints[_T_BLOCK]];
-        //Assigning directly is cheaper than using a for loop
-        _tblock.valuesByTimestamp[0][_slotP] = _values[0];
-        _tblock.valuesByTimestamp[1][_slotP] = _values[1];
-        _tblock.valuesByTimestamp[2][_slotP] = _values[2];
-        _tblock.valuesByTimestamp[3][_slotP] = _values[3];
-        _tblock.valuesByTimestamp[4][_slotP] = _values[4];
-        _tblock.minersByValue[0][_slotP] = msg.sender;
-        _tblock.minersByValue[1][_slotP] = msg.sender;
-        _tblock.minersByValue[2][_slotP] = msg.sender;
-        _tblock.minersByValue[3][_slotP] = msg.sender;
-        _tblock.minersByValue[4][_slotP] = msg.sender;
-
-        if (_slotP + 1 == 4) {
-            _adjustDifficulty();
-        }
-
-        emit NonceSubmitted(
-            msg.sender,
-            _nonce,
-            _requestIds,
-            _values,
-            _currChallenge,
-            _slotP
-        );
-        if (_slotP + 1 == 5) {
-            //slotProgress has been incremented, but we're using the variable on stack to save gas
-            _newBlock(_nonce, _requestIds);
-            uints[_SLOT_PROGRESS] = 0;
-        } else {
-            uints[_SLOT_PROGRESS]++;
-        }
-    }
-
-    /**
-     * @dev This is an internal function used by submitMiningSolution to allows miners to submit
-     * their mining solution and data requested. It checks the miner has submitted a
-     * valid nonce or allows any solution if 15 minutes or more have passed since last
-     *  mine values
-     * @param _nonce is the mining solution
-     */
-    function _verifyNonce(string memory _nonce) internal view {
-        require(
-            uint256(
-                sha256(
-                    abi.encodePacked(
-                        ripemd160(
-                            abi.encodePacked(
-                                keccak256(
-                                    abi.encodePacked(
-                                        bytesVars[_CURRENT_CHALLENGE],
-                                        msg.sender,
-                                        _nonce
-                                    )
-                                )
-                            )
-                        )
-                    )
-                )
-            ) %
-                uints[_DIFFICULTY] ==
-                0 ||
-                block.timestamp - uints[_TIME_OF_LAST_NEW_VALUE] >= 15 minutes,
-            "Incorrect nonce for current challenge"
-        );
-    }
-
+    /*Internal Functions*/
     /**
      * @dev This is an internal function used by submitMiningSolution and adjusts the difficulty
      * based on the difference between the target time and how long it took to solve
      * the previous challenge otherwise it sets it to 1
-     */
+    */
     function _adjustDifficulty() internal {
         // If the difference between the timeTarget and how long it takes to solve the challenge this updates the challenge
         // difficulty up or down by the difference between the target time and how long it took to solve the previous challenge
@@ -365,37 +228,151 @@ contract Tellor is TellorStake {
     }
 
     /**
-     * @dev This is an internal function used by submitMiningSolution to
-     * calculate and pay rewards to miners
-     * @param miners are the 5 miners to reward
-     * @param _previousTime is the previous mine time based on the 4th entry
-     */
-    function _payReward(address[5] memory miners, uint256 _previousTime)
+     * @dev This is an internal function called within the fallback function to help delegate calls.
+     * This functions helps delegate calls to the TellorGetters
+     * contract.
+    */
+    function _delegate(address implementation)
         internal
+        virtual
+        returns (bool succ, bytes memory ret)
     {
-        //_timeDiff is how many seconds passed since last block
-        uint256 _timeDiff = block.timestamp - _previousTime;
-        uint256 reward = (_timeDiff * uints[_CURRENT_REWARD]) / 300;
-        uint256 _tip = uints[_CURRENT_TOTAL_TIPS] / 10;
-        uint256 _devShare = reward / 2;
+        (succ, ret) = implementation.delegatecall(msg.data);
+    }
 
-        _doMint(miners[0], reward + _tip);
-        _doMint(miners[1], reward + _tip);
-        _doMint(miners[2], reward + _tip);
-        _doMint(miners[3], reward + _tip);
-        _doMint(miners[4], reward + _tip);
+    /**
+     * @dev This is an internal function called by updateOnDeck that gets the top 5 values
+     * @param _data is an array [51] to determine the top 5 values from
+     * @return max the top 5 values and their index values in the data array
+    */
+    function _getMax5(uint256[51] memory _data)
+        internal
+        pure
+        returns (uint256[5] memory max, uint256[5] memory maxIndex)
+    {
+        uint256 min5 = _data[1];
+        uint256 minI = 0;
+        for (uint256 j = 0; j < 5; j++) {
+            max[j] = _data[j + 1];
+            maxIndex[j] = j + 1;
+            if (max[j] < min5) {
+                min5 = max[j];
+                minI = j;
+            }
+        }
+        for (uint256 i = 6; i < _data.length; i++) {
+            if (_data[i] > min5) {
+                max[minI] = _data[i];
+                maxIndex[minI] = i;
+                min5 = _data[i];
+                for (uint256 j = 0; j < 5; j++) {
+                    if (max[j] < min5) {
+                        min5 = max[j];
+                        minI = j;
+                    }
+                }
+            }
+        }
+    }
 
-        _doMint(addresses[_OWNER], _devShare);
-        uints[_CURRENT_TOTAL_TIPS] = 0;
+    /**
+     * @dev This is an internal function called by updateOnDeck that gets the min value
+     * @param _data is an array [51] to determine the min from
+     * @return min the min value and it's index in the data array
+     */
+    function _getMin(uint256[51] memory _data)
+        internal
+        pure
+        returns (uint256 min, uint256 minIndex)
+    {
+        minIndex = _data.length - 1;
+        min = _data[minIndex];
+        for (uint256 i = _data.length - 2; i > 0; i--) {
+            if (_data[i] < min) {
+                min = _data[i];
+                minIndex = i;
+            }
+        }
+    }
+
+    /**
+     * @dev Getter function for the top 5 requests with highest payouts.
+     * This function is used within the newBlock function
+     * @return _requestIds the top 5 requests ids based on tips or the last 5 requests ids mined
+    */
+    function _getTopRequestIDs()
+        internal
+        view
+        returns (uint256[5] memory _requestIds)
+    {
+        uint256[5] memory _max;
+        uint256[5] memory _index;
+        (_max, _index) = _getMax5(requestQ);
+        for (uint256 i = 0; i < 5; i++) {
+            if (_max[i] != 0) {
+                _requestIds[i] = requestIdByRequestQIndex[_index[i]];
+            } else {
+                _requestIds[i] = currentMiners[4 - i].value;
+            }
+        }
+    }
+
+    /**
+     * @dev This is an internal function used by the function migrate  that helps to
+     *  swap old trb tokens for new ones based on the user's old Tellor balance
+     * @param _user is the msg.sender address of the user to migrate the balance from
+    */
+    function _migrate(address _user) internal {
+        require(!migrated[_user], "Already migrated");
+        _doMint(_user, ITellor(addresses[_OLD_TELLOR]).balanceOf(_user));
+        migrated[_user] = true;
+    }
+
+    /**
+     * @dev This is an internal function used by the function migrate  that helps to
+     *  swap old trb tokens for new ones based on a custom amount
+     * @param _destination is the address that will receive tokens
+     * @param _amount is the amount to mint to the user
+     * @param _bypass is true if the migrator contract needs to bypass the migrated = true flag
+     *  for users that have already  migrated 
+    */
+    function _migrateFor(
+        address _destination,
+        uint256 _amount,
+        bool _bypass
+    ) internal {
+        if (!_bypass) require(!migrated[_destination], "already migrated");
+        _doMint(_destination, _amount);
+        migrated[_destination] = true;
+    }
+
+    /**
+     * @dev This is an internal function used by the function migrate  that helps to
+     *  swap old trb tokens for new ones based on a custom amount and it allows
+     *  the migrator contact to swap contract locked tokens even if the user has previosly migrated.
+     * @param _origin is the address of the user to migrate the balance from
+     * @param _destination is the address that will receive tokens
+     * @param _amount is the amount to mint to the user
+     * @param _bypass is a flag used by the migrator to allow it to bypass the "migrated = true" flag
+    */
+    function _migrateFrom(
+        address _origin,
+        address _destination,
+        uint256 _amount,
+        bool _bypass
+    ) internal {
+        if (!_bypass) require(!migrated[_origin], "already migrated");
+        _doMint(_destination, _amount);
+        migrated[_origin] = true;
     }
 
     /**
      * @dev This is an internal function called by submitMiningSolution and adjusts the difficulty,
      * sorts and stores the first 5 values received, pays the miners, the dev share and
      * assigns a new challenge
-     * @param _nonce or solution for the PoW  for the requestId
-     * @param _requestIds for the current request being mined
-     */
+     * @param _nonce or solution for the PoW for the current challenge
+     * @param _requestIds array of the current request IDs being mined
+    */
     function _newBlock(string memory _nonce, uint256[5] memory _requestIds)
         internal
     {
@@ -481,36 +458,115 @@ contract Tellor is TellorStake {
     }
 
     /**
-     * @dev Add tip to Request value from oracle
-     * @param _requestId being requested to be mined
-     * @param _tip amount the requester is willing to pay to be get on queue. Miners
-     * mine the onDeckQueryHash, or the api with the highest payout pool
-     */
-    function addTip(uint256 _requestId, uint256 _tip) external {
-        require(_requestId != 0, "RequestId is 0");
-        require(_tip != 0, "Tip should be greater than 0");
-        uint256 _count = uints[_REQUEST_COUNT] + 1;
-        if (_requestId == _count) {
-            uints[_REQUEST_COUNT] = _count;
-        } else {
-            require(_requestId < _count, "RequestId is not less than count");
-        }
-        _doBurn(msg.sender, _tip);
-        //Update the information for the request that should be mined next based on the tip submitted
-        updateOnDeck(_requestId, _tip);
-        emit TipAdded(
-            msg.sender,
-            _requestId,
-            _tip,
-            requestDetails[_requestId].apiUintVars[_TOTAL_TIP]
+     * @dev This is an internal function used by submitMiningSolution to
+     * calculate and pay rewards to miners
+     * @param miners are the 5 miners to reward
+     * @param _previousTime is the previous mine time based on the 4th entry
+    */
+    function _payReward(address[5] memory miners, uint256 _previousTime)
+        internal
+    {
+        //_timeDiff is how many seconds passed since last block
+        uint256 _timeDiff = block.timestamp - _previousTime;
+        uint256 reward = (_timeDiff * uints[_CURRENT_REWARD]) / 300;
+        uint256 _tip = uints[_CURRENT_TOTAL_TIPS] / 10;
+        uint256 _devShare = reward / 2;
+        _doMint(miners[0], reward + _tip);
+        _doMint(miners[1], reward + _tip);
+        _doMint(miners[2], reward + _tip);
+        _doMint(miners[3], reward + _tip);
+        _doMint(miners[4], reward + _tip);
+        _doMint(addresses[_OWNER], _devShare);
+        uints[_CURRENT_TOTAL_TIPS] = 0;
+    }
+
+    /**
+     * @dev This is an internal function used by submitMiningSolution to  allow miners to submit
+     * their mining solution and data requested. It checks the miner is staked, has not
+     * won in the last 15 min, and checks they are submitting all the correct requestids
+     * @param _nonce is the mining solution
+     * @param _requestIds are the 5 request ids being mined
+     * @param _values are the 5 values corresponding to the 5 request ids
+    */
+    function _submitMiningSolution(
+        string memory _nonce,
+        uint256[5] memory _requestIds,
+        uint256[5] memory _values
+    ) internal {
+        //Verifying Miner Eligibility
+        bytes32 _hashMsgSender = keccak256(abi.encode(msg.sender));
+        require(
+            stakerDetails[msg.sender].currentStatus == 1,
+            "Miner status is not staker"
         );
+        require(
+            _requestIds[0] == currentMiners[0].value,
+            "Request ID is wrong"
+        );
+        require(
+            _requestIds[1] == currentMiners[1].value,
+            "Request ID is wrong"
+        );
+        require(
+            _requestIds[2] == currentMiners[2].value,
+            "Request ID is wrong"
+        );
+        require(
+            _requestIds[3] == currentMiners[3].value,
+            "Request ID is wrong"
+        );
+        require(
+            _requestIds[4] == currentMiners[4].value,
+            "Request ID is wrong"
+        );
+        uints[_hashMsgSender] = block.timestamp;
+        bytes32 _currChallenge = bytesVars[_CURRENT_CHALLENGE];
+        uint256 _slotP = uints[_SLOT_PROGRESS];
+        //Checking and updating Miner Status
+        require(
+            minersByChallenge[_currChallenge][msg.sender] == false,
+            "Miner already submitted the value"
+        );
+        //Update the miner status to true once they submit a value so they don't submit more than once
+        minersByChallenge[_currChallenge][msg.sender] = true;
+        //Updating Request
+        Request storage _tblock = requestDetails[uints[_T_BLOCK]];
+        //Assigning directly is cheaper than using a for loop
+        _tblock.valuesByTimestamp[0][_slotP] = _values[0];
+        _tblock.valuesByTimestamp[1][_slotP] = _values[1];
+        _tblock.valuesByTimestamp[2][_slotP] = _values[2];
+        _tblock.valuesByTimestamp[3][_slotP] = _values[3];
+        _tblock.valuesByTimestamp[4][_slotP] = _values[4];
+        _tblock.minersByValue[0][_slotP] = msg.sender;
+        _tblock.minersByValue[1][_slotP] = msg.sender;
+        _tblock.minersByValue[2][_slotP] = msg.sender;
+        _tblock.minersByValue[3][_slotP] = msg.sender;
+        _tblock.minersByValue[4][_slotP] = msg.sender;
+        if (_slotP + 1 == 4) {
+            _adjustDifficulty();
+        }
+        emit NonceSubmitted(
+            msg.sender,
+            _nonce,
+            _requestIds,
+            _values,
+            _currChallenge,
+            _slotP
+        );
+        if (_slotP + 1 == 5) {
+            //slotProgress has been incremented, but we're using the variable on stack to save gas
+            _newBlock(_nonce, _requestIds);
+            uints[_SLOT_PROGRESS] = 0;
+        } else {
+            uints[_SLOT_PROGRESS]++;
+        }
     }
 
     /**
      * @dev This function updates the requestQ when addTip are ran
      * @param _requestId being requested
      * @param _tip is the tip to add
-     */
+    */
     function updateOnDeck(uint256 _requestId, uint256 _tip) internal {
         Request storage _request = requestDetails[_requestId];
         _request.apiUintVars[_TOTAL_TIP] = _request.apiUintVars[_TOTAL_TIP].add(
@@ -549,100 +605,43 @@ contract Tellor is TellorStake {
     }
 
     /**
-     * @dev This is an internal function called by updateOnDeck that gets the min value
-     * @param data is an array [51] to determine the min from
-     * @return min the min value and it's index in the data array
-     */
-    function _getMin(uint256[51] memory data)
-        internal
-        pure
-        returns (uint256 min, uint256 minIndex)
-    {
-        minIndex = data.length - 1;
-        min = data[minIndex];
-        for (uint256 i = data.length - 2; i > 0; i--) {
-            if (data[i] < min) {
-                min = data[i];
-                minIndex = i;
-            }
-        }
-    }
-
-    /**
-     * @dev This is an internal function called by updateOnDeck that gets the top 5 values
-     * @param data is an array [51] to determine the top 5 values from
-     * @return max the top 5 values and their index values in the data array
-     */
-    function _getMax5(uint256[51] memory data)
-        internal
-        pure
-        returns (uint256[5] memory max, uint256[5] memory maxIndex)
-    {
-        uint256 min5 = data[1];
-        uint256 minI = 0;
-        for (uint256 j = 0; j < 5; j++) {
-            max[j] = data[j + 1]; //max[0]=data[1]
-            maxIndex[j] = j + 1; //maxIndex[0]= 1
-            if (max[j] < min5) {
-                min5 = max[j];
-                minI = j;
-            }
-        }
-        for (uint256 i = 6; i < data.length; i++) {
-            if (data[i] > min5) {
-                max[minI] = data[i];
-                maxIndex[minI] = i;
-                min5 = data[i];
-                for (uint256 j = 0; j < 5; j++) {
-                    if (max[j] < min5) {
-                        min5 = max[j];
-                        minI = j;
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * @dev Getter function for the top 5 requests with highest payouts.
-     * This function is used within the newBlock function
-     * @return _requestIds the top 5 requests ids based on tips or the last 5 requests ids mined
-     */
-    function _getTopRequestIDs()
-        internal
-        view
-        returns (uint256[5] memory _requestIds)
-    {
-        uint256[5] memory _max;
-        uint256[5] memory _index;
-        (_max, _index) = _getMax5(requestQ);
-        for (uint256 i = 0; i < 5; i++) {
-            if (_max[i] != 0) {
-                _requestIds[i] = requestIdByRequestQIndex[_index[i]];
-            } else {
-                _requestIds[i] = currentMiners[4 - i].value;
-            }
-        }
-    }
-
-    /**
-     * @dev This is an internal function called within the fallback function to help delegate calls.
-     * This functions helps delegate calls to the TellorGetters
-     * contract.
-     */
-    function _delegate(address implementation)
-        internal
-        virtual
-        returns (bool succ, bytes memory ret)
-    {
-        (succ, ret) = implementation.delegatecall(msg.data);
+     * @dev This is an internal function used by submitMiningSolution to allows miners to submit
+     * their mining solution and data requested. It checks the miner has submitted a
+     * valid nonce or allows any solution if 15 minutes or more have passed since last
+     * mined values
+     * @param _nonce is the mining solution
+    */
+    function _verifyNonce(string memory _nonce) internal view {
+        require(
+            uint256(
+                sha256(
+                    abi.encodePacked(
+                        ripemd160(
+                            abi.encodePacked(
+                                keccak256(
+                                    abi.encodePacked(
+                                        bytesVars[_CURRENT_CHALLENGE],
+                                        msg.sender,
+                                        _nonce
+                                    )
+                                )
+                            )
+                        )
+                    )
+                )
+            ) %
+                uints[_DIFFICULTY] ==
+                0 ||
+                block.timestamp - uints[_TIME_OF_LAST_NEW_VALUE] >= 15 minutes,
+            "Incorrect nonce for current challenge"
+        );
     }
 
     /**
      * @dev The tellor logic does not fit in one contract so it has been split into two:
      * Tellor and TellorGetters This functions helps delegate calls to the TellorGetters
      * contract.
-     */
+    */
     fallback() external {
         address addr = addresses[_EXTENSION];
         (bool result, ) = _delegate(addr);
