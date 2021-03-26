@@ -7,10 +7,11 @@ import "./Utilities.sol";
 import "./ITellor.sol";
 import "./SafeMath.sol";
 
-/**
- * @title Tellor Oracle System
- * @dev Oracle contract where miners can submit the proof of work along with the value.
- */
+ /** 
+ @author Tellor Inc.
+ @title Tellor
+ @dev  Main functionality for Tellor Oracle system
+**/
 contract Tellor is TellorStake {
     using SafeMath for uint256;
 

@@ -1,7 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.7.4;
 
-//Slightly modified SafeMath library - includes a min and max function, removes useless div function
+/** 
+ @author Tellor Inc.
+ @title SafeMath
+ @dev  Slightly modified SafeMath library - includes a min and max function, removes useless div function
+**/
 library SafeMath {
     function add(uint256 a, uint256 b) internal pure returns (uint256) {
         uint256 c = a + b;

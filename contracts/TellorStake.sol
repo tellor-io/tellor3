@@ -7,12 +7,12 @@ import "./Extension.sol";
 import "./Utilities.sol";
 
 /**
- * title Tellor Stake
- * @dev Contains the methods related to initiating disputes and
+ @author Tellor Inc.
+ @title TellorStake
+ @dev Contains the methods related to initiating disputes and
  * voting on them.
  * Because of space limitations some functions are currently on the Extensions contract
- */
-
+*/
 contract TellorStake is TellorTransfer {
     using SafeMath for uint256;
     using SafeMath for int256;

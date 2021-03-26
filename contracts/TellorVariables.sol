@@ -1,7 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.7.4;
 
-// Helper contract to store hashes of variables
+/**
+ @author Tellor Inc.
+ @title TellorVariables
+ @dev Helper contract to store hashes of variables
+*/
 contract TellorVariables {
     bytes32 constant _BLOCK_NUMBER =
         0x4b4cefd5ced7569ef0d091282b4bca9c52a034c56471a6061afd1bf307a2de7c; //keccak256("_BLOCK_NUMBER");

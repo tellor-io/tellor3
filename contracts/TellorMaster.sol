@@ -5,11 +5,12 @@ import "./TellorStorage.sol";
 import "./TellorVariables.sol";
 
 /**
- * @title Tellor Master
- * @dev This is the Master contract with all tellor getter functions and delegate call to Tellor.
- * The logic for the functions on this contract is saved on the TellorGettersLibrary, TellorTransfer,
- * TellorGettersLibrary, and TellorStake
- */
+ @author Tellor Inc.
+ @title TellorMaster
+ @dev This is the Master contract which delegate calls to the Tellor contract.
+ * The logic implemented by this contract is saved on the TellorGetters, TellorStake,
+ * TellorTransfer, and Extension contracts
+*/
 contract TellorMaster is TellorStorage, TellorVariables {
     event NewTellorAddress(address _newTellor);
 

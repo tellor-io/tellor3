@@ -1,6 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.7.4;
 
+/** 
+ @author Tellor Inc.
+ @title ITellor
+ @dev  This contract holds the interface for all Tellor functions
+**/
 interface ITellor {
     event NewTellorAddress(address _newTellor);
     event NewDispute(
@@ -355,4 +360,5 @@ interface ITellor {
     ) external;
 
     function bumpVersion() external;
+    function verify() external returns (uint256) 
 }

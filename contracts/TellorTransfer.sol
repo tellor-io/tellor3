@@ -6,10 +6,11 @@ import "./TellorStorage.sol";
 import "./TellorVariables.sol";
 
 /**
- * @title Tellor Transfer
- * @dev Contains the methods related to transfers and ERC20, its storage and hashes of tellor variable
+ @author Tellor Inc.
+ @title TellorTransfer
+ @dev Contains the methods related to transfers and ERC20, its storage and hashes of tellor variables
  * that are used to save gas on transactions.
- */
+*/
 contract TellorTransfer is TellorStorage, TellorVariables {
     using SafeMath for uint256;
 
