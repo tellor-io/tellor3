@@ -20,7 +20,7 @@ contract TellorGetters is TellorStorage, TellorVariables, Utilities {
      * @return true if the _miner address provided solved the
      */
     function didMine(bytes32 _challenge, address _miner)
-        public
+        external
         view
         returns (bool)
     {
@@ -75,7 +75,7 @@ contract TellorGetters is TellorStorage, TellorVariables, Utilities {
      * int count of the current tally
      */
     function getAllDisputeVars(uint256 _disputeId)
-        public
+        external
         view
         returns (
             bytes32,
@@ -256,7 +256,7 @@ contract TellorGetters is TellorStorage, TellorVariables, Utilities {
      * @dev Getter function for the requestQ array
      * @return the requestQ array
      */
-    function getRequestQ() public view returns (uint256[51] memory) {
+    function getRequestQ() external view returns (uint256[51] memory) {
         return requestQ;
     }
 
@@ -347,7 +347,7 @@ contract TellorGetters is TellorStorage, TellorVariables, Utilities {
      * The variables names in the TellorVariables contract
      * @return uint of specified variable
      */
-    function getUintVar(bytes32 _data) public view returns (uint256) {
+    function getUintVar(bytes32 _data) external view returns (uint256) {
         return uints[_data];
     }
 

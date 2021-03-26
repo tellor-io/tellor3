@@ -182,6 +182,7 @@ master = await ITellor.at(tellorMaster.address)
   });
 
   it("Test 50 requests, proper booting, and mining of 5", async function() {
+    this.timeout(40000)
       // Mining 11 blocks to get the requestQ alright
     for (let index = 0; index < 12; index++) {
       await helper.advanceTime(60 * 60 * 16);

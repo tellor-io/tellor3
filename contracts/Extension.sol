@@ -48,22 +48,17 @@ contract Extension is TellorGetters {
         StakeInfo storage stakes = stakerDetails[msg.sender];
         //Require that the miner is staked
         require(stakes.currentStatus == 1, "Miner is not staked");
-
         //Change the miner staked to locked to be withdrawStake
         stakes.currentStatus = 2;
-
         //Change the startDate to block.timestamp since the lock up period begins block.timestamp
         //and the miner can only withdraw 7 days later from block.timestamp(check the withdraw function)
         stakes.startDate = block.timestamp - (block.timestamp % 86400);
-
         //Reduce the staker count
         uints[_STAKE_COUNT] -= 1;
-
         //Update the minimum dispute fee that is based on the number of stakers
         updateMinDisputeFee();
         emit StakeWithdrawRequested(msg.sender);
     }
-
 
     /**
      * @dev tallies the votes and locks the stake disbursement(currentStatus = 4) if the vote passes
@@ -73,10 +68,12 @@ contract Extension is TellorGetters {
         Dispute storage disp = disputesById[_disputeId];
         //Ensure this has not already been executed/tallied
         require(disp.executed == false, "Dispute has been already executed");
+        //Ensure that the vote has been open long enough
         require(
             block.timestamp >= disp.disputeUintVars[_MIN_EXECUTION_DATE],
             "Time for voting haven't elapsed"
         );
+        //Ensure that it's a valid disputeId
         require(
             disp.reportingParty != address(0),
             "reporting Party is address 0"
@@ -129,10 +126,11 @@ contract Extension is TellorGetters {
      * @dev Updates the Tellor address after a proposed fork has
      * passed the vote and day has gone by without a dispute
      * @param _disputeId the disputeId for the proposed fork
-     */
+    */
     function updateTellor(uint256 _disputeId) external {
         bytes32 _hash = disputesById[_disputeId].hash;
         uint256 origID = disputeIdByDisputeHash[_hash];
+        //this checks the "lastID" or the most recent if this is a multiple dispute case
         uint256 lastID =
             disputesById[origID].disputeUintVars[
                 keccak256(
@@ -156,6 +154,7 @@ contract Extension is TellorGetters {
         addresses[_TELLOR_CONTRACT] = disp.proposedForkAddress;
         emit NewTellorAddress(disp.proposedForkAddress);
     }
+
     /**
      * @dev This function allows users to withdraw their stake after a 7 day waiting
      * period from request
@@ -182,7 +181,7 @@ contract Extension is TellorGetters {
      * The function updates their status/state and status start date so they are locked it so they can't withdraw
      * and updates the number of stakers in the system.
      * @param _staker the address of the new staker
-     */
+    */
     function newStake(address _staker) internal {
         require(
             balances[_staker][balances[_staker].length - 1].value >=
@@ -198,8 +197,8 @@ contract Extension is TellorGetters {
         );
         uints[_STAKE_COUNT] += 1;
         stakerDetails[_staker] = StakeInfo({
-            currentStatus: 1, //this resets their stake start date to today
-            startDate: block.timestamp - (block.timestamp % 86400)
+            currentStatus: 1, 
+            startDate: block.timestamp//this resets their stake start date to now
         });
         emit NewStake(_staker);
     }

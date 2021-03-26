@@ -48,7 +48,7 @@ contract TellorStake is TellorTransfer {
         uint256 _requestId,
         uint256 _timestamp,
         uint256 _minerIndex
-    ) public {
+    ) external {
         Request storage _request = requestDetails[_requestId];
         require(_request.minedBlockNum[_timestamp] != 0, "Mined block is 0");
         require(_minerIndex < 5, "Miner index is wrong");
@@ -150,7 +150,7 @@ contract TellorStake is TellorTransfer {
      * @dev Allows for a fork to be proposed
      * @param _propNewTellorAddress address for new proposed Tellor
      */
-    function proposeFork(address _propNewTellorAddress) public {
+    function proposeFork(address _propNewTellorAddress) external {
         _verify(_propNewTellorAddress);
         bytes32 _hash = keccak256(abi.encode(_propNewTellorAddress));
         uints[_DISPUTE_COUNT]++;
@@ -224,7 +224,7 @@ contract TellorStake is TellorTransfer {
      * @param _disputeId is the dispute id
      * @param _supportsDispute is the vote (true=the dispute has basis false = vote against dispute)
      */
-    function vote(uint256 _disputeId, bool _supportsDispute) public {
+    function vote(uint256 _disputeId, bool _supportsDispute) external {
         require(_disputeId <= uints[_DISPUTE_COUNT], "dispute does not exist");
         Dispute storage disp = disputesById[_disputeId];
         require(!disp.executed, "the dispute has already been executed");
@@ -266,7 +266,7 @@ contract TellorStake is TellorTransfer {
      * @dev Allows disputer to unlock the dispute fee
      * @param _disputeId to unlock fee from
      */
-    function unlockDisputeFee(uint256 _disputeId) public {
+    function unlockDisputeFee(uint256 _disputeId) external {
         require(_disputeId <= uints[_DISPUTE_COUNT], "dispute does not exist");
         uint256 origID = disputeIdByDisputeHash[disputesById[_disputeId].hash];
         uint256 lastID =
