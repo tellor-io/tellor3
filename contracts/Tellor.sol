@@ -228,19 +228,6 @@ contract Tellor is TellorStake {
     }
 
     /**
-     * @dev This is an internal function called within the fallback function to help delegate calls.
-     * This functions helps delegate calls to the TellorGetters
-     * contract.
-    */
-    function _delegate(address implementation)
-        internal
-        virtual
-        returns (bool succ, bytes memory ret)
-    {
-        (succ, ret) = implementation.delegatecall(msg.data);
-    }
-
-    /**
      * @dev This is an internal function called by updateOnDeck that gets the top 5 values
      * @param _data is an array [51] to determine the top 5 values from
      * @return max the top 5 values and their index values in the data array
@@ -644,7 +631,7 @@ contract Tellor is TellorStake {
     */
     fallback() external {
         address addr = addresses[_EXTENSION];
-        (bool result, ) = _delegate(addr);
+        (bool result, ) =  addr.delegatecall(msg.data);
         assembly {
             returndatacopy(0, 0, returndatasize())
 
