@@ -6,9 +6,10 @@ import "./TellorVariables.sol";
 import "./Utilities.sol";
 
 /**
- * @title Tellor Getters
- * @dev Oracle contract with all tellor getter functions
- */
+ @author Tellor Inc.
+ @title TellorGetters
+ @dev Getter functions for Tellor Oracle system
+*/
 contract TellorGetters is TellorStorage, TellorVariables, Utilities {
     using SafeMath for uint256;
 
@@ -19,7 +20,7 @@ contract TellorGetters is TellorStorage, TellorVariables, Utilities {
      * @return true if the _miner address provided solved the
      */
     function didMine(bytes32 _challenge, address _miner)
-        public
+        external
         view
         returns (bool)
     {
@@ -74,7 +75,7 @@ contract TellorGetters is TellorStorage, TellorVariables, Utilities {
      * int count of the current tally
      */
     function getAllDisputeVars(uint256 _disputeId)
-        public
+        external
         view
         returns (
             bytes32,
@@ -255,7 +256,7 @@ contract TellorGetters is TellorStorage, TellorVariables, Utilities {
      * @dev Getter function for the requestQ array
      * @return the requestQ array
      */
-    function getRequestQ() public view returns (uint256[51] memory) {
+    function getRequestQ() external view returns (uint256[51] memory) {
         return requestQ;
     }
 
@@ -346,7 +347,7 @@ contract TellorGetters is TellorStorage, TellorVariables, Utilities {
      * The variables names in the TellorVariables contract
      * @return uint of specified variable
      */
-    function getUintVar(bytes32 _data) public view returns (uint256) {
+    function getUintVar(bytes32 _data) external view returns (uint256) {
         return uints[_data];
     }
 
@@ -458,7 +459,7 @@ contract TellorGetters is TellorStorage, TellorVariables, Utilities {
     {
         uint256[5] memory _max;
         uint256[5] memory _index;
-        (_max, _index) = getMax5(requestQ);
+        (_max, _index) = _getMax5(requestQ);
         for (uint256 i = 0; i < 5; i++) {
             if (_max[i] != 0) {
                 _requestIds[i] = requestIdByRequestQIndex[_index[i]];

@@ -1,18 +1,21 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.7.4;
 
-//Functions for retrieving min and Max in 51 length array (requestQ)
-//Taken partly from: https://github.com/modular-network/ethereum-libraries-array-utils/blob/master/contracts/Array256Lib.sol
-
+/**
+ @author Tellor Inc.
+ @title Utilities
+ @dev Functions for retrieving min and Max in 51 length array (requestQ)
+ *Taken partly from: https://github.com/modular-network/ethereum-libraries-array-utils/blob/master/contracts/Array256Lib.sol
+*/
 contract Utilities {
     /**
      * @dev This is an internal function called by updateOnDeck that gets the top 5 values
      * @param data is an array [51] to determine the top 5 values from
      * @return max the top 5 values and their index values in the data array
      */
-    function getMax5(uint256[51] memory data)
-        public
-        view
+    function _getMax5(uint256[51] memory data)
+        internal
+        pure
         returns (uint256[5] memory max, uint256[5] memory maxIndex)
     {
         uint256 min5 = data[1];

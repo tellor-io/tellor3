@@ -7,12 +7,12 @@ import "./Extension.sol";
 import "./Utilities.sol";
 
 /**
- * title Tellor Stake
- * @dev Contains the methods related to initiating disputes and
+ @author Tellor Inc.
+ @title TellorStake
+ @dev Contains the methods related to initiating disputes and
  * voting on them.
  * Because of space limitations some functions are currently on the Extensions contract
- */
-
+*/
 contract TellorStake is TellorTransfer {
     using SafeMath for uint256;
     using SafeMath for int256;
@@ -48,7 +48,7 @@ contract TellorStake is TellorTransfer {
         uint256 _requestId,
         uint256 _timestamp,
         uint256 _minerIndex
-    ) public {
+    ) external {
         Request storage _request = requestDetails[_requestId];
         require(_request.minedBlockNum[_timestamp] != 0, "Mined block is 0");
         require(_minerIndex < 5, "Miner index is wrong");
@@ -60,8 +60,8 @@ contract TellorStake is TellorTransfer {
             keccak256(abi.encodePacked(_miner, _requestId, _timestamp));
 
         //Increase the dispute count by 1
-        uint256 disputeId = uints[_DISPUTE_COUNT] + 1;
-        uints[_DISPUTE_COUNT] = disputeId;
+        uints[_DISPUTE_COUNT]++;
+        uint256 disputeId = uints[_DISPUTE_COUNT];
 
         //Ensures that a dispute is not already open for the that miner, requestId and timestamp
         uint256 hashId = disputeIdByDisputeHash[_hash];
@@ -72,32 +72,7 @@ contract TellorStake is TellorTransfer {
             disputeIdByDisputeHash[_hash] = disputeId;
             hashId = disputeId;
         }
-        uint256 origID = hashId;
-        uint256 dispRounds =
-            disputesById[origID].disputeUintVars[_DISPUTE_ROUNDS] + 1;
-        disputesById[origID].disputeUintVars[_DISPUTE_ROUNDS] = dispRounds;
-        disputesById[origID].disputeUintVars[
-            keccak256(abi.encode(dispRounds))
-        ] = disputeId;
-        if (disputeId != origID) {
-            uint256 lastID =
-                disputesById[origID].disputeUintVars[
-                    keccak256(abi.encode(dispRounds - 1))
-                ];
-            require(
-                disputesById[lastID].disputeUintVars[_MIN_EXECUTION_DATE] <=
-                    block.timestamp,
-                "Dispute is already open"
-            );
-            if (disputesById[lastID].executed) {
-                require(
-                    block.timestamp -
-                        disputesById[lastID].disputeUintVars[_TALLY_DATE] <=
-                        1 days,
-                    "Time for voting haven't elapsed"
-                );
-            }
-        }
+        uint256 dispRounds = _updateLastId(disputeId,hashId);
         uint256 _fee;
         if (_minerIndex == 2) {
             requestDetails[_requestId].apiUintVars[_DISPUTE_COUNT] =
@@ -149,8 +124,8 @@ contract TellorStake is TellorTransfer {
     /**
      * @dev Allows for a fork to be proposed
      * @param _propNewTellorAddress address for new proposed Tellor
-     */
-    function proposeFork(address _propNewTellorAddress) public {
+    */
+    function proposeFork(address _propNewTellorAddress) external {
         _verify(_propNewTellorAddress);
         bytes32 _hash = keccak256(abi.encode(_propNewTellorAddress));
         uints[_DISPUTE_COUNT]++;
@@ -162,33 +137,7 @@ contract TellorStake is TellorTransfer {
         } else {
             disputeIdByDisputeHash[_hash] = disputeId;
         }
-        uint256 origID = disputeIdByDisputeHash[_hash];
-
-        disputesById[origID].disputeUintVars[_DISPUTE_ROUNDS]++;
-        uint256 dispRounds =
-            disputesById[origID].disputeUintVars[_DISPUTE_ROUNDS];
-        disputesById[origID].disputeUintVars[
-            keccak256(abi.encode(dispRounds))
-        ] = disputeId;
-        if (disputeId != origID) {
-            uint256 lastID =
-                disputesById[origID].disputeUintVars[
-                    keccak256(abi.encode(dispRounds - 1))
-                ];
-            require(
-                disputesById[lastID].disputeUintVars[_MIN_EXECUTION_DATE] <=
-                    block.timestamp,
-                "Dispute is already open"
-            );
-            if (disputesById[lastID].executed) {
-                require(
-                    block.timestamp -
-                        disputesById[lastID].disputeUintVars[_TALLY_DATE] <=
-                        1 days,
-                    "Time for voting haven't elapsed"
-                );
-            }
-        }
+        uint256 dispRounds = _updateLastId(disputeId,disputeIdByDisputeHash[_hash]);
         disputesById[disputeId].hash = _hash;
         disputesById[disputeId].isPropFork = true;
         // I don't think we need those
@@ -223,8 +172,8 @@ contract TellorStake is TellorTransfer {
      * @dev Allows token holders to vote
      * @param _disputeId is the dispute id
      * @param _supportsDispute is the vote (true=the dispute has basis false = vote against dispute)
-     */
-    function vote(uint256 _disputeId, bool _supportsDispute) public {
+    */
+    function vote(uint256 _disputeId, bool _supportsDispute) external {
         require(_disputeId <= uints[_DISPUTE_COUNT], "dispute does not exist");
         Dispute storage disp = disputesById[_disputeId];
         require(!disp.executed, "the dispute has already been executed");
@@ -265,8 +214,8 @@ contract TellorStake is TellorTransfer {
     /**
      * @dev Allows disputer to unlock the dispute fee
      * @param _disputeId to unlock fee from
-     */
-    function unlockDisputeFee(uint256 _disputeId) public {
+    */
+    function unlockDisputeFee(uint256 _disputeId) external {
         require(_disputeId <= uints[_DISPUTE_COUNT], "dispute does not exist");
         uint256 origID = disputeIdByDisputeHash[disputesById[_disputeId].hash];
         uint256 lastID =
@@ -289,6 +238,7 @@ contract TellorStake is TellorTransfer {
         }
         uint256 _id;
         require(disp.disputeUintVars[_PAID] == 0, "already paid out");
+        require(!disp.isPropFork, "function not callable fork fork proposals");
         require(
             block.timestamp - last.disputeUintVars[_TALLY_DATE] > 1 days,
             "Time for voting haven't elapsed"
@@ -361,6 +311,35 @@ contract TellorStake is TellorTransfer {
             requestDetails[disp.disputeUintVars[_REQUEST_ID]].apiUintVars[
                 _DISPUTE_COUNT
             ]--;
+        }
+    }
+
+    /**
+     * @dev Internal function with round checking logic from beginDispute/ proposeFork
+     * @param _disputeId new dispute ID of round
+     * @param _origId original ID of the hash
+    */
+    function _updateLastId(uint _disputeId,uint _origId) internal returns(uint256 _dispRounds){
+        _dispRounds = disputesById[_origId].disputeUintVars[_DISPUTE_ROUNDS] + 1;
+        disputesById[_origId].disputeUintVars[_DISPUTE_ROUNDS] = _dispRounds;
+        disputesById[_origId].disputeUintVars[
+            keccak256(abi.encode(_dispRounds))
+        ] = _disputeId;
+        if (_disputeId != _origId) {
+            uint256 _lastId =
+            disputesById[_origId].disputeUintVars[keccak256(abi.encode(_dispRounds - 1))];
+            require(
+                disputesById[_lastId].disputeUintVars[_MIN_EXECUTION_DATE] <=
+                    block.timestamp,
+                "Dispute is already open"
+            );
+            if (disputesById[_lastId].executed) {
+                require(
+                    block.timestamp - disputesById[_lastId].disputeUintVars[_TALLY_DATE] <=
+                        1 days,
+                    "Time for voting haven't elapsed"
+                );
+            }
         }
     }
 }

@@ -2,9 +2,10 @@
 pragma solidity 0.7.4;
 
 /**
- * @title Tellor Oracle Storage Library
- * @dev Contains all the variables/structs used by Tellor
- */
+  @author Tellor Inc.
+  @title TellorStorage
+  @dev Contains all the variables/structs used by Tellor
+*/
 
 contract TellorStorage {
     //Internal struct for use in proof-of-work submission

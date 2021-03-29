@@ -55,7 +55,7 @@ contract("Utilities Tests", function(accounts) {
       await TestLib.mineBlock(env);      
     }
 
-    utilities = await UtilitiesTests.new(master.address);
+    utilities = await UtilitiesTests.new();
 
   });
 
@@ -64,7 +64,6 @@ contract("Utilities Tests", function(accounts) {
     for (var i = 50; i >= 0; i--) {
       myArr.push(i);
     }
-    utilities = await UtilitiesTests.new(master.address);
     top5N = await utilities.testgetMax5(myArr);
     for (var i = 0; i < 5; i++) {
       assert(top5N["_max"][i] == myArr[i + 1]);

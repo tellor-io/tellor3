@@ -6,10 +6,11 @@ import "./TellorStorage.sol";
 import "./TellorVariables.sol";
 
 /**
- * @title Tellor Transfer
- * @dev Contains the methods related to transfers and ERC20, its storage and hashes of tellor variable
+ @author Tellor Inc.
+ @title TellorTransfer
+ @dev Contains the methods related to transfers and ERC20, its storage and hashes of tellor variables
  * that are used to save gas on transactions.
- */
+*/
 contract TellorTransfer is TellorStorage, TellorVariables {
     using SafeMath for uint256;
 
@@ -108,13 +109,13 @@ contract TellorTransfer is TellorStorage, TellorVariables {
         );
         uint128 previousBalance = uint128(balanceOf(_from));
         uint128 _sizedAmount  = uint128(_amount);
-        updateBalanceAtNow(_from, previousBalance - _sizedAmount);
+        _updateBalanceAtNow(_from, previousBalance - _sizedAmount);
         previousBalance = uint128(balanceOf(_to));
         require(
             previousBalance + _sizedAmount >= previousBalance,
             "Overflow happened"
         ); // Check for overflow
-        updateBalanceAtNow(_to, previousBalance + _sizedAmount);
+        _updateBalanceAtNow(_to, previousBalance + _sizedAmount);
         emit Transfer(_from, _to, _amount);
     }
 
@@ -138,7 +139,7 @@ contract TellorTransfer is TellorStorage, TellorVariables {
             "Overflow happened"
         );
         uints[_TOTAL_SUPPLY] += _amount;
-        updateBalanceAtNow(_to, previousBalance + _sizedAmount);
+        _updateBalanceAtNow(_to, previousBalance + _sizedAmount);
         emit Transfer(address(0), _to, _amount);
     }
 
@@ -160,7 +161,7 @@ contract TellorTransfer is TellorStorage, TellorVariables {
             previousSupply - _amount <= previousSupply,
             "Overflow happened"
         );
-        updateBalanceAtNow(_from, previousBalance - _sizedAmount);
+        _updateBalanceAtNow(_from, previousBalance - _sizedAmount);
         uints[_TOTAL_SUPPLY] -= _amount;
     }
 
@@ -238,7 +239,7 @@ contract TellorTransfer is TellorStorage, TellorVariables {
      * @dev Updates balance for from and to on the current block number via doTransfer
      * @param _value is the new balance
      */
-    function updateBalanceAtNow(address _user, uint128 _value) internal {
+    function _updateBalanceAtNow(address _user, uint128 _value) internal {
         Checkpoint[] storage checkpoints = balances[_user];
         if (
             checkpoints.length == 0 ||
