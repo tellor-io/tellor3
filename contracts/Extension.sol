@@ -23,7 +23,7 @@ contract Extension is TellorGetters {
         int256 _result,
         address indexed _reportedMiner,
         address _reportingParty,
-        bool _active
+        bool _passed
     );
     event StakeWithdrawn(address indexed _sender); //Emits when a staker is block.timestamp no longer staked
     event StakeWithdrawRequested(address indexed _sender); //Emits when a staker begins the 7 day withdraw period
