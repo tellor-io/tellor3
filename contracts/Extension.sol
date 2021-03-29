@@ -151,8 +151,12 @@ contract Extension is TellorGetters {
             "Time for voting for further disputes has not passed"
         );
         disp.disputeUintVars[_FORK_EXECUTED] = 1;
-        addresses[_TELLOR_CONTRACT] = disp.proposedForkAddress;
-        emit NewTellorAddress(disp.proposedForkAddress);
+        address _newTellor =disp.proposedForkAddress;
+        addresses[_TELLOR_CONTRACT] = _newTellor; 
+        assembly {
+            sstore(_EIP_SLOT, _newTellor)
+        }
+        emit NewTellorAddress(_newTellor);
     }
 
     /**
