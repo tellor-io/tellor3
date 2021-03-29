@@ -360,5 +360,5 @@ interface ITellor {
     ) external;
 
     function bumpVersion() external;
-    function verify() external returns (uint256) 
+    function verify() external returns (uint256); 
 }
