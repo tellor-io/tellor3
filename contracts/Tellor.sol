@@ -12,7 +12,7 @@ import "./SafeMath.sol";
  @title Tellor
  @dev  Main functionality for Tellor Oracle system
 **/
-contract Tellor is TellorStake {
+contract Tellor is TellorStake,Utilities {
     using SafeMath for uint256;
 
     /*Events*/
@@ -66,7 +66,7 @@ contract Tellor is TellorStake {
         }
         _doBurn(msg.sender, _tip);
         //Update the information for the request that should be mined next based on the tip submitted
-        updateOnDeck(_requestId, _tip);
+        _updateOnDeck(_requestId, _tip);
         emit TipAdded(
             msg.sender,
             _requestId,
@@ -225,41 +225,6 @@ contract Tellor is TellorStake {
             _change = 1;
         }
         uints[_DIFFICULTY] = uint256(SafeMath.max(_diff + _change, 1));
-    }
-
-    /**
-     * @dev This is an internal function called by updateOnDeck that gets the top 5 values
-     * @param _data is an array [51] to determine the top 5 values from
-     * @return max the top 5 values and their index values in the data array
-    */
-    function _getMax5(uint256[51] memory _data)
-        internal
-        pure
-        returns (uint256[5] memory max, uint256[5] memory maxIndex)
-    {
-        uint256 min5 = _data[1];
-        uint256 minI = 0;
-        for (uint256 j = 0; j < 5; j++) {
-            max[j] = _data[j + 1];
-            maxIndex[j] = j + 1;
-            if (max[j] < min5) {
-                min5 = max[j];
-                minI = j;
-            }
-        }
-        for (uint256 i = 6; i < _data.length; i++) {
-            if (_data[i] > min5) {
-                max[minI] = _data[i];
-                maxIndex[minI] = i;
-                min5 = _data[i];
-                for (uint256 j = 0; j < 5; j++) {
-                    if (max[j] < min5) {
-                        min5 = max[j];
-                        minI = j;
-                    }
-                }
-            }
-        }
     }
 
     /**
@@ -554,7 +519,7 @@ contract Tellor is TellorStake {
      * @param _requestId being requested
      * @param _tip is the tip to add
     */
-    function updateOnDeck(uint256 _requestId, uint256 _tip) internal {
+    function _updateOnDeck(uint256 _requestId, uint256 _tip) internal {
         Request storage _request = requestDetails[_requestId];
         _request.apiUintVars[_TOTAL_TIP] = _request.apiUintVars[_TOTAL_TIP].add(
             _tip

@@ -459,7 +459,7 @@ contract TellorGetters is TellorStorage, TellorVariables, Utilities {
     {
         uint256[5] memory _max;
         uint256[5] memory _index;
-        (_max, _index) = getMax5(requestQ);
+        (_max, _index) = _getMax5(requestQ);
         for (uint256 i = 0; i < 5; i++) {
             if (_max[i] != 0) {
                 _requestIds[i] = requestIdByRequestQIndex[_index[i]];

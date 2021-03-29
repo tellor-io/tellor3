@@ -35,7 +35,7 @@ contract Extension is TellorGetters {
      * @dev This function allows miners to deposit their stake.
      */
     function depositStake() external{
-        newStake(msg.sender);
+        _newStake(msg.sender);
         updateMinDisputeFee();
     }
 
@@ -182,7 +182,7 @@ contract Extension is TellorGetters {
      * and updates the number of stakers in the system.
      * @param _staker the address of the new staker
     */
-    function newStake(address _staker) internal {
+    function _newStake(address _staker) internal {
         require(
             balances[_staker][balances[_staker].length - 1].value >=
                 uints[_STAKE_AMOUNT],

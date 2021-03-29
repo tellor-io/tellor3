@@ -13,8 +13,8 @@ contract Utilities {
      * @param data is an array [51] to determine the top 5 values from
      * @return max the top 5 values and their index values in the data array
      */
-    function getMax5(uint256[51] memory data)
-        public
+    function _getMax5(uint256[51] memory data)
+        internal
         pure
         returns (uint256[5] memory max, uint256[5] memory maxIndex)
     {

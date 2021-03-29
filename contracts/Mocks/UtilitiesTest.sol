@@ -1,30 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.7.4;
 
-import "../Utilities.sol";
-import "../ITellor.sol";
-import "../TellorMaster.sol";
-
 import "hardhat/console.sol";
+import "../Utilities.sol";
 
 /**
  * @title Utilities Tests
- * @dev These are the getter function for the two assembly code functions in the
- * Utilities library
+ * @dev These are the getter function for the code functions in the
+ * Utility contract
  */
-contract UtilitiesTest {
-    address internal owner;
-    ITellor internal tellorMaster;
-    address payable public tellorMasterAddress;
-
-    /**
-     * @dev The constructor sets the owner
-     */
-    constructor(address payable _TellorMasterAddress) {
-        owner = msg.sender;
-        tellorMasterAddress = _TellorMasterAddress;
-        tellorMaster = ITellor(tellorMasterAddress);
-    }
+contract UtilitiesTest is Utilities{
     /**
      * @dev Gets the top 5 of the array provided
      * @param requests is an array of length 51
@@ -35,6 +20,6 @@ contract UtilitiesTest {
         view
         returns (uint256[5] memory _max, uint256[5] memory _index)
     {
-        (_max, _index) = tellorMaster.getMax5(requests);
+        (_max, _index) = _getMax5(requests);
     }
 }
