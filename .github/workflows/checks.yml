@@ -37,7 +37,7 @@ jobs:
       - run: npm install -g solhint
       - run: make solhint
 
-    coverage:
+  coverage:
     runs-on: ubuntu-latest
 
     steps:
