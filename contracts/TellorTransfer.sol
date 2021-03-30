@@ -64,10 +64,6 @@ contract TellorTransfer is TellorStorage, TellorVariables {
      * @return true if spender approved successfully
      */
     function approve(address _spender, uint256 _amount) public returns (bool) {
-        require(
-            msg.sender != address(0),
-            "ERC20: approve from the zero address"
-        );
         require(_spender != address(0), "ERC20: approve to the zero address");
 
         _allowances[msg.sender][_spender] = _amount;
