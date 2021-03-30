@@ -3,6 +3,8 @@ const Master = artifacts.require("./TellorMaster.sol")
 const Extension = artifacts.require("./Extension.sol")
 const Tellor = artifacts.require("./TellorTest.sol")
 const ITellor = artifacts.require("./ITellor")
+const helper = require("./helpers/test_helpers");
+
 
 
 contract("Token Tests", function(accounts) {
@@ -92,4 +94,33 @@ contract("Token Tests", function(accounts) {
       "Allowance shoudl be 1 eth"
     );
   });
+
+  it("Should return balanceOfAt", async function() {
+    await master.theLazyCoon(accounts[2], web3.utils.toWei("5000", "ether"));
+    let balance1 = await master.balanceOf(accounts[2]);
+    let block = await web3.eth.getBlockNumber()
+
+    for (let index = 0; index < accounts.length; index++) {
+      await master.transfer(accounts[index], 1, {from: accounts[2]})
+      await helper.advanceBlock()
+    }
+    let balance2 = await master.balanceOfAt(accounts[2], block.toString()) 
+    
+    assert(
+      balance1.eq(balance2), "balances should match"
+    );
+  });
+
+  it("Allowed to trade return correct values", async function() {
+    await master.theLazyCoon(accounts[9], web3.utils.toWei("500", "ether"));
+    await master.depositStake({from: accounts[9]})
+    let allowed = await master.allowedToTrade(accounts[9], web3.utils.toWei("500", "ether"));
+    
+    assert(
+      !allowed, "shouldn't be allowed to trade"
+    );
+  });
+
+
+
 });
