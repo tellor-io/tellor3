@@ -23,13 +23,12 @@ contract Extension is TellorGetters {
         int256 _result,
         address indexed _reportedMiner,
         address _reportingParty,
-        bool _active
+        bool _passed
     );
     event StakeWithdrawn(address indexed _sender); //Emits when a staker is block.timestamp no longer staked
     event StakeWithdrawRequested(address indexed _sender); //Emits when a staker begins the 7 day withdraw period
     event NewStake(address indexed _sender); //Emits upon new staker
-    event NewTellorAddress(address newAddress);//Emits after a succesful upgrade of the Tellor system (proposeFork)
-
+    event NewTellorAddress(address _newTellor);
     /*Functions*/
     /**
      * @dev This function allows miners to deposit their stake.

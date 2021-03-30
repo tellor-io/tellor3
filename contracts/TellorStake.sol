@@ -153,64 +153,6 @@ contract TellorStake is TellorTransfer {
             7 days;
     }
 
-    function _verify(address _newTellor) internal {
-        (bool success, bytes memory data) =
-            address(_newTellor).call(
-                abi.encodeWithSelector(0xfc735e99, "") //verify() signature
-            );
-        require(
-            success && abi.decode(data, (uint256)) > CURRENT_VERSION, //we could enforce versioning through this return value, but we're almost in the size limit.
-            "new tellor is invalid"
-        );
-    }
-
-    function verify() external virtual returns (uint256) {
-        return CURRENT_VERSION;
-    }
-
-    /**
-     * @dev Allows token holders to vote
-     * @param _disputeId is the dispute id
-     * @param _supportsDispute is the vote (true=the dispute has basis false = vote against dispute)
-    */
-    function vote(uint256 _disputeId, bool _supportsDispute) external {
-        require(_disputeId <= uints[_DISPUTE_COUNT], "dispute does not exist");
-        Dispute storage disp = disputesById[_disputeId];
-        require(!disp.executed, "the dispute has already been executed");
-        //Get the voteWeight or the balance of the user at the time/blockNumber the dispute began
-        uint256 voteWeight =
-            balanceOfAt(msg.sender, disp.disputeUintVars[_BLOCK_NUMBER]);
-
-        //Require that the msg.sender has not voted
-        require(disp.voted[msg.sender] != true, "Sender has already voted");
-
-        //Require that the user had a balance >0 at time/blockNumber the dispute began
-        require(voteWeight != 0, "User balance is 0");
-
-        //ensures miners that are under dispute cannot vote
-        require(
-            stakerDetails[msg.sender].currentStatus != 3,
-            "Miner is under dispute"
-        );
-
-        //Update user voting status to true
-        disp.voted[msg.sender] = true;
-
-        //Update the number of votes for the dispute
-        disp.disputeUintVars[_NUM_OF_VOTES] += 1;
-
-        //If the user supports the dispute increase the tally for the dispute by the voteWeight
-        //otherwise decrease it
-        if (_supportsDispute) {
-            disp.tally = disp.tally.add(int256(voteWeight));
-        } else {
-            disp.tally = disp.tally.sub(int256(voteWeight));
-        }
-
-        //Let the network kblock.timestamp the user has voted on the dispute and their casted vote
-        emit Voted(_disputeId, _supportsDispute, msg.sender, voteWeight);
-    }
-
     /**
      * @dev Allows disputer to unlock the dispute fee
      * @param _disputeId to unlock fee from
@@ -315,6 +257,56 @@ contract TellorStake is TellorTransfer {
     }
 
     /**
+     * @dev Used during upgrade process to verify valid Tellor Contract
+    */
+    function verify() external virtual returns (uint256) {
+        return CURRENT_VERSION;
+    }
+
+    /**
+     * @dev Allows token holders to vote
+     * @param _disputeId is the dispute id
+     * @param _supportsDispute is the vote (true=the dispute has basis false = vote against dispute)
+    */
+    function vote(uint256 _disputeId, bool _supportsDispute) external {
+        require(_disputeId <= uints[_DISPUTE_COUNT], "dispute does not exist");
+        Dispute storage disp = disputesById[_disputeId];
+        require(!disp.executed, "the dispute has already been executed");
+        //Get the voteWeight or the balance of the user at the time/blockNumber the dispute began
+        uint256 voteWeight =
+            balanceOfAt(msg.sender, disp.disputeUintVars[_BLOCK_NUMBER]);
+
+        //Require that the msg.sender has not voted
+        require(disp.voted[msg.sender] != true, "Sender has already voted");
+
+        //Require that the user had a balance >0 at time/blockNumber the dispute began
+        require(voteWeight != 0, "User balance is 0");
+
+        //ensures miners that are under dispute cannot vote
+        require(
+            stakerDetails[msg.sender].currentStatus != 3,
+            "Miner is under dispute"
+        );
+
+        //Update user voting status to true
+        disp.voted[msg.sender] = true;
+
+        //Update the number of votes for the dispute
+        disp.disputeUintVars[_NUM_OF_VOTES] += 1;
+
+        //If the user supports the dispute increase the tally for the dispute by the voteWeight
+        //otherwise decrease it
+        if (_supportsDispute) {
+            disp.tally = disp.tally.add(int256(voteWeight));
+        } else {
+            disp.tally = disp.tally.sub(int256(voteWeight));
+        }
+
+        //Let the network kblock.timestamp the user has voted on the dispute and their casted vote
+        emit Voted(_disputeId, _supportsDispute, msg.sender, voteWeight);
+    }
+
+    /**
      * @dev Internal function with round checking logic from beginDispute/ proposeFork
      * @param _disputeId new dispute ID of round
      * @param _origId original ID of the hash
@@ -342,4 +334,19 @@ contract TellorStake is TellorTransfer {
             }
         }
     }
+    
+    /**
+     * @dev Used during upgrade process to verify valid Tellor Contract
+    */
+    function _verify(address _newTellor) internal {
+        (bool success, bytes memory data) =
+            address(_newTellor).call(
+                abi.encodeWithSelector(0xfc735e99, "") //verify() signature
+            );
+        require(
+            success && abi.decode(data, (uint256)) > CURRENT_VERSION, //we could enforce versioning through this return value, but we're almost in the size limit.
+            "new tellor is invalid"
+        );
+    }
+
 }
