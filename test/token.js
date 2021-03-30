@@ -3,6 +3,8 @@ const Master = artifacts.require("./TellorMaster.sol")
 const Extension = artifacts.require("./Extension.sol")
 const Tellor = artifacts.require("./TellorTest.sol")
 const ITellor = artifacts.require("./ITellor")
+const helper = require("./helpers/test_helpers");
+const constants = require("./helpers/constants")
 
 
 contract("Token Tests", function(accounts) {
@@ -92,4 +94,60 @@ contract("Token Tests", function(accounts) {
       "Allowance shoudl be 1 eth"
     );
   });
+
+  it("Should return balanceOfAt", async function() {
+    await master.theLazyCoon(accounts[2], web3.utils.toWei("5000", "ether"));
+    let balance1 = await master.balanceOf(accounts[2]);
+    let block = await web3.eth.getBlockNumber()
+    let midBlock;
+    let midBalance;
+    for (let index = 0; index < accounts.length; index++) {
+      if(index == Math.floor(accounts.length / 2)) {
+        midBlock = await web3.eth.getBlockNumber();
+        midBalance = await master.balanceOf(accounts[2]);
+      }
+      await master.transfer(accounts[index], 1, {from: accounts[2]})
+      await helper.advanceBlock()
+    }
+    let balance2 = await master.balanceOfAt(accounts[2], block.toString()) 
+    let balance3 = await master.balanceOfAt(accounts[2], midBlock.toString());
+
+    assert(
+      balance1.eq(balance2), "balances should match"
+    );
+    assert(
+      balance3.eq(midBalance), "mid balances should match"
+    );
+  });
+
+  it("Allowed to trade return correct values", async function() {
+    await master.theLazyCoon(accounts[9], web3.utils.toWei("500", "ether"));
+    await master.depositStake({from: accounts[9]})
+    let allowed = await master.allowedToTrade(accounts[9], web3.utils.toWei("500", "ether"));
+    
+    assert(
+      !allowed, "shouldn't be allowed to trade"
+    );
+  });
+
+  it("Approving zero address fails", async function() {
+    await master.theLazyCoon(accounts[9], web3.utils.toWei("500", "ether"));
+    await helper.expectThrow(master.approve(constants.zeroAddress, web3.utils.toWei("500", "ether")))
+  });
+
+  it("Transferring zero amount fails", async function() {
+    await master.theLazyCoon(accounts[9], web3.utils.toWei("500", "ether"));
+    await helper.expectThrow(master.transfer(accounts[5], "0", {from:accounts[9]}))
+  });
+
+  it("Transferring zero to address fails", async function() {
+    await master.theLazyCoon(accounts[9], web3.utils.toWei("500", "ether"));
+    await helper.expectThrow(master.transfer(constants.zeroAddress, "1000", {from:accounts[9]}))
+  });
+
+  it("Transferring overflowing amount fails", async function() {
+    await master.theLazyCoon(accounts[9], web3.utils.toWei("500", "ether"));
+    await helper.expectThrow(master.transfer(accounts[2], constants.maxUint256, {from:accounts[9]}))
+  });
+
 });
