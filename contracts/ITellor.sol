@@ -204,7 +204,7 @@ interface ITellor {
         returns (
             bytes32 _challenge,
             uint256[5] memory _requestIds,
-            uint256 _diff,
+            uint256 _difficulty,
             uint256 _tip
         );
     function getNewVariablesOnDeck()
