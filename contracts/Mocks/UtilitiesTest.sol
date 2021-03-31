@@ -17,7 +17,7 @@ contract UtilitiesTest is Utilities{
      */
     function testgetMax5(uint256[51] memory requests)
         public
-        view
+        pure
         returns (uint256[5] memory _max, uint256[5] memory _index)
     {
         (_max, _index) = _getMax5(requests);
