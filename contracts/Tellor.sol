@@ -85,15 +85,6 @@ contract Tellor is TellorStake,Utilities {
     }
 
     /**
-     * @dev  allows for the deity to update the Migrator contract address
-     * @param _migrator the address of the new Tellor Contract
-    */
-    function changeMigrator(address _migrator) external {
-        require(msg.sender == addresses[_DEITY], "only deity can call this function");
-        addresses[_MIGRATOR] = _migrator;
-    }
-
-    /**
      * @dev This function allows users to swap old trb tokens for new ones based
      * on the user's old Tellor balance
     */
@@ -113,74 +104,8 @@ contract Tellor is TellorStake,Utilities {
         uint256 _amount,
         bool _bypass
     ) external {
-        require(msg.sender == addresses[_MIGRATOR], "not allowed");
+        require(msg.sender == addresses[_DEITY], "not allowed");
         _migrateFor(_destination, _amount, _bypass);
-    }
-
-    /**
-     * @dev This is an internal function used by the function migrate  that helps to
-     *  swap old trb tokens for new ones based on a custom amount
-     * @param _destination are the addresses that will receive tokens
-     * @param _amount are the amounts to mint to the user
-    */
-    function migrateForBatch(
-        address[] calldata _destination,
-        uint256[] calldata _amount
-    ) external {
-        require(msg.sender == addresses[_MIGRATOR], "not allowed");
-        require(_amount.length == _destination.length, "mismatching input");
-        for (uint256 index = 0; index < _destination.length; index++) {
-            _migrateFor(_destination[index], _amount[index], false);
-        }
-    }
-
-    /**
-     * @dev This is an external function used by only the Migrator contract that helps to
-     *  swap old trb tokens for new ones based on a custom amount and allows it
-     *  to bypass the flag for an address that has already migrated. This is needed to ensure 
-     *  tokens locked on contract(pool) can be transfered to a user and also allow them to 
-     *  swap old tokens to the same address if it held any
-     * @param _origin is the address of the user to migrate the balance from
-     * @param _destination is the address that will receive tokens
-     * @param _amount is the amount to mint to the user
-     * @param _bypass is a flag used by the migrator to allow it to bypass the "migrated = true" flag
-    */
-    function migrateFrom(
-        address _origin,
-        address _destination,
-        uint256 _amount,
-        bool _bypass
-    ) external {
-        require(msg.sender == addresses[_MIGRATOR], "not allowed");
-        _migrateFrom(_origin, _destination, _amount, _bypass);
-    }
-
-    /**
-     * @dev This is an external function used by only the Migrator contract that helps to
-     *  swap old trb tokens for new ones based on a custom amount
-     * @param _origin is an array of user addresses to migrate the balance from
-     * @param _destination is an array of the address that will receive tokens
-     * @param _amount are the amounts to mint to the users
-    */
-    function migrateFromBatch(
-        address[] calldata _origin,
-        address[] calldata _destination,
-        uint256[] calldata _amount
-    ) external {
-        require(msg.sender == addresses[_MIGRATOR], "not allowed");
-        require(
-            _origin.length == _destination.length &&
-                _origin.length == _amount.length,
-            "mismatching input"
-        );
-        for (uint256 index = 0; index < _origin.length; index++) {
-            _migrateFrom(
-                _origin[index],
-                _destination[index],
-                _amount[index],
-                false
-            );
-        }
     }
 
     /**
@@ -296,26 +221,6 @@ contract Tellor is TellorStake,Utilities {
         if (!_bypass) require(!migrated[_destination], "already migrated");
         _doMint(_destination, _amount);
         migrated[_destination] = true;
-    }
-
-    /**
-     * @dev This is an internal function used by the function migrate  that helps to
-     *  swap old trb tokens for new ones based on a custom amount and it allows
-     *  the migrator contact to swap contract locked tokens even if the user has previosly migrated.
-     * @param _origin is the address of the user to migrate the balance from
-     * @param _destination is the address that will receive tokens
-     * @param _amount is the amount to mint to the user
-     * @param _bypass is a flag used by the migrator to allow it to bypass the "migrated = true" flag
-    */
-    function _migrateFrom(
-        address _origin,
-        address _destination,
-        uint256 _amount,
-        bool _bypass
-    ) internal {
-        if (!_bypass) require(!migrated[_origin], "already migrated");
-        _doMint(_destination, _amount);
-        migrated[_origin] = true;
     }
 
     /**
