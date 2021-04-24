@@ -5,7 +5,7 @@ const Tellor = artifacts.require("./TellorTest.sol")
 const ITellor = artifacts.require("./ITellor")
 const hash = web3.utils.keccak256;
 const helpers = require("./helpers/test_helpers")
-
+let amount = new web3.utils.BN("10000")
 
 
 contract("Migrator Test", function(accounts) {
@@ -16,163 +16,58 @@ contract("Migrator Test", function(accounts) {
     tellor = await Tellor.new()
     oldTellor = await Tellor.new()
     tellorMaster = await Master.new(tellor.address, oldTellor.address)
-    
     let extension = await Extension.new()
     master = await ITellor.at(tellorMaster.address)
     await master.changeExtension(extension.address)
-
   });
 
-  it("Can correctly add migrator", async function() {
-    await master.changeMigrator(accounts[5]);
-    let mig = await master.getAddressVars(hash("_MIGRATOR"))
-    assert.equal(mig, accounts[5], "the address should match");
-    data3 = await master.decimals();
-    assert(data3 - 0 == 18);
-  });
-
-  it("Migrator should mint tokens for contract", async() => {
-    await master.changeMigrator(accounts[5]);
-    let amount = new web3.utils.BN("10000")
-    let dummyContract = await Tellor.new()
-    await master.migrateFrom(dummyContract.address, accounts[2], amount,false, {from: accounts[5]});
-    let balCon = await master.balanceOf(dummyContract.address)
-    let balUser = await master.balanceOf(accounts[2])
-
-    assert.isTrue(balCon.toString() == "0", "contract should not have balance")
-    assert.isTrue(balUser.eq(amount), "user should have balance")
-  })
   it("Total Supply Should change Properly", async() => {
-    await master.changeMigrator(accounts[5]);
-    let amount = new web3.utils.BN("10000")
-    let dummyContract = await Tellor.new()
     let initalSupply = await master.totalSupply.call()
-    await master.migrateFrom(dummyContract.address, accounts[2], amount,false,{from: accounts[5]});
+    await master.migrateFor(accounts[2], amount,false);
     let finalSupply = await master.totalSupply.call()
     assert(finalSupply - amount == initalSupply, "total supply should change correctly")
   })
-  it("Migrator should batch mint tokens for contract", async() => {
-    await master.changeMigrator(accounts[5]);
-    let amount = new web3.utils.BN("10000")
-    let dummyContract1 = await Tellor.new()
-    let dummyContract2 = await Tellor.new()
-    await master.migrateFromBatch([dummyContract1.address,dummyContract2.address], [accounts[2], accounts[3]],[amount, amount], {from: accounts[5]});
-    let balCon1 = await master.balanceOf(dummyContract1.address)
-    let balUser1 = await master.balanceOf(accounts[2])
-
-    let balCon2 = await master.balanceOf(dummyContract2.address)
-    let balUser2 = await master.balanceOf(accounts[3])
-
-    assert.isTrue(balCon1.toString() == "0", "contract should not have balance")
-    assert.isTrue(balUser1.eq(amount), "user should have balance")
-    assert.isTrue(balCon2.toString() == "0", "contract should not have balance")
-    assert.isTrue(balUser2.eq(amount), "user should have balance")
-  })
 
   it("Shouldn't allow contract to migrate twice", async() => {
-    await master.changeMigrator(accounts[5]);
-    let amount = new web3.utils.BN("10000")
-    let dummyContract = await Tellor.new()
-    await master.migrateFrom(dummyContract.address, accounts[2], amount,false, {from: accounts[5]});
-    let balCon = await master.balanceOf(dummyContract.address)
-    let balUser = await master.balanceOf(accounts[2])
-
-    assert.isTrue(balCon.toString() == "0", "contract should not have balance")
-    assert.isTrue(balUser.eq(amount), "user should have balance")
-    await helpers.expectThrow(master.migrateFrom(dummyContract.address, accounts[2], amount,false,{from: accounts[5]}))
-  })
-  it("Shouldn't allow contract to migrate twice (run migrate from contract)", async() => {
-    await master.changeMigrator(accounts[5]);
-    let amount = new web3.utils.BN("10000")
-    await master.migrateFrom(accounts[1], accounts[2], amount,false, {from: accounts[5]});
+    await master.migrateFor(accounts[2], amount,false);
     let balUser = await master.balanceOf(accounts[2])
     assert.isTrue(balUser.eq(amount), "user should have balance")
-    await helpers.expectThrow(master.migrateFrom(accounts[1], accounts[2], amount,false,{from: accounts[5]}))
-    await helpers.expectThrow(master.migrate({from:accounts[1]}))
+    await helpers.expectThrow(master.migrateFor(accounts[2], amount,false))
   })
   it("Shouldn't allow party to migrate twice if manually input", async() => {
-    await master.changeMigrator(accounts[5]);
-    let amount = new web3.utils.BN("10000")
-    await master.migrateFor(accounts[2], amount,false, {from: accounts[5]});
+    await master.migrateFor(accounts[2], amount,false);
     let balUser = await master.balanceOf(accounts[2])
     assert.isTrue(balUser.eq(amount), "user should have balance")
-    await helpers.expectThrow(master.migrateFor(accounts[2], amount,false,{from: accounts[5]}))
+    await helpers.expectThrow(master.migrateFor(accounts[2], amount,false))
     await helpers.expectThrow(master.migrate({from:accounts[2]}))
   })
     it("Should allow contract to migrate twice if bypass flag is passed", async() => {
-    await master.changeMigrator(accounts[5]);
-    let amount = new web3.utils.BN("10000")
-    let dummyContract = await Tellor.new()
-    await master.migrateFrom(dummyContract.address, accounts[2], amount,false, {from: accounts[5]});
-    await master.migrateFrom(dummyContract.address, accounts[2], amount, true, {from: accounts[5]})
-    let balCon = await master.balanceOf(dummyContract.address)
+    await master.migrateFor(accounts[2], amount,false);
+    await master.migrateFor(accounts[2], amount, true)
     let balUser = await master.balanceOf(accounts[2])
-
-    assert.isTrue(balCon.toString() == "0", "contract should not have balance")
     assert.isTrue(balUser.eq(amount.mul(new web3.utils.BN("2"))), "user should have balance")
-
-  })
-
-  it("Should allow contract owner to migrate twice", async() => {
-    await master.changeMigrator(accounts[5]);
-    let amount = new web3.utils.BN("10000")
-    let dummyContract = await Tellor.new()
-    await master.migrateFrom(dummyContract.address, accounts[2], amount, false,{from: accounts[5]});
-    let balCon = await master.balanceOf(dummyContract.address)
-    let balUser = await master.balanceOf(accounts[2])
-
-    assert.isTrue(balCon.toString() == "0", "contract should not have balance")
-    assert.isTrue(balUser.eq(amount), "user should have balance")
-
-    await master.migrateFor(accounts[2], amount, false,{from: accounts[5]})
-
-    let balUser2 = await master.balanceOf(accounts[2])
-    assert.isTrue(balUser2.eq(amount.add(amount)), "user should have balance")
-  })
-
-  it("Migrator should mint tokens for address", async() => {
-    await master.changeMigrator(accounts[5]);
-    let amount = new web3.utils.BN("10000")
-    await master.migrateFor(accounts[2], amount,false, {from: accounts[5]});
-    let balUser = await master.balanceOf(accounts[2])
-    assert.isTrue(balUser.eq(amount), "user should have balance")
-  })
-
-   it("Migrator should mint tokens for address", async() => {
-    await master.changeMigrator(accounts[5]);
-    let amount = new web3.utils.BN("10000")
-    await master.migrateForBatch([accounts[2], accounts[3]], [amount, amount], {from: accounts[5]});
-    let balUser = await master.balanceOf(accounts[2])
-    let balUser2 = await master.balanceOf(accounts[3])
-    assert.isTrue(balUser.eq(amount), "user should have balance")
-    assert.isTrue(balUser2.eq(amount), "user should have balance")
   })
 
   it("Migrator should not mint tokens for adddress twice", async() => {
-    await master.changeMigrator(accounts[5]);
-    let amount = new web3.utils.BN("10000")
-    await master.migrateFor(accounts[2], amount, false, {from: accounts[5]});
+    await master.migrateFor(accounts[2], amount, false);
     let balUser = await master.balanceOf(accounts[2])
     assert.isTrue(balUser.eq(amount), "user should have balance")
-
-    await helpers.expectThrow(master.migrateFor(accounts[2], amount, false,{from: accounts[5]}))
+    await helpers.expectThrow(master.migrateFor(accounts[2], amount, false))
   })
 
-    it("Migrator should mint tokens  with bypass flag", async() => {
-    await master.changeMigrator(accounts[5]);
-    let amount = new web3.utils.BN("10000")
-    await master.migrateFor(accounts[2], amount, false,{from: accounts[5]});
-    await master.migrateFor(accounts[2], amount, true, {from: accounts[5]});
+  it("Migrator should mint tokens  with bypass flag", async() => {
+    await master.migrateFor(accounts[2], amount, false);
+    await master.migrateFor(accounts[2], amount, true);
     let balUser = await master.balanceOf(accounts[2])
     assert.isTrue(balUser.eq(amount.mul(new web3.utils.BN("2"))), "user should have balance")
-
-    await helpers.expectThrow(master.migrateFor(accounts[2], amount,false, {from: accounts[5]}))
+    await helpers.expectThrow(master.migrateFor(accounts[2], amount,false))
   })
-
-  it("Should not mint tokens with mismatched input address", async() => {
-    await master.changeMigrator(accounts[5]);
-    let amount = new web3.utils.BN("10000")
-    await helpers.expectThrow(master.migrateForBatch([accounts[2], accounts[3]], [amount, amount, amount], {from: accounts[5]}))
-    await helpers.expectThrow(master.migrateFromBatch([accounts[2], accounts[3], accounts[4]], [accounts[2], accounts[3]], [amount], {from: accounts[5]}))
+  it("Cannot migrate twice", async() => {
+    await oldTellor.theLazyCoon(accounts[2], new web3.utils.BN(web3.utils.toWei("1000", "ether")));
+    await master.migrateFor(accounts[2], amount, false);
+    await helpers.expectThrow(master.migrate({from:accounts[2]}))
+  })
+  it("Non-deity cannot migrateFor", async() => {
+    await helpers.expectThrow(master.migrateFor(accounts[2], amount,false,{from:accounts[2]}))
   })
 });
