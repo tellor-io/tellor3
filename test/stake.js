@@ -41,15 +41,28 @@ master = await ITellor.at(tellorMaster.address)
   });
   it("Stake miner", async function() {
     await master.theLazyCoon(accounts[6], web3.utils.toWei("5000", "ether"))
+    await master.transfer(accounts[7],await master.balanceOf(accounts[8]),{from:accounts[8]})
+    await helper.expectThrow(master.depositStake({from:accounts[8]}));//not enough balance
     await master.depositStake({from:accounts[6]})
     let s = await master.getStakerInfo(accounts[6]);
     assert(s[0] == 1, "Staked");
   });
-
   it("getStakersCount", async function() {
     await master.depositStake({from:accounts[7]})
     let count = await master.getUintVar(web3.utils.keccak256("_STAKE_COUNT"));
-    assert(web3.utils.hexToNumberString(count) == 1, "count is 6"); //added miner
+    assert(web3.utils.hexToNumberString(count) == 1, "count is 1"); //added miner
+  });
+  it("test updateMinDisputeFee", async function() {
+    let origDisputeFee = await master.getUintVar(web3.utils.keccak256("_DISPUTE_FEE"));
+    assert(origDisputeFee - web3.utils.toWei("500") == 0, "original dispute fee should be correct");
+    await master.updateMinDisputeFee();
+    origDisputeFee = await master.getUintVar(web3.utils.keccak256("_DISPUTE_FEE"));
+    assert(origDisputeFee*1 - web3.utils.toWei("500") == 0, "original dispute fee should be correct");
+    await master.depositStake({from:accounts[7]})
+    await master.depositStake({from:accounts[6]})
+    await master.depositStake({from:accounts[8]})
+    origDisputeFee = await master.getUintVar(web3.utils.keccak256("_DISPUTE_FEE"));   
+    assert(origDisputeFee - web3.utils.toWei("492.5") == 0, "original dispute fee should be correct");
   });
   it("getStakersInfo", async function() {
     await master.depositStake({from:accounts[1]})
@@ -101,7 +114,7 @@ master = await ITellor.at(tellorMaster.address)
     await master.depositStake({from:accounts[1]})
     balance1 = await master.balanceOf(accounts[1])
     await helper.expectThrow(
-       master.withdrawStake({from:accounts[1]})
+       master.withdrawStake({from:accounts[1]})//miner not locked
     );
     s = await master.getStakerInfo(accounts[1]);
     assert(s[0] == 1, " Staked");
@@ -144,9 +157,13 @@ master = await ITellor.at(tellorMaster.address)
         await master.depositStake({from:accounts[1]})
 
     await helper.advanceTime(86400 * 10);
+    await helper.expectThrow(master.requestStakingWithdraw({from: accounts[2]}));
     let withdrawreq = await master.requestStakingWithdraw({
       from: accounts[1],
     });
+    await helper.expectThrow(
+      master.withdrawStake({from:accounts[1]})//not enough time has passed
+    );
     await helper.advanceTime(86400 * 10);
     let s = await master.getStakerInfo(accounts[1]);
     assert(s[0] == 2, "is not Staked");

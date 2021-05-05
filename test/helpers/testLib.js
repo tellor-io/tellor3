@@ -20,7 +20,6 @@ async function mineBlock(env) {
     }
     finalVals.push(minerVals);
     try {
-      // console.log(minerVals);
       res = await env.master.testSubmitMiningSolution(
         "nonce",
         vars["1"],

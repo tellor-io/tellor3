@@ -1,5 +1,14 @@
 {
-  "name": "hardhat-project",
+  "name": "Tellor3",
+  "dependencies": {
+    "y18n": "^5.0.5",
+    "@nomiclabs/hardhat-etherscan": "^2.1.1",
+    "dotenv": "^8.2.0",
+    "hardhat-contract-sizer": "^2.0.2",
+    "hardhat-gas-reporter": "^1.0.4",
+    "load-json-file": "^6.2.0",
+    "node-fetch-polyfill": "^2.0.6"
+  },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.1",
     "@nomiclabs/hardhat-truffle5": "^2.0.0",
@@ -8,13 +17,5 @@
     "hardhat": "^2.0.10",
     "solidity-coverage": "^0.7.15",
     "web3": "^1.3.4"
-  },
-  "dependencies": {
-    "@nomiclabs/hardhat-etherscan": "^2.1.1",
-    "dotenv": "^8.2.0",
-    "hardhat-contract-sizer": "^2.0.2",
-    "hardhat-gas-reporter": "^1.0.4",
-    "load-json-file": "^6.2.0",
-    "node-fetch-polyfill": "^2.0.6"
   }
 }

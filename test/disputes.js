@@ -112,7 +112,7 @@ contract("Dispute Tests", function(accounts) {
     await master.tallyVotes(2);
     await master.tallyVotes(3);
     await helper.advanceTime(86400 * 2);
-
+    await helper.expectThrow(master.updateTellor(1))//try running update Tellor on nonexistent function
     await master.unlockDisputeFee(1, { from: accounts[0] });
     await master.unlockDisputeFee(2, { from: accounts[0] });
     await master.unlockDisputeFee(3, { from: accounts[0] });
@@ -179,7 +179,7 @@ contract("Dispute Tests", function(accounts) {
     await master.vote(1, true, { from: accounts[1] });
     await master.vote(2, true, { from: accounts[1] });
     await master.vote(3, true, { from: accounts[1] });
-
+    await helper.expectThrow(master.depositStake({from:accounts[1]}));//cannot restake if disputed
     await helper.advanceTime(86400 * 22);
     await master.tallyVotes(1);
     await master.tallyVotes(2);
@@ -225,8 +225,11 @@ contract("Dispute Tests", function(accounts) {
     await startADispute(accounts[1]);
     count = await master.getUintVar(web3.utils.keccak256("_DISPUTE_COUNT"));
     await master.vote(1, true, { from: accounts[3] });
+    await helper.expectThrow(master.tallyVotes(1)); //try to tally too early
     await helper.advanceTime(86400 * 3);
     await master.tallyVotes(1);
+    await helper.expectThrow(master.tallyVotes(1)); //try to reexecute
+    await helper.expectThrow(master.tallyVotes(2)); //try to execute a non-existent vote
     await helper.expectThrow(master.unlockDisputeFee(1, { from: accounts[0] })); //try to withdraw
     dispInfo = await master.getAllDisputeVars(1);
     assert(

@@ -49,6 +49,7 @@ contract("Voting Tests", function(accounts) {
     }
     await helper.advanceTime(86400 * 8);
     await master.tallyVotes(1,{from:accounts[5]})
+    await helper.expectThrow(master.updateTellor(1))//not enough time has passed
     await helper.advanceTime(86400 * 2);
     await master.updateTellor(1)
     let tea = await master.getAddressVars(hash("_TELLOR_CONTRACT"))
@@ -56,6 +57,7 @@ contract("Voting Tests", function(accounts) {
       tea ==
         tel.address
     );
+    await helper.expectThrow(master.updateTellor(1))//already has been executed
   });
   it("Test Failed Vote - New Tellor Storage Contract", async function() {
     let tel = await Tellor.new()

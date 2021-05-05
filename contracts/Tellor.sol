@@ -504,7 +504,6 @@ contract Tellor is TellorStake,Utilities {
         (bool result, ) =  addr.delegatecall(msg.data);
         assembly {
             returndatacopy(0, 0, returndatasize())
-
             switch result
                 // delegatecall returns 0 on error.
                 case 0 {
