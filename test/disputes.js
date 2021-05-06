@@ -103,12 +103,15 @@ contract("Dispute Tests", function(accounts) {
     });
 
     //dispute votes and tally
+    await helper.expectThrow(master.vote(10, true, { from: accounts[3] }))//try voting on nonexistent id
     await master.vote(1, true, { from: accounts[3] });
+    await helper.expectThrow(master.vote(1, true, { from: accounts[3] }))//he already voted
     await master.vote(2, true, { from: accounts[3] });
     await master.vote(3, true, { from: accounts[3] });
 
     await helper.advanceTime(86400 * 22);
     await master.tallyVotes(1);
+    await helper.expectThrow(master.vote(1, true, { from: accounts[4] }))
     await master.tallyVotes(2);
     await master.tallyVotes(3);
     await helper.advanceTime(86400 * 2);
@@ -171,7 +174,10 @@ contract("Dispute Tests", function(accounts) {
     let balance1 = await master.balanceOf(accounts[2]);
     orig_dispBal4 = await master.balanceOf(accounts[4]);
     let dispBal1 = await master.balanceOf(accounts[1]);
+    await helper.expectThrow(master.beginDispute(requetsId, times[0], 10, { from: accounts[1] }));//index > 4
+    await helper.expectThrow(master.beginDispute(requetsId, times[0]-86420, 2, { from: accounts[1] }));//timestamp not valid
     await master.beginDispute(requetsId, times[0], 2, { from: accounts[1] });
+    await helper.expectThrow(master.beginDispute(requetsId, times[0], 2, { from: accounts[1] }));//already started    
     await master.beginDispute(requetsId, times[1], 2, { from: accounts[3] });
     await master.beginDispute(requetsId, times[2], 2, { from: accounts[4] });
 
@@ -180,14 +186,19 @@ contract("Dispute Tests", function(accounts) {
     await master.vote(2, true, { from: accounts[1] });
     await master.vote(3, true, { from: accounts[1] });
     await helper.expectThrow(master.depositStake({from:accounts[1]}));//cannot restake if disputed
+    await helper.expectThrow(master.unlockDisputeFee(1, { from: accounts[0] }));//not enought time
     await helper.advanceTime(86400 * 22);
     await master.tallyVotes(1);
     await master.tallyVotes(2);
     await master.tallyVotes(3);
+    await helper.expectThrow(master.unlockDisputeFee(1, { from: accounts[0] }));//not enought time
     await helper.advanceTime(86400 * 2);
+    await helper.expectThrow(master.unlockDisputeFee(10, { from: accounts[0] }));//dispute doesn't exist
     await master.unlockDisputeFee(1, { from: accounts[0] });
+    await helper.expectThrow(master.unlockDisputeFee(1, { from: accounts[0] }));//already paid out
     await master.unlockDisputeFee(2, { from: accounts[0] });
     await master.unlockDisputeFee(3, { from: accounts[0] });
+    await helper.expectThrow(master.beginDispute(requetsId, times[0], 2, { from: accounts[1] }));//cannot do another vote 
     dispInfo = await master.getAllDisputeVars(1);
     assert(dispInfo[7][0] == requetsId);
     assert(dispInfo["7"][2] == blocks[0].submitted[requetsId][2]);
@@ -214,6 +225,7 @@ contract("Dispute Tests", function(accounts) {
     assert(s != 1, " Not staked");
     dispBal4 = await master.balanceOf(accounts[4]);
     assert(dispBal4 - orig_dispBal4 == 0, "a4 shouldn't change'");
+    await helper.expectThrow(master.beginDispute(requetsId, times[0], 3, { from: accounts[1] }));//dispute must start within a week
   });
   it("Test multiple dispute rounds, assure increasing per dispute round", async function() {
     await master.theLazyCoon(accounts[1], web3.utils.toWei("500", "ether"));

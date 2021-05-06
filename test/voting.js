@@ -21,24 +21,19 @@ contract("Voting Tests", function(accounts) {
     tellor = await Tellor.new()
     oldTellor = await Tellor.new()
     tellorMaster = await Master.new(tellor.address, oldTellor.address)
-    
     let extension = await Extension.new()
     master = await ITellor.at(tellorMaster.address)
     await master.changeExtension(extension.address)
-
     for (var i = 0; i < accounts.length; i++) {
       //print tokens
       await master.theLazyCoon(accounts[i], web3.utils.toWei("7000", "ether"));
       await master.depositStake({from: accounts[i]})
     }
-
     env = {
       master: master,
       accounts: accounts
     }
-
   });
-
   it("Test New Tellor Storage Contract", async function() {
     let tel = await Tellor.new()
     await tel.bumpVersion();
@@ -58,6 +53,8 @@ contract("Voting Tests", function(accounts) {
         tel.address
     );
     await helper.expectThrow(master.updateTellor(1))//already has been executed
+    await helper.expectThrow(master.unlockDisputeFee(1, { from: accounts[0] }));//not callable on forks
+    
   });
   it("Test Failed Vote - New Tellor Storage Contract", async function() {
     let tel = await Tellor.new()
@@ -66,6 +63,7 @@ contract("Voting Tests", function(accounts) {
     await TestLib.mineBlock(env);
     let oracleBase = await master.getAddressVars(hash("_TELLOR_CONTRACT"));
     await master.theLazyCoon(accounts[6], web3.utils.toWei("1000000", "ether"))
+    await helper.expectThrow(master.proposeFork(accounts[3],{from:accounts[2]}))//a non-valid tellor addy
     await  master.proposeFork(tel.address,{from:accounts[2]})
     for (var i = 1; i < 5; i++) {
       await master.vote(1, false,{from:accounts[i]})
@@ -76,6 +74,11 @@ contract("Voting Tests", function(accounts) {
     await helper.expectThrow(master.updateTellor(1))
     var newAddy = await master.getAddressVars(hash("_TELLOR_CONTRACT"))
     assert(newAddy == oracleBase,"vote should have failed");
+  });
+  it("Test Verify", async function() {
+  let tel = await Tellor.new()
+  await tel.bumpVersion();
+  assert(await tel.verify() == 3001, "version should be correct")
   });
   it("Test Failed Vote - New Tellor Storage Contract--vote fail to fail because 5% diff in quorum is not reached", async function() {
     let tel = await Tellor.new()

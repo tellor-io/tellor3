@@ -63,23 +63,25 @@ contract("Test Oracle", function(accounts) {
     let res;
     let prices = [1100, 1200, 1300, 1400, 1500, 1600, 1700, 1800, 1900];
     let requestValues = [[], [], [], [], []];
-    let requestVals = [];
+    let requestVals = {};
     let minersByVal = { 0: {}, 1: {}, 2: {}, 3: {}, 4: {} };
     await helper.advanceTime(60 * 60 * 16);
     let currrVars = await env.master.getNewCurrentVariables();
-    let reqs = currrVars["1"];
+    const reqs = currrVars["1"];
     let balances = []
     let timestamps = [];
+    let bal;
     for (var k = 0; k < 5; k++) {
-      balances[k] = master.balanceOf[accounts[k]]
+      bal = await master.balanceOf(accounts[k]);
+      balances.push(bal)
       requestVals[reqs[k]] = [];
     }
-    let wrongreqs = currrVars["1"]
+    let wrongreqs;
     for (var i = 0; i < 5; i++) {
       //Getting a random number
-      let wrongreqs = currrVars["1"]
+      wrongreqs = reqs.slice()
       wrongreqs[i] = 1000;
-      await helper.expectThrow(master.testSubmitMiningSolution("nonce",wrongreqs,[1,1,1,1,1],{from:accounts[i]}));//test wrong requestID
+      await helper.expectThrow(env.master.testSubmitMiningSolution("nonce",wrongreqs,[1,1,1,1,1],{from:accounts[i]}));//test wrong requestID
       let vals = [];
       for (var j = 0; j < 5; j++) {
         let rd = Math.floor(Math.random() * (7 - 0));
@@ -87,19 +89,19 @@ contract("Test Oracle", function(accounts) {
         requestVals[reqs[j]].push(prices[rd]);
         minersByVal[j][accounts[i]] = prices[rd];
       }
-      await master.testSubmitMiningSolution("nonce", reqs, vals, {
+      await env.master.testSubmitMiningSolution("nonce", reqs, vals, {
         from: accounts[i],
       });
       await helper.expectThrow(
-        master.testSubmitMiningSolution("nonce", reqs, vals, {
+        env.master.testSubmitMiningSolution("nonce", reqs, vals, {
           from: accounts[i],
         })//miner already submitted
       )
     }
     let newBalances =[]
     for (var k = 0; k < 5; k++) {
-      newBalances[k] = master.balanceOf[accounts[k]]
-      assert(newBalances[k] > balances[k], "token reward should work")
+      newBalances.push(await env.master.balanceOf(accounts[k]))
+      assert(newBalances[k] - balances[k] > 0, "token reward should work")
     }
     for (var i = 0; i < 5; i++) {
       //Getting a random number

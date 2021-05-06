@@ -67,6 +67,12 @@ contract("Migrator Test", function(accounts) {
     await master.migrateFor(accounts[2], amount, false);
     await helpers.expectThrow(master.migrate({from:accounts[2]}))
   })
+  it("Failure checks", async() => {
+    await oldTellor.theLazyCoon(accounts[2], new web3.utils.BN(web3.utils.toWei("1000", "ether")));
+    await master.migrateFor(accounts[2], amount, false);
+    await helpers.expectThrow(master.migrateFor(accounts[2],0,true))
+    await helpers.expectThrow(master.migrateFor("0x0000000000000000000000000000000000000000",amount,true))
+  })
   it("Non-deity cannot migrateFor", async() => {
     await helpers.expectThrow(master.migrateFor(accounts[2], amount,false,{from:accounts[2]}))
   })
