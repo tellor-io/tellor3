@@ -301,7 +301,6 @@ contract Tellor is TellorStake,Utilities {
                 _TOTAL_TIP
             ];
         }
-        // Issue the next challenge
         _currChallenge = keccak256(
             abi.encode(_nonce, _currChallenge, blockhash(block.number - 1))
         );
@@ -350,7 +349,6 @@ contract Tellor is TellorStake,Utilities {
         uint256[5] memory _requestIds,
         uint256[5] memory _values
     ) internal {
-        //Verifying Miner Eligibility
         bytes32 _hashMsgSender = keccak256(abi.encode(msg.sender));
         require(
             stakerDetails[msg.sender].currentStatus == 1,

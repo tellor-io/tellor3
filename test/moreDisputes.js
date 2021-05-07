@@ -44,7 +44,6 @@ contract("More Dispute Tests", function(accounts) {
     master = await ITellor.at(tellorMaster.address)
     await master.changeExtension(extension.address)
     for (var i = 0; i < 7; i++) {
-      //print tokens
       await master.theLazyCoon(accounts[i], web3.utils.toWei("7000", "ether"));
       await master.depositStake({from: accounts[i]})
     }

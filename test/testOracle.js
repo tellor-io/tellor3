@@ -173,7 +173,6 @@ contract("Test Oracle", function(accounts) {
       data[0][i] = data[0][i] * 1 - 0;
     }
     assert(data[0].includes(30), "ID on deck should be 14");
-
     assert(data[1][0] > 1000, "Tip should be over 1000");
     await master.addTip(31, 2000);
   });
@@ -210,6 +209,8 @@ contract("Test Oracle", function(accounts) {
     );
     data = await master.getMinedBlockNum(1, timestamp);
     assert(data * 1 > 0, "Should be true if Data exist for that point in time");
+    let retrieveVal = await master.retrieveData(1,timestamp)
+    assert(retrieveVal > 0, "should retrieve data" )
     for (var i = 11; i <= 20; i++) {
       apix = "api" + i;
       await master.addTip(i + 2, i, { from: accounts[2] });

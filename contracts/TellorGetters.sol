@@ -266,7 +266,7 @@ contract TellorGetters is TellorStorage, TellorVariables, Utilities {
      * @param _requestId to look up
      * @param _data the variable to pull from the mapping. _data = keccak256("variable_name") where variable_name is
      * the variables/strings used to save the data in the mapping. The variables names are
-     * commented out under the apiUintVars under the requestDetails struct
+     * in TellorVariables.sol
      * @return uint value of the apiUintVars specified in _data for the requestId specified
      */
     function getRequestUintVars(uint256 _requestId, bytes32 _data)

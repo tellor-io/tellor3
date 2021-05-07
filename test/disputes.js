@@ -63,21 +63,18 @@ contract("Dispute Tests", function(accounts) {
     res = await TestLib.mineBlock(env);
     await takeFifteen();
     res = await TestLib.mineBlock(env);
-  })
-
+  });
   it("Test multiple dispute to the same miner", async function() {
     let times = [];
     let blocks = [];
     const reportingMiner = accounts[5];
     const reportedMiner = accounts[1];
     const reportedIndex = 1;
-
     const requestId = 1;
     for (j = 0; j < 4; j++) {
       await master.addTip(1, 1000);
       await takeFifteen();
       await TestLib.mineBlock(env);
-
       await takeFifteen();
       let block = await TestLib.mineBlock(env);
       let count = await master.getNewValueCountbyRequestId(requestId);
@@ -101,14 +98,13 @@ contract("Dispute Tests", function(accounts) {
     await master.beginDispute(requestId, times[2], reportedIndex, {
       from: reportingMiner,
     });
-
+    assert(await master.isInDispute(requestId,times[0], "id shoudl be inDispute"))
     //dispute votes and tally
     await helper.expectThrow(master.vote(10, true, { from: accounts[3] }))//try voting on nonexistent id
     await master.vote(1, true, { from: accounts[3] });
     await helper.expectThrow(master.vote(1, true, { from: accounts[3] }))//he already voted
     await master.vote(2, true, { from: accounts[3] });
     await master.vote(3, true, { from: accounts[3] });
-
     await helper.advanceTime(86400 * 22);
     await master.tallyVotes(1);
     await helper.expectThrow(master.vote(1, true, { from: accounts[4] }))

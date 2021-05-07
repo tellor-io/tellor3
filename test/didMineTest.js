@@ -21,14 +21,11 @@ contract("DidMine test", function(accounts) {
     let extension = await Extension.new()
 master = await ITellor.at(tellorMaster.address)
     await master.changeExtension(extension.address)
-    
-
     env = {
       master: master,
       accounts: accounts
     }
     await master.theLazyCoon(tellorMaster.address, web3.utils.toWei("70000", "ether"));
-
     await TestLib.depositStake(env)
   });
 
@@ -36,7 +33,6 @@ master = await ITellor.at(tellorMaster.address)
     await helper.advanceTime(60 * 16);
     //TestLib.mineBlock(env) already fetches the currentVariables. Fetching here to use in the verification
     let v = await master.getNewCurrentVariables();
-
    await TestLib.mineBlock(env);
     let didMine = await master.didMine(v[0], accounts[2]);
     assert(didMine);

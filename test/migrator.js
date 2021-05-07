@@ -71,6 +71,8 @@ contract("Migrator Test", function(accounts) {
     await oldTellor.theLazyCoon(accounts[2], new web3.utils.BN(web3.utils.toWei("1000", "ether")));
     await master.migrateFor(accounts[2], amount, false);
     await helpers.expectThrow(master.migrateFor(accounts[2],0,true))
+    await helpers.expectThrow(master.migrateFor(accounts[3],(new web3.utils.toBN(2).pow(web3.utils.toBN(256))).sub(web3.utils.toBN(1)),true))//total supply overflow
+    await helpers.expectThrow(master.migrateFor(accounts[2],new web3.utils.toBN(2).pow(web3.utils.toBN(256)).sub(web3.utils.toBN(1)),true))//balance overflow
     await helpers.expectThrow(master.migrateFor("0x0000000000000000000000000000000000000000",amount,true))
   })
   it("Non-deity cannot migrateFor", async() => {
