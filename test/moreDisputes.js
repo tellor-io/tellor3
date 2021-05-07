@@ -103,6 +103,9 @@ contract("More Dispute Tests", function(accounts) {
       );
       s = await master.getStakerInfo(accounts[2]);
       assert(s != 1, " Not staked");
+      s = await master.getDisputeUintVars(1,hash("_DISPUTE_FEE"))
+      console.log(web3.utils.fromWei(s)*1)
+      assert(s == web3.utils.fromWei(s)*1, "dispute fee should be correct")
     });
 
     it("Test multiple dispute rounds, passing all three", async function() {

@@ -98,7 +98,8 @@ contract("Dispute Tests", function(accounts) {
     await master.beginDispute(requestId, times[2], reportedIndex, {
       from: reportingMiner,
     });
-    assert(await master.isInDispute(requestId,times[0], "id shoudl be inDispute"))
+    let hashID = await master.getDisputeIdByDisputeHash(web3.utils.soliditySha3(reportedMiner,requestId,times[0]))
+    assert(hashID == 1, "hash ID should be correct")
     //dispute votes and tally
     await helper.expectThrow(master.vote(10, true, { from: accounts[3] }))//try voting on nonexistent id
     await master.vote(1, true, { from: accounts[3] });
@@ -120,23 +121,19 @@ contract("Dispute Tests", function(accounts) {
     assert(dispInfo[7][0] == requestId);
     assert(dispInfo[7][2] == blocks[0].values[reportedIndex][0]);
     assert(dispInfo[2] == true, "Dispute Vote passed");
-
     voted = await master.didVote(1, accounts[3]);
     assert(voted == true, "account 3 voted");
     voted = await master.didVote(1, accounts[5]);
     assert(voted == false, "account 5 did not vote");
     let value = await master.retrieveData(1, times[0]);
     assert(value.toNumber() > 0);
-
     //checks balances after dispute 1
     let balance2 = await master.balanceOf(reportingMiner);
     let dispBal2 = await master.balanceOf(reportedMiner);
-
     assert(
       balance2.sub(balance1).eq(stakeAmount),
       "reporting miner's balance should change correctly"
     );
-
     assert(
       dispBal1.sub(dispBal2).eq(stakeAmount),
       "reported party's balance should change correctly"
@@ -150,7 +147,6 @@ contract("Dispute Tests", function(accounts) {
 
   it("Test multiple dispute to official value/miner index 2", async function() {
     let requetsId = 1;
-
     let times = [];
     let blocks = [];
     for (j = 0; j < 3; j++) {
@@ -176,7 +172,7 @@ contract("Dispute Tests", function(accounts) {
     await helper.expectThrow(master.beginDispute(requetsId, times[0], 2, { from: accounts[1] }));//already started    
     await master.beginDispute(requetsId, times[1], 2, { from: accounts[3] });
     await master.beginDispute(requetsId, times[2], 2, { from: accounts[4] });
-
+    assert(await master.isInDispute(requetsId, times[1]), "id shoudl be inDispute")
     //dispute votes and tally
     await master.vote(1, true, { from: accounts[1] });
     await master.vote(2, true, { from: accounts[1] });
@@ -208,7 +204,6 @@ contract("Dispute Tests", function(accounts) {
     //checks balances after dispute 1
     balance2 = await master.balanceOf(accounts[2]);
     dispBal2 = await master.balanceOf(accounts[1]);
-
     assert(
       balance1.sub(balance2).eq(stakeAmount),
       "reported miner's balance should change correctly"

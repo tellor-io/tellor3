@@ -144,21 +144,6 @@ contract TellorGetters is TellorStorage, TellorVariables, Utilities {
 
     /**
      * @dev Gets the a value for the latest timestamp available
-     * @return value for timestamp of last proof of work submitted
-     * @return true if the is a timestamp for the lastNewValue
-     */
-    function getLastNewValue() external view returns (uint256, bool) {
-        return (
-            retrieveData(
-                requestIdByTimestamp[uints[_TIME_OF_LAST_NEW_VALUE]],
-                uints[_TIME_OF_LAST_NEW_VALUE]
-            ),
-            true
-        );
-    }
-
-    /**
-     * @dev Gets the a value for the latest timestamp available
      * @param _requestId being requested
      * @return value for timestamp of last proof of work submitted and if true if it exist or 0 and false if it doesn't
      */
@@ -237,19 +222,6 @@ contract TellorGetters is TellorStorage, TellorVariables, Utilities {
     {
         require(_index <= 50, "RequestQ index is above 50");
         return requestIdByRequestQIndex[_index];
-    }
-
-    /**
-     * @dev Getter function for requestId based on timestamp
-     * @param _timestamp to check requestId
-     * @return uint of requestId
-     */
-    function getRequestIdByTimestamp(uint256 _timestamp)
-        external
-        view
-        returns (uint256)
-    {
-        return requestIdByTimestamp[_timestamp];
     }
 
     /**

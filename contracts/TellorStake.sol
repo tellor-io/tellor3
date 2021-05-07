@@ -120,7 +120,10 @@ contract TellorStake is TellorTransfer {
      * @param _propNewTellorAddress address for new proposed Tellor
     */
     function proposeFork(address _propNewTellorAddress) external {
+        require(uints[_LOCK] == 0, "no rentrancy");
+        uints[_LOCK] = 1;
         _verify(_propNewTellorAddress);
+        uints[_LOCK] = 0;
         bytes32 _hash = keccak256(abi.encode(_propNewTellorAddress));
         uints[_DISPUTE_COUNT]++;
         uint256 disputeId = uints[_DISPUTE_COUNT];
