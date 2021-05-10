@@ -43,8 +43,7 @@ contract("More Dispute Tests", function(accounts) {
     let extension = await Extension.new()
     master = await ITellor.at(tellorMaster.address)
     await master.changeExtension(extension.address)
-    for (var i = 0; i < accounts.length; i++) {
-      //print tokens
+    for (var i = 0; i < 7; i++) {
       await master.theLazyCoon(accounts[i], web3.utils.toWei("7000", "ether"));
       await master.depositStake({from: accounts[i]})
     }
@@ -104,6 +103,9 @@ contract("More Dispute Tests", function(accounts) {
       );
       s = await master.getStakerInfo(accounts[2]);
       assert(s != 1, " Not staked");
+      s = await master.getDisputeUintVars(1,hash("_DISPUTE_FEE"))
+      console.log(web3.utils.fromWei(s)*1)
+      assert(s == web3.utils.fromWei(s)*1, "dispute fee should be correct")
     });
 
     it("Test multiple dispute rounds, passing all three", async function() {
@@ -143,6 +145,7 @@ contract("More Dispute Tests", function(accounts) {
       await master.vote(disp3.id, false, { from: accounts[6] });
       await master.vote(disp3.id, true, { from: accounts[3] });
       await master.vote(disp3.id, true, { from: accounts[4] });
+      await helper.expectThrow(master.vote(1, true, { from: accounts[7] }))
       await helper.advanceTime(86400 * 9);
       await master.tallyVotes(disp3.id);
       await helper.advanceTime(86400 * 2);

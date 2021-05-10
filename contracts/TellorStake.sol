@@ -52,17 +52,14 @@ contract TellorStake is TellorTransfer {
         Request storage _request = requestDetails[_requestId];
         require(_request.minedBlockNum[_timestamp] != 0, "Mined block is 0");
         require(_minerIndex < 5, "Miner index is wrong");
-
         //_miner is the miner being disputed. For every mined value 5 miners are saved in an array and the _minerIndex
         //provided by the party initiating the dispute
         address _miner = _request.minersByValue[_timestamp][_minerIndex];
         bytes32 _hash =
             keccak256(abi.encodePacked(_miner, _requestId, _timestamp));
-
         //Increase the dispute count by 1
         uints[_DISPUTE_COUNT]++;
         uint256 disputeId = uints[_DISPUTE_COUNT];
-
         //Ensures that a dispute is not already open for the that miner, requestId and timestamp
         uint256 hashId = disputeIdByDisputeHash[_hash];
         if (hashId != 0) {
@@ -85,7 +82,6 @@ contract TellorStake is TellorTransfer {
         } else {
             _fee = uints[_DISPUTE_FEE] * dispRounds;
         }
-
         //maps the dispute to the Dispute struct
         disputesById[disputeId].hash = _hash;
         disputesById[disputeId].isPropFork = false;
@@ -95,7 +91,6 @@ contract TellorStake is TellorTransfer {
         disputesById[disputeId].executed = false;
         disputesById[disputeId].disputeVotePassed = false;
         disputesById[disputeId].tally = 0;
-
         //Saves all the dispute variables for the disputeId
         disputesById[disputeId].disputeUintVars[_REQUEST_ID] = _requestId;
         disputesById[disputeId].disputeUintVars[_TIMESTAMP] = _timestamp;
@@ -109,7 +104,6 @@ contract TellorStake is TellorTransfer {
         disputesById[disputeId].disputeUintVars[_MINER_SLOT] = _minerIndex;
         disputesById[disputeId].disputeUintVars[_FEE] = _fee;
         _doTransfer(msg.sender, address(this), _fee);
-
         //Values are sorted as they come in and the official value is the median of the first five
         //So the "official value" miner is always minerIndex==2. If the official value is being
         //disputed, it sets its status to inDispute(currentStatus = 3) so that users are made aware it is under dispute
@@ -126,7 +120,10 @@ contract TellorStake is TellorTransfer {
      * @param _propNewTellorAddress address for new proposed Tellor
     */
     function proposeFork(address _propNewTellorAddress) external {
+        require(uints[_LOCK] == 0, "no rentrancy");
+        uints[_LOCK] = 1;
         _verify(_propNewTellorAddress);
+        uints[_LOCK] = 0;
         bytes32 _hash = keccak256(abi.encode(_propNewTellorAddress));
         uints[_DISPUTE_COUNT]++;
         uint256 disputeId = uints[_DISPUTE_COUNT];
@@ -145,7 +142,6 @@ contract TellorStake is TellorTransfer {
         disputesById[disputeId].reportingParty = msg.sender;
         disputesById[disputeId].proposedForkAddress = _propNewTellorAddress;
         disputesById[disputeId].tally = 0;
-
         _doTransfer(msg.sender, address(this), 100e18 * 2**(dispRounds - 1)); //This is the fork fee (just 100 tokens flat, no refunds.  Goes up quickly to dispute a bad vote)
         disputesById[disputeId].disputeUintVars[_BLOCK_NUMBER] = block.number;
         disputesById[disputeId].disputeUintVars[_MIN_EXECUTION_DATE] =
@@ -181,16 +177,16 @@ contract TellorStake is TellorTransfer {
         uint256 _id;
         require(disp.disputeUintVars[_PAID] == 0, "already paid out");
         require(!disp.isPropFork, "function not callable fork fork proposals");
+        require(disp.disputeUintVars[_TALLY_DATE] > 0, "vote needs to be tallied");
         require(
             block.timestamp - last.disputeUintVars[_TALLY_DATE] > 1 days,
-            "Time for voting haven't elapsed"
+            "Time for a follow up dispute hasn't elapsed"
         );
         StakeInfo storage stakes = stakerDetails[disp.reportedMiner];
         disp.disputeUintVars[_PAID] = 1;
         if (last.disputeVotePassed == true) {
             //Changing the currentStatus and startDate unstakes the reported miner and transfers the stakeAmount
             stakes.startDate = block.timestamp - (block.timestamp % 86400);
-
             //Reduce the staker count
             uints[_STAKE_COUNT] -= 1;
             //Decreases the stakerCount since the miner's stake is being slashed
@@ -248,7 +244,6 @@ contract TellorStake is TellorTransfer {
                 );
             }
         }
-
         if (disp.disputeUintVars[_MINER_SLOT] == 2) {
             requestDetails[disp.disputeUintVars[_REQUEST_ID]].apiUintVars[
                 _DISPUTE_COUNT
@@ -273,27 +268,20 @@ contract TellorStake is TellorTransfer {
         Dispute storage disp = disputesById[_disputeId];
         require(!disp.executed, "the dispute has already been executed");
         //Get the voteWeight or the balance of the user at the time/blockNumber the dispute began
-        uint256 voteWeight =
-            balanceOfAt(msg.sender, disp.disputeUintVars[_BLOCK_NUMBER]);
-
+        uint256 voteWeight = balanceOfAt(msg.sender, disp.disputeUintVars[_BLOCK_NUMBER]);
         //Require that the msg.sender has not voted
         require(disp.voted[msg.sender] != true, "Sender has already voted");
-
         //Require that the user had a balance >0 at time/blockNumber the dispute began
         require(voteWeight != 0, "User balance is 0");
-
         //ensures miners that are under dispute cannot vote
         require(
             stakerDetails[msg.sender].currentStatus != 3,
             "Miner is under dispute"
         );
-
         //Update user voting status to true
         disp.voted[msg.sender] = true;
-
         //Update the number of votes for the dispute
         disp.disputeUintVars[_NUM_OF_VOTES] += 1;
-
         //If the user supports the dispute increase the tally for the dispute by the voteWeight
         //otherwise decrease it
         if (_supportsDispute) {
@@ -301,7 +289,6 @@ contract TellorStake is TellorTransfer {
         } else {
             disp.tally = disp.tally.sub(int256(voteWeight));
         }
-
         //Let the network kblock.timestamp the user has voted on the dispute and their casted vote
         emit Voted(_disputeId, _supportsDispute, msg.sender, voteWeight);
     }

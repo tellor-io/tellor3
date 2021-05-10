@@ -20,7 +20,6 @@ async function mineBlock(env) {
     }
     finalVals.push(minerVals);
     try {
-      // console.log(minerVals);
       res = await env.master.testSubmitMiningSolution(
         "nonce",
         vars["1"],
@@ -44,7 +43,6 @@ async function mineBlock(env) {
     }
   }
   let block = await web3.eth.getBlock("latest");
-
   return {
     miners: m,
     values: finalVals,
@@ -53,8 +51,6 @@ async function mineBlock(env) {
     timestamp: block.timestamp,
   };
 }
-
-
 async function depositStake(env) {
     for (var i = 0; i < env.accounts.length; i++) {
       //print tokens
@@ -62,8 +58,6 @@ async function depositStake(env) {
       await env.master.depositStake({from: env.accounts[i]})
     }
 }
-
-
 module.exports = {
   mineBlock: mineBlock,
   depositStake: depositStake,

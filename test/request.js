@@ -15,12 +15,9 @@ contract("Request and tip tests", function(accounts) {
     tellor = await Tellor.new()
     oldTellor = await Tellor.new()
     tellorMaster = await Master.new(tellor.address, oldTellor.address)
-
     let extension = await Extension.new()
 master = await ITellor.at(tellorMaster.address)
     await master.changeExtension(extension.address)
-
-
     for (var i = 0; i < accounts.length; i++) {
       //print tokens
       await master.theLazyCoon(accounts[i], web3.utils.toWei("7000", "ether"));
@@ -30,8 +27,15 @@ master = await ITellor.at(tellorMaster.address)
       await master.addTip(index, 1);
     }
   });
+  it("Failing non-staked mine ", async function() {
+    let currrVars = await master.getNewCurrentVariables();
+    let reqs = currrVars["1"];
+    await helper.expectThrow(master.testSubmitMiningSolution("nonce",reqs,[1,1,1,1,1],{from:accounts[1]}));
+  });
   it("Add Tip", async function() {
-
+    await helper.expectThrow(master.addTip(0,10)); //try to tip 0 id
+    await helper.expectThrow(master.addTip(11,0)); //try to tip 0
+    await helper.expectThrow(master.addTip(250,10)); //try to really high id
     let vars = await master.getRequestVars(11);
     let initialTip = vars[1];
     apiVars = await master.getRequestVars(11);

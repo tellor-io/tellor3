@@ -53,9 +53,7 @@ master = await ITellor.at(tellorMaster.address)
       let pay = new BN(i+1);
       assert(await master.balanceOf(accounts[i]) - pay.mul(baseNum) == 0)
     }
-    await helper.expectThrow(
-      master.migrate({from:accounts[1]})
-    )
+    await helper.expectThrow(master.migrate({from:accounts[1]}))
   });
     it("Migration works if bypass flags", async function() {
     for (var i = 0; i < 10; i++) {
@@ -73,11 +71,14 @@ master = await ITellor.at(tellorMaster.address)
       master = await ITellor.at(tellorMaster.address)
       await master.changeExtension(extension.address)
       assert(await master.getAddressVars(hash("_EXTENSION")) == extension.address)
-
+      await helper.expectThrow(master.changeExtension(accounts[2],{from:accounts[1]}))
       await tellorMaster.changeOwner(accounts[2])
       assert(await master.getAddressVars(hash("_OWNER")) == accounts[2])
+      await helper.expectThrow(master.changeOwner(accounts[2],{from:accounts[1]}))
       await tellorMaster.changeTellorContract(newTellor.address)
       assert(await master.getAddressVars(hash("_TELLOR_CONTRACT")) == newTellor.address)
+      await helper.expectThrow(master.changeTellorContract(newTellor.address,{from:accounts[1]}))
+      await helper.expectThrow(master.changeDeity(accounts[1],{from:accounts[1]}))
       await tellorMaster.changeDeity(accounts[1])
       assert(await master.getAddressVars(hash("_DEITY")) == accounts[1])
     });
