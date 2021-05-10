@@ -1,3 +1,4 @@
+
 require("@nomiclabs/hardhat-truffle5");
 require("hardhat-gas-reporter");
 require('hardhat-contract-sizer');
@@ -16,13 +17,34 @@ task("deploy", "Deploy and verify the contracts")
   .addParam("net", "rinkeby or empty for mainnet")
   .setAction(async taskArgs => {
 
+    console.log("deploy extension")
+    var network = taskArgs.net
+    await run("compile");
+    const Ext = await ethers.getContractFactory("Extension");
+    const extension = await Ext.deploy();
+    console.log("extension  deployed to:", extension.address);
+    await extension.deployed();
+    console.log("Tellor contract deployed to:", "https://" + network + ".etherscan.io/address/" + extension.address);
+    console.log("    transaction hash:", "https://" + network + ".etherscan.io/tx/" + extension.deployTransaction.hash);
+
+    // Wait for few confirmed transactions.
+    // Otherwise the etherscan api doesn't find the deployed contract.
+    console.log('waiting for tx confirmation...');
+    await extension.deployTransaction.wait(3)
+
+    console.log('submitting extension for etherscan verification...');
+
+    await run("verify:verify", {
+      address: extension.address,
+    },
+    )
+
 
     console.log("deploy tellor")
-    var oldtelloraddress = taskArgs.oldtelloraddress
     var network = taskArgs.net
     await run("compile");
     const Tellor = await ethers.getContractFactory("Tellor");
-    const tellor= await Tellor.deploy();
+    const tellor= await Tellor.deploy(extension.address);
     console.log("Tellor deployed to:", tellor.address);
     await tellor.deployed();
         if (network == "mainnet"){
@@ -48,29 +70,7 @@ task("deploy", "Deploy and verify the contracts")
     },
     )
 
-    console.log("deploy extension")
-    var oldtelloraddress = taskArgs.oldtelloraddress
-    var network = taskArgs.net
-    await run("compile");
-    const Ext = await ethers.getContractFactory("Extension");
-    const extension = await Ext.deploy();
-    console.log("extension  deployed to:", extension.address);
-    await extension.deployed();
-    console.log("Tellor contract deployed to:", "https://" + network + ".etherscan.io/address/" + extension.address);
-    console.log("    transaction hash:", "https://" + network + ".etherscan.io/tx/" + extension.deployTransaction.hash);
-
-    // Wait for few confirmed transactions.
-    // Otherwise the etherscan api doesn't find the deployed contract.
-    console.log('waiting for tx confirmation...');
-    await extension.deployTransaction.wait(3)
-
-    console.log('submitting extension for etherscan verification...');
-
-    await run("verify:verify", {
-      address: extension.address,
-    },
-    )
-
+    
     //instantiate Master with tellor sol before this
     // var provider = ethers.getDefaultProvider(network, infuraKey);
     // var provider = new ethers.providers.JsonRpcProvider(process.env.RINKEBY_NODE)
