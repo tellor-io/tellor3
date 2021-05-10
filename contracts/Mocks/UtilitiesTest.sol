@@ -18,7 +18,6 @@ contract UtilitiesTest is Utilities,Tellor{
     constructor(address _ext) Tellor(_ext){
     }
 
-
     /**
      * @dev Gets the top 5 of the array provided
      * @param requests is an array of length 51

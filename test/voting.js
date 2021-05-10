@@ -18,14 +18,12 @@ contract("Voting Tests", function(accounts) {
   let tellor = {};
 
   beforeEach("Setup contract for each test", async function() {
-    tellor = await Tellor.new()
-    oldTellor = await Tellor.new()
-    tellorMaster = await Master.new(tellor.address, oldTellor.address)
     let extension = await Extension.new()
+    tellor = await Tellor.new(extension.address)
+    oldTellor = await Tellor.new(extension.address)
+    tellorMaster = await Master.new(tellor.address, oldTellor.address)
     master = await ITellor.at(tellorMaster.address)
-    await master.changeExtension(extension.address)
     for (var i = 0; i < accounts.length; i++) {
-      //print tokens
       await master.theLazyCoon(accounts[i], web3.utils.toWei("7000", "ether"));
       await master.depositStake({from: accounts[i]})
     }
@@ -35,7 +33,8 @@ contract("Voting Tests", function(accounts) {
     }
   });
   it("Test New Tellor Storage Contract", async function() {
-    let tel = await Tellor.new()
+    let newExtension = await Extension.new()
+    let tel = await Tellor.new(newExtension.address)
     await tel.bumpVersion();
     await master.theLazyCoon(accounts[2], web3.utils.toWei("5000", "ether"))
     await master.proposeFork(tel.address,{from:accounts[2]})
@@ -57,7 +56,8 @@ contract("Voting Tests", function(accounts) {
     
   });
   it("Test Failed Vote - New Tellor Storage Contract", async function() {
-    let tel = await Tellor.new()
+    let newExtension = await Extension.new()
+    let tel = await Tellor.new(newExtension.address)
     await tel.bumpVersion();
     await helper.takeFifteen();
     await TestLib.mineBlock(env);
@@ -76,12 +76,14 @@ contract("Voting Tests", function(accounts) {
     assert(newAddy == oracleBase,"vote should have failed");
   });
   it("Test Verify", async function() {
-  let tel = await Tellor.new()
+    let newExtension = await Extension.new()
+    let tel = await Tellor.new(newExtension.address)
   await tel.bumpVersion();
   assert(await tel.verify() == 3001, "version should be correct")
   });
   it("Test Failed Vote - New Tellor Storage Contract--vote fail to fail because 5% diff in quorum is not reached", async function() {
-    let tel = await Tellor.new()
+    let newExtension = await Extension.new()
+    let tel = await Tellor.new(newExtension.address)
     await tel.bumpVersion();
     await helper.takeFifteen();
     await TestLib.mineBlock(env);
@@ -100,12 +102,11 @@ contract("Voting Tests", function(accounts) {
   });
 
   it("Test Vote - New Tellor Storage Contract--vote passed by 5% quorum", async function() {
-    //print some TRB tokens
-    let tel = await Tellor.new()
+    let newExtension = await Extension.new()
+    let tel = await Tellor.new(newExtension.address)
     await tel.bumpVersion();
     await master.theLazyCoon(accounts[4], web3.utils.toWei("4000", "ether"))
     await master.proposeFork(tel.address,{from:accounts[4]})
-    //get the initial dispute variables--should be zeros
     await master.vote(1, false)
     await master.vote(1, true,{from:accounts[4]})
     await master.vote(1, true,{from:accounts[1]})
@@ -115,13 +116,10 @@ contract("Voting Tests", function(accounts) {
     await master.tallyVotes(1)
     await helper.advanceTime(86400 * 2);
     await master.updateTellor(1)
- 
     let madd = await master.getAddressVars(hash("_TELLOR_CONTRACT"));
     assert(
       madd == tel.address,
       "vote should have passed"
     );
   });
-
-
 });
