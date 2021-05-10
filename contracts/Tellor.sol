@@ -48,7 +48,18 @@ contract Tellor is TellorStake,Utilities {
         uint256 _slot
     );
 
+    /*Storage -- constant only*/
+    address immutable extensionAddress;
+    
     /*Functions*/
+    /**
+     * @dev Constructor to set extension address
+     * @param _ext Extension address
+    */
+    constructor(address _ext) {
+        extensionAddress = _ext;
+    }
+
     /**
      * @dev Add tip to a request ID
      * @param _requestId being requested to be mined
@@ -73,15 +84,6 @@ contract Tellor is TellorStake,Utilities {
             _tip,
             requestDetails[_requestId].apiUintVars[_TOTAL_TIP]
         );
-    }
-
-    /**
-     * @dev  allows for the deity to update the Extension contract address
-     * @param _extension the address of the new Extension Contract
-    */
-    function changeExtension(address _extension) external {
-        require(msg.sender == addresses[_DEITY], "only deity can call this function");
-        addresses[_EXTENSION] = _extension;
     }
 
     /**
@@ -498,7 +500,7 @@ contract Tellor is TellorStake,Utilities {
      * contract.
     */
     fallback() external {
-        address addr = addresses[_EXTENSION];
+        address addr = extensionAddress;
         (bool result, ) =  addr.delegatecall(msg.data);
         assembly {
             returndatacopy(0, 0, returndatasize())
