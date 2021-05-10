@@ -199,7 +199,7 @@ contract TellorTransfer is TellorStorage, TellorVariables {
         require(
             previousBalance + _sizedAmount >= previousBalance,
             "Overflow happened"
-        ); // Check for overflow
+        );
         uint256 previousSupply = uints[_TOTAL_SUPPLY];
         require(
             previousSupply + _amount >= previousSupply,
@@ -222,7 +222,7 @@ contract TellorTransfer is TellorStorage, TellorVariables {
         require(
             previousBalance - _sizedAmount <= previousBalance,
             "Overflow happened"
-        ); // Check for overflow
+        );
         uint256 previousSupply = uints[_TOTAL_SUPPLY];
         require(
             previousSupply - _amount <= previousSupply,

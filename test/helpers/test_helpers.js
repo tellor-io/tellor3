@@ -48,22 +48,6 @@ advanceBlock = () => {
   });
 };
 
-/*function promisifyLogWatch(_contract,_event) {
-  return new Promise((resolve, reject) => {
-    web3.eth.subscribe('logs', {
-      address: _contract.options.address,
-      topics:  ['0xc12a8e1d75371aee68708dbc301ab95ef7a6022cd0eda54f8669aafcb77d21bd']
-    }, (error, result) => {
-        console.log('Result',result);
-        console.log('Error',error);
-        if (error)
-          reject(error);
-        web3.eth.clearSubscriptions();
-        resolve(result);
-    })
-  });
-}*/
-
 async function expectThrow(promise) {
   try {
     await promise;

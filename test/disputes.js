@@ -63,21 +63,18 @@ contract("Dispute Tests", function(accounts) {
     res = await TestLib.mineBlock(env);
     await takeFifteen();
     res = await TestLib.mineBlock(env);
-  })
-
+  });
   it("Test multiple dispute to the same miner", async function() {
     let times = [];
     let blocks = [];
     const reportingMiner = accounts[5];
     const reportedMiner = accounts[1];
     const reportedIndex = 1;
-
     const requestId = 1;
     for (j = 0; j < 4; j++) {
       await master.addTip(1, 1000);
       await takeFifteen();
       await TestLib.mineBlock(env);
-
       await takeFifteen();
       let block = await TestLib.mineBlock(env);
       let count = await master.getNewValueCountbyRequestId(requestId);
@@ -101,18 +98,21 @@ contract("Dispute Tests", function(accounts) {
     await master.beginDispute(requestId, times[2], reportedIndex, {
       from: reportingMiner,
     });
-
+    let hashID = await master.getDisputeIdByDisputeHash(web3.utils.soliditySha3(reportedMiner,requestId,times[0]))
+    assert(hashID == 1, "hash ID should be correct")
     //dispute votes and tally
+    await helper.expectThrow(master.vote(10, true, { from: accounts[3] }))//try voting on nonexistent id
     await master.vote(1, true, { from: accounts[3] });
+    await helper.expectThrow(master.vote(1, true, { from: accounts[3] }))//he already voted
     await master.vote(2, true, { from: accounts[3] });
     await master.vote(3, true, { from: accounts[3] });
-
     await helper.advanceTime(86400 * 22);
     await master.tallyVotes(1);
+    await helper.expectThrow(master.vote(1, true, { from: accounts[4] }))
     await master.tallyVotes(2);
     await master.tallyVotes(3);
     await helper.advanceTime(86400 * 2);
-
+    await helper.expectThrow(master.updateTellor(1))//try running update Tellor on nonexistent function
     await master.unlockDisputeFee(1, { from: accounts[0] });
     await master.unlockDisputeFee(2, { from: accounts[0] });
     await master.unlockDisputeFee(3, { from: accounts[0] });
@@ -121,23 +121,19 @@ contract("Dispute Tests", function(accounts) {
     assert(dispInfo[7][0] == requestId);
     assert(dispInfo[7][2] == blocks[0].values[reportedIndex][0]);
     assert(dispInfo[2] == true, "Dispute Vote passed");
-
     voted = await master.didVote(1, accounts[3]);
     assert(voted == true, "account 3 voted");
     voted = await master.didVote(1, accounts[5]);
     assert(voted == false, "account 5 did not vote");
     let value = await master.retrieveData(1, times[0]);
     assert(value.toNumber() > 0);
-
     //checks balances after dispute 1
     let balance2 = await master.balanceOf(reportingMiner);
     let dispBal2 = await master.balanceOf(reportedMiner);
-
     assert(
       balance2.sub(balance1).eq(stakeAmount),
       "reporting miner's balance should change correctly"
     );
-
     assert(
       dispBal1.sub(dispBal2).eq(stakeAmount),
       "reported party's balance should change correctly"
@@ -151,7 +147,6 @@ contract("Dispute Tests", function(accounts) {
 
   it("Test multiple dispute to official value/miner index 2", async function() {
     let requetsId = 1;
-
     let times = [];
     let blocks = [];
     for (j = 0; j < 3; j++) {
@@ -171,23 +166,31 @@ contract("Dispute Tests", function(accounts) {
     let balance1 = await master.balanceOf(accounts[2]);
     orig_dispBal4 = await master.balanceOf(accounts[4]);
     let dispBal1 = await master.balanceOf(accounts[1]);
+    await helper.expectThrow(master.beginDispute(requetsId, times[0], 10, { from: accounts[1] }));//index > 4
+    await helper.expectThrow(master.beginDispute(requetsId, times[0]-86420, 2, { from: accounts[1] }));//timestamp not valid
     await master.beginDispute(requetsId, times[0], 2, { from: accounts[1] });
+    await helper.expectThrow(master.beginDispute(requetsId, times[0], 2, { from: accounts[1] }));//already started    
     await master.beginDispute(requetsId, times[1], 2, { from: accounts[3] });
     await master.beginDispute(requetsId, times[2], 2, { from: accounts[4] });
-
+    assert(await master.isInDispute(requetsId, times[1]), "id shoudl be inDispute")
     //dispute votes and tally
     await master.vote(1, true, { from: accounts[1] });
     await master.vote(2, true, { from: accounts[1] });
     await master.vote(3, true, { from: accounts[1] });
-
+    await helper.expectThrow(master.depositStake({from:accounts[1]}));//cannot restake if disputed
+    await helper.expectThrow(master.unlockDisputeFee(1, { from: accounts[0] }));//not enought time
     await helper.advanceTime(86400 * 22);
     await master.tallyVotes(1);
     await master.tallyVotes(2);
     await master.tallyVotes(3);
+    await helper.expectThrow(master.unlockDisputeFee(1, { from: accounts[0] }));//not enought time
     await helper.advanceTime(86400 * 2);
+    await helper.expectThrow(master.unlockDisputeFee(10, { from: accounts[0] }));//dispute doesn't exist
     await master.unlockDisputeFee(1, { from: accounts[0] });
+    await helper.expectThrow(master.unlockDisputeFee(1, { from: accounts[0] }));//already paid out
     await master.unlockDisputeFee(2, { from: accounts[0] });
     await master.unlockDisputeFee(3, { from: accounts[0] });
+    await helper.expectThrow(master.beginDispute(requetsId, times[0], 2, { from: accounts[1] }));//cannot do another vote 
     dispInfo = await master.getAllDisputeVars(1);
     assert(dispInfo[7][0] == requetsId);
     assert(dispInfo["7"][2] == blocks[0].submitted[requetsId][2]);
@@ -201,7 +204,6 @@ contract("Dispute Tests", function(accounts) {
     //checks balances after dispute 1
     balance2 = await master.balanceOf(accounts[2]);
     dispBal2 = await master.balanceOf(accounts[1]);
-
     assert(
       balance1.sub(balance2).eq(stakeAmount),
       "reported miner's balance should change correctly"
@@ -214,6 +216,7 @@ contract("Dispute Tests", function(accounts) {
     assert(s != 1, " Not staked");
     dispBal4 = await master.balanceOf(accounts[4]);
     assert(dispBal4 - orig_dispBal4 == 0, "a4 shouldn't change'");
+    await helper.expectThrow(master.beginDispute(requetsId, times[0], 3, { from: accounts[1] }));//dispute must start within a week
   });
   it("Test multiple dispute rounds, assure increasing per dispute round", async function() {
     await master.theLazyCoon(accounts[1], web3.utils.toWei("500", "ether"));
@@ -225,8 +228,11 @@ contract("Dispute Tests", function(accounts) {
     await startADispute(accounts[1]);
     count = await master.getUintVar(web3.utils.keccak256("_DISPUTE_COUNT"));
     await master.vote(1, true, { from: accounts[3] });
+    await helper.expectThrow(master.tallyVotes(1)); //try to tally too early
     await helper.advanceTime(86400 * 3);
     await master.tallyVotes(1);
+    await helper.expectThrow(master.tallyVotes(1)); //try to reexecute
+    await helper.expectThrow(master.tallyVotes(2)); //try to execute a non-existent vote
     await helper.expectThrow(master.unlockDisputeFee(1, { from: accounts[0] })); //try to withdraw
     dispInfo = await master.getAllDisputeVars(1);
     assert(

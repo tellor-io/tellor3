@@ -145,6 +145,7 @@ contract Extension is TellorGetters {
             "update Tellor has already been run"
         );
         require(disp.disputeVotePassed == true, "vote needs to pass");
+        require(disp.disputeUintVars[_TALLY_DATE] > 0, "vote needs to be tallied");
         require(
             block.timestamp - disp.disputeUintVars[_TALLY_DATE] > 1 days,
             "Time for voting for further disputes has not passed"

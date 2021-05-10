@@ -144,21 +144,6 @@ contract TellorGetters is TellorStorage, TellorVariables, Utilities {
 
     /**
      * @dev Gets the a value for the latest timestamp available
-     * @return value for timestamp of last proof of work submitted
-     * @return true if the is a timestamp for the lastNewValue
-     */
-    function getLastNewValue() external view returns (uint256, bool) {
-        return (
-            retrieveData(
-                requestIdByTimestamp[uints[_TIME_OF_LAST_NEW_VALUE]],
-                uints[_TIME_OF_LAST_NEW_VALUE]
-            ),
-            true
-        );
-    }
-
-    /**
-     * @dev Gets the a value for the latest timestamp available
      * @param _requestId being requested
      * @return value for timestamp of last proof of work submitted and if true if it exist or 0 and false if it doesn't
      */
@@ -240,19 +225,6 @@ contract TellorGetters is TellorStorage, TellorVariables, Utilities {
     }
 
     /**
-     * @dev Getter function for requestId based on timestamp
-     * @param _timestamp to check requestId
-     * @return uint of requestId
-     */
-    function getRequestIdByTimestamp(uint256 _timestamp)
-        external
-        view
-        returns (uint256)
-    {
-        return requestIdByTimestamp[_timestamp];
-    }
-
-    /**
      * @dev Getter function for the requestQ array
      * @return the requestQ array
      */
@@ -266,7 +238,7 @@ contract TellorGetters is TellorStorage, TellorVariables, Utilities {
      * @param _requestId to look up
      * @param _data the variable to pull from the mapping. _data = keccak256("variable_name") where variable_name is
      * the variables/strings used to save the data in the mapping. The variables names are
-     * commented out under the apiUintVars under the requestDetails struct
+     * in TellorVariables.sol
      * @return uint value of the apiUintVars specified in _data for the requestId specified
      */
     function getRequestUintVars(uint256 _requestId, bytes32 _data)
