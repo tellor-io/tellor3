@@ -16,13 +16,43 @@ task("deploy", "Deploy and verify the contracts")
   .addParam("net", "rinkeby or empty for mainnet")
   .setAction(async taskArgs => {
 
-
-    console.log("deploy tellor")
-    var oldtelloraddress = taskArgs.oldtelloraddress
+    
     var network = taskArgs.net
     await run("compile");
+
+    console.log("deploy extension")
+    const Ext = await ethers.getContractFactory("Extension");
+    const extension = await Ext.deploy();
+    console.log("extension  deployed to:", extension.address);
+    await extension.deployed();
+    if (network == "mainnet"){
+      console.log("Extension contract deployed to:", "https://etherscan.io/address/" + extension.address);
+      console.log("    transaction hash:", "https://etherscan.io/tx/" + extension.deployTransaction.hash);
+    } else if (network == "rinkeby") {
+      console.log("Extension contract deployed to:", "https://rinkeby.etherscan.io/address/" + extension.address);
+      console.log("    transaction hash:", "https://rinkeby.etherscan.io/tx/" + extension.deployTransaction.hash);
+    } else {
+      console.log("Please add network explorer details")
+    }
+
+    // Wait for few confirmed transactions.
+    // Otherwise the etherscan api doesn't find the deployed contract.
+    console.log('waiting for tx confirmation...');
+    await extension.deployTransaction.wait(3)
+
+    console.log('submitting extension for etherscan verification...');
+
+    await run("verify:verify", {
+      address: extension.address,
+    },
+    )
+
+
+    console.log("deploy tellor")
+    //var network = taskArgs.net
+    //await run("compile");
     const Tellor = await ethers.getContractFactory("Tellor");
-    const tellor= await Tellor.deploy();
+    const tellor= await Tellor.deploy(extension.address);
     console.log("Tellor deployed to:", tellor.address);
     await tellor.deployed();
         if (network == "mainnet"){
@@ -45,45 +75,11 @@ task("deploy", "Deploy and verify the contracts")
 
     await run("verify:verify", {
       address: tellor.address,
+      constructorArguments: [extension.address]
     },
     )
 
-    console.log("deploy extension")
-    var oldtelloraddress = taskArgs.oldtelloraddress
-    var network = taskArgs.net
-    await run("compile");
-    const Ext = await ethers.getContractFactory("Extension");
-    const extension = await Ext.deploy();
-    console.log("extension  deployed to:", extension.address);
-    await extension.deployed();
-    console.log("Tellor contract deployed to:", "https://" + network + ".etherscan.io/address/" + extension.address);
-    console.log("    transaction hash:", "https://" + network + ".etherscan.io/tx/" + extension.deployTransaction.hash);
-
-    // Wait for few confirmed transactions.
-    // Otherwise the etherscan api doesn't find the deployed contract.
-    console.log('waiting for tx confirmation...');
-    await extension.deployTransaction.wait(3)
-
-    console.log('submitting extension for etherscan verification...');
-
-    await run("verify:verify", {
-      address: extension.address,
-    },
-    )
-
-    //instantiate Master with tellor sol before this
-    // var provider = ethers.getDefaultProvider(network, infuraKey);
-    // var provider = new ethers.providers.JsonRpcProvider(process.env.RINKEBY_NODE)
-    // let masterAddress = '0x88dF592F8eb5D7Bd38bFeF7dEb0fBc02cf3778a0'
-    // let wallet = new ethers.Wallet(env.process.PRIVATE_KEY, network);
-    // let abi = await loadJsonFile(path.join("abi", "tellor.json"))
-    // let contract = new ethers.Contract(tellorMasterAddress, abi, provider);
-    // var contractWithSigner = contract.connect(wallet);
-    // let tx = await contractWithSigner.addTip(changeExtension);
-    // //const factory = await ethers.getContractFactory("ITellor");
-    // //const master = await ITellor.at(masterAddress)
-    // await master.changeExtension(extension.address)
-    // console.log("tellorExtension address updated to", extension.address)
+ 
 
 /************************************************************************************/
     // console.log("deploy tellorMaster")
