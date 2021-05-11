@@ -7,27 +7,22 @@ const hash = web3.utils.keccak256;
 const helpers = require("./helpers/test_helpers")
 let amount = new web3.utils.BN("10000")
 
-
 contract("Migrator Test", function(accounts) {
   let tellorMaster = {};
   let tellor = {};
-
   beforeEach("Setup contract for each test", async function() {
-    tellor = await Tellor.new()
-    oldTellor = await Tellor.new()
-    tellorMaster = await Master.new(tellor.address, oldTellor.address)
     let extension = await Extension.new()
+    tellor = await Tellor.new(extension.address)
+    oldTellor = await Tellor.new(extension.address)
+    tellorMaster = await Master.new(tellor.address, oldTellor.address)
     master = await ITellor.at(tellorMaster.address)
-    await master.changeExtension(extension.address)
   });
-
   it("Total Supply Should change Properly", async() => {
     let initalSupply = await master.totalSupply.call()
     await master.migrateFor(accounts[2], amount,false);
     let finalSupply = await master.totalSupply.call()
     assert(finalSupply - amount == initalSupply, "total supply should change correctly")
   })
-
   it("Shouldn't allow contract to migrate twice", async() => {
     await master.migrateFor(accounts[2], amount,false);
     let balUser = await master.balanceOf(accounts[2])

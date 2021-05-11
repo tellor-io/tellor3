@@ -5,6 +5,14 @@ import "../Tellor.sol";
 
 contract TellorTest is Tellor {
     uint256 version = 3000;
+   
+    /*Functions*/
+    /**
+     * @dev Constructor to set extension address
+     * @param _ext Extension address
+    */
+    constructor(address _ext) Tellor(_ext){
+    }
 
     /*This is a cheat for demo purposes, is not on main Tellor*/
     function theLazyCoon(address _address, uint256 _amount) public {

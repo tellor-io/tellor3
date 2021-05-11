@@ -10,6 +10,14 @@ import "../Tellor.sol";
  * Utility contract
  */
 contract UtilitiesTest is Utilities,Tellor{
+
+    /**
+     * @dev Constructor to set extension address
+     * @param _ext Extension address
+    */
+    constructor(address _ext) Tellor(_ext){
+    }
+
     /**
      * @dev Gets the top 5 of the array provided
      * @param requests is an array of length 51

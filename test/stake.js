@@ -13,27 +13,18 @@ contract("Staking Tests", function(accounts) {
   let master = {}
 
   beforeEach("Setup contract for each test", async function() {
-    tellor = await Tellor.new()
-    oldTellor = await Tellor.new()
-    tellorMaster = await Master.new(tellor.address, oldTellor.address)
-
     let extension = await Extension.new()
-master = await ITellor.at(tellorMaster.address)
-    await master.changeExtension(extension.address)
-    
-
-
+    tellor = await Tellor.new(extension.address)
+    oldTellor = await Tellor.new(extension.address)
+    tellorMaster = await Master.new(tellor.address, oldTellor.address)
+    master = await ITellor.at(tellorMaster.address)
     for (var i = 0; i < accounts.length; i++) {
-      //print tokens
       await master.theLazyCoon(accounts[i], web3.utils.toWei("7000", "ether"));
-      // await master.depositStake({from: accounts[i]})
     }
-
     for (let index = 1; index < 50; index++) {
       await master.addTip(index, index);
     }
     await master.theLazyCoon(tellorMaster.address, web3.utils.toWei("70000", "ether"));
-
     env = {
       master: master,
       accounts: accounts
