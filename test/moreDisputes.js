@@ -13,8 +13,6 @@ contract("More Dispute Tests", function(accounts) {
   let master;
   let env;
   let disputeFee;
-
-
   const takeFifteen = async () => {
     await helper.advanceTime(60 * 18);
   };
@@ -37,12 +35,11 @@ contract("More Dispute Tests", function(accounts) {
 
   beforeEach("Setup contract for each test", async function() {
     this.timeout(30000)
-    tellor = await Tellor.new()
-    oldTellor = await Tellor.new()
-    tellorMaster = await Master.new(tellor.address, oldTellor.address)
     let extension = await Extension.new()
+    tellor = await Tellor.new(extension.address)
+    oldTellor = await Tellor.new(extension.address)
+    tellorMaster = await Master.new(tellor.address, oldTellor.address)
     master = await ITellor.at(tellorMaster.address)
-    await master.changeExtension(extension.address)
     for (var i = 0; i < 7; i++) {
       await master.theLazyCoon(accounts[i], web3.utils.toWei("7000", "ether"));
       await master.depositStake({from: accounts[i]})
@@ -69,7 +66,6 @@ contract("More Dispute Tests", function(accounts) {
     diputer = disp.disputer;
     disputed = disp.disputed;
     disputeFee = await master.getUintVar(hash("_DISPUTE_FEE"));
-
   })
     it("Test basic dispute", async function() {
       // console.log("basic disp 1")
@@ -104,23 +100,18 @@ contract("More Dispute Tests", function(accounts) {
       s = await master.getStakerInfo(accounts[2]);
       assert(s != 1, " Not staked");
       s = await master.getDisputeUintVars(1,hash("_DISPUTE_FEE"))
-      console.log(web3.utils.fromWei(s)*1)
       assert(s == web3.utils.fromWei(s)*1, "dispute fee should be correct")
     });
-
     it("Test multiple dispute rounds, passing all three", async function() {
       let balance1 = await master.balanceOf(accounts[2]);
       let dispBal1 = await master.balanceOf(accounts[1]);
       let count = await master.getUintVar(hash("_DISPUTE_COUNT"));
-      //vote 1 passes
       await master.vote(disputeId, true);
       await helper.advanceTime(86400 * 3);
       await master.tallyVotes(disputeId);
-
       await helper.expectThrow(
         master.unlockDisputeFee(disputeId, { from: accounts[0] })
       );
-      //try to withdraw
       dispInfo = await master.getAllDisputeVars(disputeId);
       assert(
         dispInfo[4] == accounts[2],
@@ -157,7 +148,6 @@ contract("More Dispute Tests", function(accounts) {
       let balance2 = await master.balanceOf(accounts[2]);
       let dispBal2 = await master.balanceOf(accounts[1]);
       let disputeFee = await master.getUintVar(hash("_DISPUTE_FEE"));
-
       assert(
         balance1.sub(balance2).toString() == web3.utils.toWei("500"),
         "reported miner's balance should change correctly"
@@ -167,16 +157,13 @@ contract("More Dispute Tests", function(accounts) {
         "disputing party's balance should change correctly"
       );
     });
-
     it("Test multiple dispute rounds - passing, then failing", async function() {
       balance1 = await master.balanceOf(accounts[2]);
       dispBal1 = await master.balanceOf(accounts[1]);
       count = await master.getUintVar(hash("_DISPUTE_COUNT"));
       await master.vote(1, { from: accounts[3] });
-
       await helper.advanceTime(86400 * 3);
       await master.tallyVotes(disputeId);
-
       await helper.expectThrow(
         master.unlockDisputeFee(1, { from: accounts[0] })
       ); //try to withdraw
@@ -191,14 +178,11 @@ contract("More Dispute Tests", function(accounts) {
       await master.vote(disp2.id, false, { from: accounts[6] });
       await master.vote(disp2.id, false, { from: accounts[4] });
       await helper.advanceTime(86400 * 5);
-
       await master.tallyVotes(disp2.id);
       dispInfo = await master.getAllDisputeVars(2);
       assert(dispInfo[2] == false, "Dispute Vote failed");
       await helper.advanceTime(86400 * 2);
-
       await master.unlockDisputeFee(1, { from: accounts[6] });
-
       dispInfo = await master.getAllDisputeVars(1);
       assert(dispInfo[2] == true, "Dispute Vote passed");
       dispInfo2 = await master.getAllDisputeVars(2);
@@ -213,7 +197,6 @@ contract("More Dispute Tests", function(accounts) {
         "disputing party's balance should change correctly"
       );
     });
-
     it("Test multiple dispute rounds - failing, then passing", async function() {
       balance1 = await master.balanceOf(accounts[2]);
       dispBal1 = await master.balanceOf(accounts[1]);
@@ -243,7 +226,6 @@ contract("More Dispute Tests", function(accounts) {
       balance2 = await master.balanceOf(accounts[2]);
       dispBal2 = await master.balanceOf(accounts[1]);
       let disputeFee = await master.getUintVar(hash("_DISPUTE_FEE"));
-
       assert(
         balance1 - balance2 ==
           (await master.getUintVar(web3.utils.keccak256("_STAKE_AMOUNT"))),

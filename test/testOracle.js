@@ -14,14 +14,12 @@ contract("Test Oracle", function(accounts) {
   let master = {}
 
   beforeEach("Setup contract for each test", async function() {
-    tellor = await Tellor.new()
-    oldTellor = await Tellor.new()
-    tellorMaster = await Master.new(tellor.address, oldTellor.address)
     let extension = await Extension.new()
+    tellor = await Tellor.new(extension.address)
+    oldTellor = await Tellor.new(extension.address)
+    tellorMaster = await Master.new(tellor.address, oldTellor.address)
     master = await ITellor.at(tellorMaster.address)
-    await master.changeExtension(extension.address)
     for (var i = 0; i < accounts.length; i++) {
-      //print tokens
       await master.theLazyCoon(accounts[i], web3.utils.toWei("7000", "ether"));
       await master.depositStake({from: accounts[i]})
     }
@@ -33,7 +31,6 @@ contract("Test Oracle", function(accounts) {
       master: master,
       accounts: accounts
     }
-
   });
   it("getVariables", async function() {
     await master.addTip(1, 20);
@@ -132,7 +129,6 @@ contract("Test Oracle", function(accounts) {
       }
     }
   });
-
   it("Test dev Share", async function() {
     await helper.advanceTime(60 * 16);
     await TestLib.mineBlock(env);
@@ -150,7 +146,6 @@ contract("Test Oracle", function(accounts) {
 
   it("Test miner, alternating api request on Q and auto select", async function() {
     this.timeout(30000)
-       //Mining 11 blocks to get the requestQ alright
     for (let index = 0; index < 12; index++) {
       await helper.advanceTime(60 * 60 * 16);
       await TestLib.mineBlock(env);      
@@ -166,8 +161,6 @@ contract("Test Oracle", function(accounts) {
     ); //throw if it hasn't been long enough
     await helper.advanceTime(60 * 60 * 16);
     await master.addTip(30, 1001, { from: accounts[2] });
-    // await helper.advanceTime(60 * 60 * 16);
-    // await TestLib.mineBlock(env);
     let data = await master.getNewVariablesOnDeck();
     for (var i = 0; i <= 4; i++) {
       data[0][i] = data[0][i] * 1 - 0;

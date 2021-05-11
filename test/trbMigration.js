@@ -12,13 +12,11 @@ contract("Token Migration and Deity Tests", function(accounts) {
   let tellor = {};
   let baseNum;
   beforeEach("Setup contract for each test", async function() {
-    tellor = await Tellor.new()
-    oldTellor = await Tellor.new()
-    tellorMaster = await Master.new(tellor.address, oldTellor.address)
     let extension = await Extension.new()
-master = await ITellor.at(tellorMaster.address)
-    await master.changeExtension(extension.address)
-
+    tellor = await Tellor.new(extension.address)
+    oldTellor = await Tellor.new(extension.address)
+    tellorMaster = await Master.new(tellor.address, oldTellor.address)
+    master = await ITellor.at(tellorMaster.address)
     baseNum = new BN(web3.utils.toWei("1000", "ether"))
     for (var i = 0; i < 10; i++) {
       let pay = new BN(i+1);
@@ -66,12 +64,10 @@ master = await ITellor.at(tellorMaster.address)
     )
   });
   it("Diety tests", async function() {
-      newTellor = await Tellor.new()
-      extension = await Extension.new()
+      let newExtension = await Extension.new()
+      newTellor = await Tellor.new(newExtension.address)
       master = await ITellor.at(tellorMaster.address)
-      await master.changeExtension(extension.address)
-      assert(await master.getAddressVars(hash("_EXTENSION")) == extension.address)
-      await helper.expectThrow(master.changeExtension(accounts[2],{from:accounts[1]}))
+      await helper.expectThrow(master.changeExtension(accounts[2],{from:accounts[1]}))//old change extension should be removed
       await tellorMaster.changeOwner(accounts[2])
       assert(await master.getAddressVars(hash("_OWNER")) == accounts[2])
       await helper.expectThrow(master.changeOwner(accounts[2],{from:accounts[1]}))
