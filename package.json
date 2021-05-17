@@ -2,15 +2,17 @@
   "name": "Tellor3",
   "dependencies": {
     "@nomiclabs/hardhat-etherscan": "^2.1.1",
+    "@nomiclabs/hardhat-waffle": "^2.0.1",
     "dotenv": "^8.2.0",
     "hardhat-contract-sizer": "^2.0.2",
+    "hardhat-ethers": "^1.0.1",
     "hardhat-gas-reporter": "^1.0.4",
     "load-json-file": "^6.2.0",
     "node-fetch-polyfill": "^2.0.6",
     "y18n": "^5.0.5"
   },
   "devDependencies": {
-    "@nomiclabs/hardhat-ethers": "^2.0.1",
+    "@nomiclabs/hardhat-ethers": "^2.0.2",
     "@nomiclabs/hardhat-truffle5": "^2.0.0",
     "@nomiclabs/hardhat-web3": "^2.0.0",
     "ethers": "^5.0.31",
