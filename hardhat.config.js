@@ -5,12 +5,11 @@ require("solidity-coverage");
 require("@nomiclabs/hardhat-ethers");
 require("@nomiclabs/hardhat-etherscan");
 require("dotenv").config();
+require("@nomiclabs/hardhat-waffle")
+//Run this commands to deploy tellor:
+//npx hardhat deploy --net rinkeby --network rinkeby
+//npx hardhat deploy --net  --network mainnet
 require("@nomiclabs/hardhat-web3");
-
-
-// //Run this commands to deploy tellor:
-// //npx hardhat deploy --net rinkeby --network rinkeby
-// //npx hardhat deploy --net  --network mainnet
 
 // task("deploy", "Deploy and verify the contracts")
 //   .addParam("net", "rinkeby or empty for mainnet")
@@ -151,7 +150,10 @@ module.exports = {
           "nick lucian brenda kevin sam fiscal patch fly damp ocean produce wish",
         count: 40,
       },
-      allowUnlimitedContractSize: true,
+      // forking: {
+      //   url: `${process.env.NODE_URL_MAINNET}`
+      // },
+      allowUnlimitedContractSize: true
     },
       // rinkeby: {
       //   url: `${process.env.NODE_URL_RINKEBY}`,
