@@ -4,7 +4,6 @@ pragma solidity 0.7.4;
 import "./SafeMath.sol";
 import "./TellorGetters.sol";
 import "./TellorVariables.sol";
-import "hardhat/console.sol";
 import "./Utilities.sol";
 
 /** 

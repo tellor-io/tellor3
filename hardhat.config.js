@@ -8,7 +8,7 @@ require("dotenv").config();
 require("@nomiclabs/hardhat-waffle")
 //Run this commands to deploy tellor:
 //npx hardhat deploy --net rinkeby --network rinkeby
-//npx hardhat deploy --net  --network mainnet
+//npx hardhat deploy --net mainnet --network mainnet
 require("@nomiclabs/hardhat-web3");
 
 // task("deploy", "Deploy and verify the contracts")
@@ -18,10 +18,12 @@ require("@nomiclabs/hardhat-web3");
     
 //     var network = taskArgs.net
 //     await run("compile");
-
+//     const overrides = {
+//       nonce: 3
+//     };
 //     console.log("deploy extension")
 //     const Ext = await ethers.getContractFactory("Extension");
-//     const extension = await Ext.deploy();
+//     const extension = await Ext.deploy(overrides);
 //     console.log("extension  deployed to:", extension.address);
 //     await extension.deployed();
 //     if (network == "mainnet"){
@@ -159,13 +161,13 @@ module.exports = {
       //   url: `${process.env.NODE_URL_RINKEBY}`,
       //   accounts: [process.env.PRIVATE_KEY],
       //   gas: 10000000 ,
-      //   gasPrice: 4000000000
+      //   gasPrice: 40000000000
       // },
       // mainnet: {
       //   url: `${process.env.NODE_URL_MAINNET}`,
       //   accounts: [process.env.PRIVATE_KEY],
       //   gas: 10000000 ,
-      //   gasPrice: 8000000000
+      //   gasPrice: 50000000000
       // }  
   },
   etherscan: {
