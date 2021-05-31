@@ -54,7 +54,7 @@ contract TellorTransfer is TellorStorage, TellorVariables {
             stakerDetails[_user].currentStatus < 5
         ) {
             //Subtracts the stakeAmount from balance if the _user is staked
-            if (balanceOf(_user) - uints[_STAKE_AMOUNT] >= _amount) {
+            if (balanceOf(_user).sub(uints[_STAKE_AMOUNT]) >= _amount) {
                 return true;
             }
             return false;
@@ -217,6 +217,10 @@ contract TellorTransfer is TellorStorage, TellorVariables {
      */
     function _doBurn(address _from, uint256 _amount) internal {
         if (_amount == 0) return;
+        require(
+            allowedToTrade(_from, _amount),
+            "Should have sufficient balance to trade"
+        );
         uint128 previousBalance = uint128(balanceOf(_from));
         uint128 _sizedAmount  = uint128(_amount);
         require(
