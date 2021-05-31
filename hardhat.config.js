@@ -11,74 +11,74 @@ require("@nomiclabs/hardhat-waffle")
 //npx hardhat deploy --net mainnet --network mainnet
 require("@nomiclabs/hardhat-web3");
 
-task("deploy", "Deploy and verify the contracts")
-  .addParam("net", "rinkeby or empty for mainnet")
-  .setAction(async taskArgs => {
+// task("deploy", "Deploy and verify the contracts")
+//   .addParam("net", "rinkeby or empty for mainnet")
+//   .setAction(async taskArgs => {
 
     
-    var network = taskArgs.net
-    await run("compile");
-    const overrides = {
-      nonce: 3
-    };
-    console.log("deploy extension")
-    const Ext = await ethers.getContractFactory("Extension");
-    const extension = await Ext.deploy(overrides);
-    console.log("extension  deployed to:", extension.address);
-    await extension.deployed();
-    if (network == "mainnet"){
-      console.log("Extension contract deployed to:", "https://etherscan.io/address/" + extension.address);
-      console.log("    transaction hash:", "https://etherscan.io/tx/" + extension.deployTransaction.hash);
-    } else if (network == "rinkeby") {
-      console.log("Extension contract deployed to:", "https://rinkeby.etherscan.io/address/" + extension.address);
-      console.log("    transaction hash:", "https://rinkeby.etherscan.io/tx/" + extension.deployTransaction.hash);
-    } else {
-      console.log("Please add network explorer details")
-    }
+//     var network = taskArgs.net
+//     await run("compile");
+//     const overrides = {
+//       nonce: 3
+//     };
+//     console.log("deploy extension")
+//     const Ext = await ethers.getContractFactory("Extension");
+//     const extension = await Ext.deploy(overrides);
+//     console.log("extension  deployed to:", extension.address);
+//     await extension.deployed();
+//     if (network == "mainnet"){
+//       console.log("Extension contract deployed to:", "https://etherscan.io/address/" + extension.address);
+//       console.log("    transaction hash:", "https://etherscan.io/tx/" + extension.deployTransaction.hash);
+//     } else if (network == "rinkeby") {
+//       console.log("Extension contract deployed to:", "https://rinkeby.etherscan.io/address/" + extension.address);
+//       console.log("    transaction hash:", "https://rinkeby.etherscan.io/tx/" + extension.deployTransaction.hash);
+//     } else {
+//       console.log("Please add network explorer details")
+//     }
 
-    // Wait for few confirmed transactions.
-    // Otherwise the etherscan api doesn't find the deployed contract.
-    console.log('waiting for tx confirmation...');
-    await extension.deployTransaction.wait(3)
+//     // Wait for few confirmed transactions.
+//     // Otherwise the etherscan api doesn't find the deployed contract.
+//     console.log('waiting for tx confirmation...');
+//     await extension.deployTransaction.wait(3)
 
-    console.log('submitting extension for etherscan verification...');
+//     console.log('submitting extension for etherscan verification...');
 
-    await run("verify:verify", {
-      address: extension.address,
-    },
-    )
-
-
-    console.log("deploy tellor")
-    //var network = taskArgs.net
-    //await run("compile");
-    const Tellor = await ethers.getContractFactory("Tellor");
-    const tellor= await Tellor.deploy(extension.address);
-    console.log("Tellor deployed to:", tellor.address);
-    await tellor.deployed();
-        if (network == "mainnet"){
-          console.log("Tellor contract deployed to:", "https://etherscan.io/address/" + tellor.address);
-          console.log("    transaction hash:", "https://etherscan.io/tx/" + tellor.deployTransaction.hash);
-        } else if (network == "rinkeby") {
-          console.log("Tellor contract deployed to:", "https://rinkeby.etherscan.io/address/" + tellor.address);
-          console.log("    transaction hash:", "https://rinkeby.etherscan.io/tx/" + tellor.deployTransaction.hash);
-        } else {
-          console.log("Please add network explorer details")
-        }
+//     await run("verify:verify", {
+//       address: extension.address,
+//     },
+//     )
 
 
-    // Wait for few confirmed transactions.
-    // Otherwise the etherscan api doesn't find the deployed contract.
-    console.log('waiting for tx confirmation...');
-    await tellor.deployTransaction.wait(3)
+//     console.log("deploy tellor")
+//     //var network = taskArgs.net
+//     //await run("compile");
+//     const Tellor = await ethers.getContractFactory("Tellor");
+//     const tellor= await Tellor.deploy(extension.address);
+//     console.log("Tellor deployed to:", tellor.address);
+//     await tellor.deployed();
+//         if (network == "mainnet"){
+//           console.log("Tellor contract deployed to:", "https://etherscan.io/address/" + tellor.address);
+//           console.log("    transaction hash:", "https://etherscan.io/tx/" + tellor.deployTransaction.hash);
+//         } else if (network == "rinkeby") {
+//           console.log("Tellor contract deployed to:", "https://rinkeby.etherscan.io/address/" + tellor.address);
+//           console.log("    transaction hash:", "https://rinkeby.etherscan.io/tx/" + tellor.deployTransaction.hash);
+//         } else {
+//           console.log("Please add network explorer details")
+//         }
 
-    console.log('submitting for etherscan verification...');
 
-    await run("verify:verify", {
-      address: tellor.address,
-      constructorArguments: [extension.address]
-    },
-    )
+//     // Wait for few confirmed transactions.
+//     // Otherwise the etherscan api doesn't find the deployed contract.
+//     console.log('waiting for tx confirmation...');
+//     await tellor.deployTransaction.wait(3)
+
+//     console.log('submitting for etherscan verification...');
+
+//     await run("verify:verify", {
+//       address: tellor.address,
+//       constructorArguments: [extension.address]
+//     },
+//     )
 
  
 
@@ -128,7 +128,7 @@ task("deploy", "Deploy and verify the contracts")
 //     //await master.changeExtension(getters.address)
 //     //console.log("tellorGetters address updated to", getters.address)
 
-  });
+//  });
 
 
 /**
@@ -157,18 +157,18 @@ module.exports = {
       // },
       allowUnlimitedContractSize: true
     },
-      rinkeby: {
-        url: `${process.env.NODE_URL_RINKEBY}`,
-        accounts: [process.env.PRIVATE_KEY],
-        gas: 10000000 ,
-        gasPrice: 40000000000
-      },
-      mainnet: {
-        url: `${process.env.NODE_URL_MAINNET}`,
-        accounts: [process.env.PRIVATE_KEY],
-        gas: 10000000 ,
-        gasPrice: 50000000000
-      }  
+      // rinkeby: {
+      //   url: `${process.env.NODE_URL_RINKEBY}`,
+      //   accounts: [process.env.PRIVATE_KEY],
+      //   gas: 10000000 ,
+      //   gasPrice: 40000000000
+      // },
+      // mainnet: {
+      //   url: `${process.env.NODE_URL_MAINNET}`,
+      //   accounts: [process.env.PRIVATE_KEY],
+      //   gas: 10000000 ,
+      //   gasPrice: 50000000000
+      // }  
   },
   etherscan: {
       // Your API key for Etherscan
