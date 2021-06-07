@@ -55,6 +55,7 @@ contract TellorStake is TellorTransfer {
         //_miner is the miner being disputed. For every mined value 5 miners are saved in an array and the _minerIndex
         //provided by the party initiating the dispute
         address _miner = _request.minersByValue[_timestamp][_minerIndex];
+        uints[keccak256(abi.encodePacked(_miner,"DisputeCount"))]++;
         bytes32 _hash =
             keccak256(abi.encodePacked(_miner, _requestId, _timestamp));
         //Increase the dispute count by 1
@@ -219,7 +220,9 @@ contract TellorStake is TellorTransfer {
                 );
             }
         } else {
-            stakes.currentStatus = 1;
+            if(uints[keccak256(abi.encodePacked(last.reportedMiner,"DisputeCount"))] == 1){
+                stakes.currentStatus = 1;
+            }
             TellorStorage.Request storage _request =
                 requestDetails[disp.disputeUintVars[_REQUEST_ID]];
             if (disp.disputeUintVars[_MINER_SLOT] == 2) {
@@ -244,6 +247,7 @@ contract TellorStake is TellorTransfer {
                 );
             }
         }
+        uints[keccak256(abi.encodePacked(last.reportedMiner,"DisputeCount"))]--;
         if (disp.disputeUintVars[_MINER_SLOT] == 2) {
             requestDetails[disp.disputeUintVars[_REQUEST_ID]].apiUintVars[
                 _DISPUTE_COUNT
