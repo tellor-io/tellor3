@@ -325,4 +325,113 @@ contract("Dispute Tests", function(accounts) {
       "disputing party's balance should change correctly"
     );
   });
+
+
+  it("Test multiple dispute to the same miner different ID's", async function() {
+    let times = [];
+    let blocks = [];
+    const reportingMiner = accounts[5];
+    const reportingMiner2 = accounts[6]
+    const reportedMiner = accounts[1];
+    const reportedIndex = 1;
+    const requestId = 1;
+    for (j = 0; j < 4; j++) {
+      await master.addTip(1, 1000);
+      await master.addTip(2, 1000);
+      await takeFifteen();
+      await TestLib.mineBlock(env);
+      await takeFifteen();
+      let block = await TestLib.mineBlock(env);
+      let count = await master.getNewValueCountbyRequestId(requestId);
+      let timestamp = await master.getTimestampbyRequestIDandIndex(
+        requestId,
+        count.toNumber() - 1
+      );
+      blocks.push(block);
+      times.push(timestamp);
+    }
+    let balance1 = await master.balanceOf(reportingMiner);
+    let balance21 = await master.balanceOf(reportingMiner2);
+    let dispBal1 = await master.balanceOf(reportedMiner);
+    let orig_dispBal4 = await master.balanceOf(accounts[4]);
+    await master.beginDispute(requestId, times[0], reportedIndex, {
+      from: reportingMiner,
+    });
+    await master.beginDispute(2, times[1], reportedIndex, {
+      from: reportingMiner2,
+    });
+    let hashID = await master.getDisputeIdByDisputeHash(web3.utils.soliditySha3(reportedMiner,requestId,times[0]))
+    assert(hashID == 1, "hash ID should be correct")
+    //dispute votes and tally
+    await master.vote(1, false, { from: accounts[3] });
+    await master.vote(2, true, { from: accounts[3] });
+    await helper.advanceTime(86400 * 22);
+    await master.tallyVotes(1);
+    s = await master.getStakerInfo(accounts[1]);
+    assert(s != 1, " Not staked");
+    let balance2 = await master.balanceOf(reportingMiner);
+    let balance22 = await master.balanceOf(reportingMiner2);
+    let dispBal2 = await master.balanceOf(reportedMiner);
+    assert(
+      balance1.sub(balance2).eq(dispInfo[7][8]),
+      "reporting miner's balance should change correctly1"
+    );
+    assert(
+      dispBal1.eq(dispBal2),
+      "reported party's balance should change correctly"
+    );
+    assert(
+      balance21.sub(balance22).eq(dispInfo[7][8]),
+      "reporting miner's balance should change correctly"
+    );
+    await master.tallyVotes(2);
+    await helper.advanceTime(86400 * 2);
+    await master.unlockDisputeFee(1, { from: accounts[0] });
+    balance2 = await master.balanceOf(reportingMiner);
+    balance22 = await master.balanceOf(reportingMiner2);
+    dispBal2 = await master.balanceOf(reportedMiner);
+    assert(
+      balance1.sub(balance2).eq(dispInfo[7][8]),
+      "reporting miner's balance should change correctly"
+    );
+    assert(
+      dispBal2.sub(dispBal1).eq(dispInfo[7][8]),
+      "reported party's balance should change correctly"
+    );
+    assert(
+      balance21.sub(balance22).eq(dispInfo[7][8]),
+      "reporting miner's balance should change correctly"
+    );
+    s = await master.getStakerInfo(accounts[1]);
+    assert(s != 1, " Not staked");
+    await master.unlockDisputeFee(2, { from: accounts[0] });
+    dispInfo = await master.getAllDisputeVars(1);
+    assert(dispInfo[7][0] == requestId);
+    assert(dispInfo[7][2] == blocks[0].values[reportedIndex][0]);
+    assert(dispInfo[2] == false, "Dispute Vote passed");
+    //checks balances after dispute 1
+    balance2 = await master.balanceOf(reportingMiner);
+    balance22 = await master.balanceOf(reportingMiner2);
+    dispBal2 = await master.balanceOf(reportedMiner);
+    assert(
+      balance1.sub(balance2).eq(dispInfo[7][8]),
+      "reporting miner's balance should change correctly"
+    );
+    console.log(dispBal1.add(dispInfo[7][8]).sub(dispBal2)*1 - (web3.utils.toWei("500", "ether"))*1)
+    assert(
+      (dispBal1.add(dispInfo[7][8]).sub(dispBal2))*1 - (web3.utils.toWei("500", "ether")*1) == 0,
+      "reported party's balance should change correctly"
+    );
+    assert(
+      balance21* 1 + 1*(web3.utils.toWei("500", "ether")) == 1*balance22,
+      "reporting miner's balance should change correctly"
+    );
+    s = await master.getStakerInfo(accounts[1]);
+    assert(s != 1, " Not staked");
+    let dispBal4 = await master.balanceOf(accounts[4]);
+    assert(dispBal4 - orig_dispBal4 == 0, "a4 shouldn't change'");
+  });
+
+
+
 });
