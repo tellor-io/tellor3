@@ -122,7 +122,7 @@ async function add58tips(masterAdd, net ) {
         for (var i = 1; i < 58; i++) {
             try {
               var gasP1 = await fetchGasPrice()
-              let tx = await contractWithSigner.addTip(i, 1, { from: pubAddr, gasLimit: gas_limit, gasPrice: gasP1 });
+              let tx = await contractWithSigner.addTip(i, i, { from: pubAddr, gasLimit: gas_limit, gasPrice: gasP1 });
               var link = "".concat(etherscanUrl, '/tx/', tx.hash)
               var ownerlink = "".concat(etherscanUrl, '/address/', tellorMasterAddress)
               console.log('Yes, a tip was sent for request id ', i)
