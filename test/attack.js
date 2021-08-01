@@ -44,18 +44,18 @@
 //     // Make sure that impersonated address has some tokens
 //     expect(await tellor.balanceOf(await devWallet.getAddress())).not.equal(expandTo18Decimals(0));
 //     // Check iniitial zero balance
-//     expect(await tellor.balanceOf(attacker.address)).equal("0");
+//     expect(await tellor.balanceOf(attacker.address) *1 ).equal(0);
 //     // Transfer 501 tokens to the attacker
 //     await tellor.transfer(attacker.address, expandTo18Decimals(501), {from: devWallet.address});
-//     expect(await tellor.balanceOf(attacker.address)).equal(expandTo18Decimals(501));
+//     expect(await tellor.balanceOf(attacker.address) * 1 - expandTo18Decimals(501)).equal(0);
 //     // Become a staker (changes currentStatus to 1)
 //     const userTellor = tellor.connect(attacker);
 //     await userTellor.depositStake();
 //     // Tip any requestId with 2 tokens to make the balance lower than 500
 //     expect(userTellor.addTip(1,expandTo18Decimals(2))).to.be.reverted;
-//     expect(await tellor.balanceOf(attacker.address)).equal(expandTo18Decimals(501));
+//     expect(await tellor.balanceOf(attacker.address) * 1 - expandTo18Decimals(501)).equal(0);
 //     // Transfer more than 500 tokens to underflow the balance
-//     expect(await tellor.balanceOf(user2.address)).equal("0");
+//     expect(await tellor.balanceOf(user2.address)* 1).equal(0);
 //     expect(userTellor.transfer (user2.address, expandTo18Decimals(1000))).to.be.reverted;
 //     expect(await tellor.balanceOf(user2.address)).equal(expandTo18Decimals(0));
 //   });

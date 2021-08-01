@@ -178,6 +178,9 @@ contract("More Dispute Tests", function(accounts) {
       await master.vote(disp2.id, false, { from: accounts[6] });
       await master.vote(disp2.id, false, { from: accounts[4] });
       await helper.advanceTime(86400 * 5);
+      await helper.expectThrow(
+        master.unlockDisputeFee(1, { from: accounts[6] })
+      );
       await master.tallyVotes(disp2.id);
       dispInfo = await master.getAllDisputeVars(2);
       assert(dispInfo[2] == false, "Dispute Vote failed");
@@ -218,6 +221,9 @@ contract("More Dispute Tests", function(accounts) {
       await master.vote(disp2.id, true, { from: accounts[6] });
       await master.vote(disp2.id, true, { from: accounts[4] });
       await helper.advanceTime(86400 * 5);
+      await helper.expectThrow(
+        master.unlockDisputeFee(1, { from: accounts[6] })
+      );
       await master.tallyVotes(disp2.id);
       dispInfo = await master.getAllDisputeVars(2);
       assert(dispInfo[2] == true, "Dispute Vote passed");
