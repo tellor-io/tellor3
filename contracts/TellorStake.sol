@@ -178,7 +178,7 @@ contract TellorStake is TellorTransfer {
         uint256 _id;
         require(disp.disputeUintVars[_PAID] == 0, "already paid out");
         require(!disp.isPropFork, "function not callable fork fork proposals");
-        require(disp.disputeUintVars[_TALLY_DATE] > 0, "vote needs to be tallied");
+        require(last.disputeUintVars[_TALLY_DATE] > 0, "vote needs to be tallied");
         require(
             block.timestamp - last.disputeUintVars[_TALLY_DATE] > 1 days,
             "Time for a follow up dispute hasn't elapsed"
