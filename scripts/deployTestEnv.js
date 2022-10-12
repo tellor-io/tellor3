@@ -110,7 +110,7 @@ async function deployoldTellor(_network, _pk, _nodeURL) {
     await run("verify:verify",
         {
             address: tellor.address,
-            constructor: [ext.address]
+            constructorArguments: [ext.address]
         },
     )
     console.log("tellor contract verified")
@@ -124,7 +124,7 @@ async function deployoldTellor(_network, _pk, _nodeURL) {
     await run("verify:verify",
         {
             address: master.address,
-            constructor: [tellor.address,oldTellor ]
+            constructorArguments: [tellor.address,oldTellor ]
         },
     )
     console.log("master contract verified")
