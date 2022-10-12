@@ -100,22 +100,10 @@ async function deployoldTellor(_network, _pk, _nodeURL) {
 
 //////////////Verify
 
-        // Wait for few confirmed transactions.
-    // Otherwise the etherscan api doesn't find the deployed contract.
-    console.log('waiting for ext tx confirmation...');
-    await ext.deployTransaction.wait(7)
-
-    console.log('submitting contract for verification...');
-    await run("verify:verify",
-        {
-            address: ext.address
-        },
-    )
-    console.log("ext contract verified")
-    
+ 
 // Wait for few confirmed transactions.
     // Otherwise the etherscan api doesn't find the deployed contract.
-    console.log('waiting for oldtllor tx confirmation...');
+    console.log('waiting for tellor tx confirmation...');
     await tellor.deployTransaction.wait(7)
 
     console.log('submitting contract for verification...');
@@ -141,7 +129,19 @@ async function deployoldTellor(_network, _pk, _nodeURL) {
     )
     console.log("master contract verified")
 
+       // Wait for few confirmed transactions.
+    // Otherwise the etherscan api doesn't find the deployed contract.
+    console.log('waiting for ext tx confirmation...');
+    await ext.deployTransaction.wait(7)
 
+    console.log('submitting contract for verification...');
+    await run("verify:verify",
+        {
+            address: ext.address
+        },
+    )
+    console.log("ext contract verified")
+    
 
 
 }
