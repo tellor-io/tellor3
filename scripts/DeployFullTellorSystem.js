@@ -11,8 +11,11 @@ const Master = artifacts.require("./TellorMaster.sol")
 const Tellor = artifacts.require("./Tellor.sol")
 const Getters = artifacts.require("./TellorGetters.sol")
 
+
+//goerli
+oldTellor = '0x639d599545d5bBCb88c28d5B998B64E6AF3e37FF'
 //rinkeby
-oldTellor = '0xFe41Cb708CD98C5B20423433309E55b53F79134a'
+//oldTellor = '0xFe41Cb708CD98C5B20423433309E55b53F79134a'
 
 //mainnet
 // oldTellor = '0x0Ba45A8b5d5575935B8158a88C631E9F9C95a2e5'
