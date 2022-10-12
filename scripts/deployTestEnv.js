@@ -26,7 +26,7 @@ async function deployoldTellor(_network, _pk, _nodeURL) {
     ////////////// Deploy tellor
 
          //////////////// extension
-         console.log("Starting deployment for ext...")
+         console.log("Starting deployment for Extension...")
          const extfac = await ethers.getContractFactory("contracts/Extension.sol:Extension", wallet)
          const ext = await extfac.deploy()
          console.log("ext contract deployed to: ", ext.address)
@@ -34,14 +34,14 @@ async function deployoldTellor(_network, _pk, _nodeURL) {
          await ext.deployed()
      
          if (net == "mainnet") {
-             console.log("OldTellor contract deployed to:", "https://etherscan.io/address/" + ext.address);
-             console.log("   OldTellor transaction hash:", "https://etherscan.io/tx/" + ext.deployTransaction.hash);
+             console.log("Extension contract deployed to:", "https://etherscan.io/address/" + ext.address);
+             console.log("   Extension transaction hash:", "https://etherscan.io/tx/" + ext.deployTransaction.hash);
          } else if (net == "rinkeby") {
-             console.log("OldTellor contract deployed to:", "https://rinkeby.etherscan.io/address/" + ext.address);
-             console.log("    OldTellor transaction hash:", "https://rinkeby.etherscan.io/tx/" + ext.deployTransaction.hash);
+             console.log("Extension contract deployed to:", "https://rinkeby.etherscan.io/address/" + ext.address);
+             console.log("    Extension transaction hash:", "https://rinkeby.etherscan.io/tx/" + ext.deployTransaction.hash);
          } else if (net == "goerli") {
-             console.log("OldTellor contract deployed to:", "https://goerli.etherscan.io/address/" + ext.address);
-             console.log("    OldTellor transaction hash:", "https://goerli.etherscan.io/tx/" + ext.deployTransaction.hash);
+             console.log("Extension contract deployed to:", "https://goerli.etherscan.io/address/" + ext.address);
+             console.log("    Extensionr transaction hash:", "https://goerli.etherscan.io/tx/" + ext.deployTransaction.hash);
          }
          else {
              console.log("Please add network explorer details")
@@ -61,10 +61,10 @@ async function deployoldTellor(_network, _pk, _nodeURL) {
         console.log("   Tellor transaction hash:", "https://etherscan.io/tx/" + tellor.deployTransaction.hash);
     } else if (net == "rinkeby") {
         console.log("Tellor contract deployed to:", "https://rinkeby.etherscan.io/address/" + tellor.address);
-        console.log("    OldTellor transaction hash:", "https://rinkeby.etherscan.io/tx/" + tellor.deployTransaction.hash);
+        console.log("    Tellor transaction hash:", "https://rinkeby.etherscan.io/tx/" + tellor.deployTransaction.hash);
     } else if (net == "goerli") {
         console.log("Tellor contract deployed to:", "https://goerli.etherscan.io/address/" + tellor.address);
-        console.log("    OldTellor transaction hash:", "https://goerli.etherscan.io/tx/" + tellor.deployTransaction.hash);
+        console.log("    Tellor transaction hash:", "https://goerli.etherscan.io/tx/" + tellor.deployTransaction.hash);
     }
     else {
         console.log("Please add network explorer details")
@@ -75,19 +75,19 @@ async function deployoldTellor(_network, _pk, _nodeURL) {
      console.log("Starting deployment for tellor...")
      const masterfac = await ethers.getContractFactory("contracts/TellorMaster.sol:TellorMaster", wallet)
      const master = await masterfac.deploy(tellor.address, oldTellor)
-     console.log("OldTellor contract deployed to: ", master.address)
+     console.log("master contract deployed to: ", master.address)
  
      await master.deployed()
  
      if (net == "mainnet") {
-         console.log("OldTellor contract deployed to:", "https://etherscan.io/address/" + master.address);
-         console.log("   OldTellor transaction hash:", "https://etherscan.io/tx/" + master.deployTransaction.hash);
+         console.log("master contract deployed to:", "https://etherscan.io/address/" + master.address);
+         console.log("   Master transaction hash:", "https://etherscan.io/tx/" + master.deployTransaction.hash);
      } else if (net == "rinkeby") {
-         console.log("OldTellor contract deployed to:", "https://rinkeby.etherscan.io/address/" + master.address);
-         console.log("    OldTellor transaction hash:", "https://rinkeby.etherscan.io/tx/" + master.deployTransaction.hash);
+         console.log("Master contract deployed to:", "https://rinkeby.etherscan.io/address/" + master.address);
+         console.log("    Master transaction hash:", "https://rinkeby.etherscan.io/tx/" + master.deployTransaction.hash);
      } else if (net == "goerli") {
-         console.log("OldTellor contract deployed to:", "https://goerli.etherscan.io/address/" + master.address);
-         console.log("    OldTellor transaction hash:", "https://goerli.etherscan.io/tx/" + master.deployTransaction.hash);
+         console.log("Master contract deployed to:", "https://goerli.etherscan.io/address/" + master.address);
+         console.log("    Master transaction hash:", "https://goerli.etherscan.io/tx/" + master.deployTransaction.hash);
      }
      else {
          console.log("Please add network explorer details")
@@ -125,7 +125,7 @@ async function deployoldTellor(_network, _pk, _nodeURL) {
             constructor: [ext.address]
         },
     )
-    console.log("oldtellor contract verified")
+    console.log("tellor contract verified")
 
     // Wait for few confirmed transactions.
     // Otherwise the etherscan api doesn't find the deployed contract.
