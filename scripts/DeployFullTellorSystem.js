@@ -30,19 +30,21 @@ async function main() {
         var provider = new ethers.providers.JsonRpcProvider(process.env.NODE_URL_SEPOLIA)
         var _teamMultisigAddress = '0x34Fae97547E990ef0E05e05286c51E4645bf1A85'
     }
-  }
+  } catch (error) {
+    console.error(error)
+    console.log("network error or environment not defined")
+    process.exit(1)
+}
   console.log(network, pubAddr)
   let wallet = new ethers.Wallet(privateKey, provider)
 
     //Deploy Old tellor
-    // console.log("Starting deployment for oldTellor contract...")
-    // const OldTellor = await ethers.getContractFactory("OldTellor", wallet)
-    // const oldtellor= await OldTellor.deploy()
-    // console.log("OldTellor deployed to:", oldtellor.address)
-    // console.log(explorerUrl + oldtellor.address)
+    console.log("Starting deployment for oldTellor contract...")
+    const OldTellor = await ethers.getContractFactory("OldTellor", wallet)
+    const oldtellor= await OldTellor.deploy()
+    console.log("OldTellor deployed to:", oldtellor.address)
+    console.log(explorerUrl + oldtellor.address)
     
-    oldaddress = '0x639d599545d5bBCb88c28d5B998B64E6AF3e37FF'
-    const oldtellor = await ethers.getContractAt("OldTellor", oldaddress, wallet)
     
     //Deploy extenstion contract
     console.log("Starting deployment for extension  contract...")
@@ -65,7 +67,7 @@ async function main() {
     console.log("TellorMaster deployed to:", tellorMaster.address)
     console.log(explorerUrl + tellorMaster.address)
 
-    //verification starting
+    // verification starting
     console.log('waiting for oldTellor tx confirmation...')
     await oldtellor.deployTransaction.wait(7)
     console.log('submitting contract for verification...')
@@ -128,23 +130,6 @@ async function main() {
     } catch (e) {
         console.log(e)
     }
-
-    console.log('waiting for Getter tx confirmation...');
-    await getters.deployTransaction.wait(7)
-    console.log('submitting contract for verification...');
-
-    try {
-        await run("verify:verify",
-            {
-                address: oldtellor.address,
-                constructorArguments: [flex.address, _teamMultisigAddress]
-            },
-        )
-        console.log("Getters contract verified")
-    } catch (e) {
-        console.log(e)
-    }
-
 
 
 
